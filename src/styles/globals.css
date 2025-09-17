@@ -1,20 +1,96 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Blue */
+  --blue-100: #eaf0ff;
+  --blue-200: #d6e1ff;
+  --blue-300: #adc4ff;
+  --blue-400: #7aa3ff;
+  --blue-500: #3d82ff;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+  --blue-950: #172554;
+
+  /* Gray */
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --gray-950: #0b0f16;
+
+  /* Purple */
+  --purple-100: #ede9fe;
+  --purple-900: #5b21b6;
+
+  /* Yellow */
+  --yellow-100: #fef9c3;
+  --yellow-900: #78350f;
+
+  /* Green */
+  --green-100: #d1fae5;
+  --green-900: #064e3b;
+
+  /* Utility */
+  --black: #000000;
+  --white: #ffffff;
+  --red: #dc2626;
+  --bg: #f9fafb;
 }
+  /*วิธีใช้ color: var(--gray-900); */
+
+
 
 h1 {
-  font-size: 2.5rem;   
-  font-weight: bold;
-  color: #222;
-  margin-bottom: 16px;
+    font-size: 48px;
+    font-weight: 700;
 }
 
 h2 {
-  font-size: 1.8rem;  
-  font-weight: 600;
-  color: #444;
-  margin-bottom: 12px;
+    font-size: 36px;
+    font-weight: 600;
+
 }
+
+h3 {
+    font-size: 28px;
+    font-weight: 600;
+}
+
+h4 {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+h5 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.body1 {
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.body2 {
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.body3 {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.body4 {
+    font-size: 12px;
+    font-weight: 400;
+}
+
+/* วิธีใช้  classname="body4" */
