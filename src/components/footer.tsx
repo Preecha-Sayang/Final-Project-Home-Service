@@ -6,7 +6,7 @@ export function Footer() {
           {/* logo */}
           <div className="flex items-center gap-2">
             <div>
-              <span></span>
+              <img src=".\Logo.svg" className="w-9 h-9"></img>
             </div>
             <div>
               <h2 className="text-[var(--blue-600)] font-semibold">HomeService</h2>
@@ -24,18 +24,18 @@ export function Footer() {
           {/* contact */}
           <div className="flex flex-col gap-2 text-[var(--gray-800)]">
             <div className="flex items-center gap-2">
-              <span>logo</span>
+              <img src=".\images\icon_phone.svg"></img>
               <span>080-540-6357</span>
             </div>
             <div className="flex items-center gap-2">
-              <span>logo</span>
+              <img src=".\images\icon_mail.svg"></img>
               <span>contact@homeservice.co</span>
             </div>
           </div>
         </div>
   
         {/* copyright */}
-        <div className="bg-gray-100">
+        <div className="bg-[var(--gray-100)]">
           <div className="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center text-xs text-[var(--gray-500)] gap-2">
             <p>Copyright © 2021 HomeServices.com All rights reserved</p>
             <div className="flex gap-4">
