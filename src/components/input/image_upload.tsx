@@ -1,104 +1,70 @@
 "use client";
-import * as React from "react";
-import { cn, labelCls, messageCls } from "./input_style";
+import { useRef } from "react";
+import Image from "next/image";
+import { cn } from "./utils";
 
-export type ImageUploadProps = {
-  label?: string;
-  hint?: string;
-  error?: string;
-  value?: File | null;
-  onChange?: (file: File | null) => void;
-  accept?: string;       // "image/png,image/jpeg"
-  maxSizeMB?: number;    // default 10
-  className?: string;
+type Props = {
+    label?: string;
+    value: File | null;
+    onChange: (file: File | null) => void;
+    accept?: string; // ตัวอย่าง "image/*"
+    className?: string;
 };
 
 export default function ImageUpload({
-  label,
-  hint,
-  error,
-  value,
-  onChange,
-  accept = "image/png,image/jpeg",
-  maxSizeMB = 10,
-  className,
-}: ImageUploadProps) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = React.useState<string | null>(null);
-  const [dragOver, setDragOver] = React.useState(false);
+    label,
+    value,
+    onChange,
+    accept = "image/*",
+    className,
+}: Props) {
+    const inputRef = useRef<HTMLInputElement | null>(null);
 
-  React.useEffect(() => {
-    if (!value) return setPreview(null);
-    const url = URL.createObjectURL(value);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [value]);
+    const handlePick = () => inputRef.current?.click();
 
-  const handleFiles = (files: FileList | null) => {
-    const file = files?.[0];
-    if (!file) return;
-    if (!accept.split(",").includes(file.type)) {
-      alert("ชนิดไฟล์ไม่ถูกต้อง");
-      return;
-    }
-    if (file.size > maxSizeMB * 1024 * 1024) {
-      alert(`ไฟล์ใหญ่เกิน ${maxSizeMB}MB`);
-      return;
-    }
-    onChange?.(file);
-  };
+    return (
+        <div className={cn("grid gap-2", className)}>
+            {label && <span className="text-sm font-medium text-gray-800">{label}</span>}
 
-  return (
-    <div className={cn("w-full", className)}>
-      {label && <label className={labelCls()}>{label}</label>}
+            <div className="flex items-center gap-3">
+                <button
+                    type="button"
+                    onClick={handlePick}
+                    className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm hover:border-gray-400 focus:ring-2 focus:ring-blue-500"
+                >
+                    เลือกรูป
+                </button>
+                {value && <span className="text-sm text-gray-700">{value.name}</span>}
+                {value && (
+                    <button
+                        type="button"
+                        onClick={() => onChange(null)}
+                        className="text-sm text-red-600 hover:underline"
+                    >
+                        ลบรูป
+                    </button>
+                )}
+            </div>
 
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          handleFiles(e.dataTransfer.files);
-        }}
-        className={cn(
-          "flex min-h-[140px] cursor-pointer items-center justify-center rounded-xl border-2 border-dashed px-4 py-6 text-center",
-          dragOver ? "border-blue-500 bg-blue-50" : "border-gray-300"
-        )}
-        onClick={() => inputRef.current?.click()}
-        role="button"
-        aria-label="อัพโหลดรูปภาพ"
-      >
-        {preview ? (
-          <img
-            src={preview}
-            alt="preview"
-            className="max-h-48 rounded-md object-contain"
-          />
-        ) : (
-          <div className="text-sm text-gray-600">
-            <p className="font-medium text-blue-600">อัพโหลดรูปภาพ</p>
-            <p className="mt-1 text-xs text-gray-500">
-              PNG/JPG ขนาดไม่เกิน {maxSizeMB}MB • คลิกหรือลากไฟล์มาวาง
-            </p>
-          </div>
-        )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept={accept}
-          className="hidden"
-          onChange={(e) => handleFiles(e.currentTarget.files)}
-        />
-      </div>
+            <input
+                ref={inputRef}
+                type="file"
+                accept={accept}
+                className="hidden"
+                onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+            />
 
-      {error ? (
-        <p className={messageCls(true)}>{error}</p>
-      ) : hint ? (
-        <p className={messageCls()}>{hint}</p>
-      ) : null}
-    </div>
-  );
+            {value && (
+                <div className="relative mt-2 h-40 w-40 overflow-hidden rounded-md border">
+                    {/* แสดง preview แบบ blob */}
+                    <Image
+                        fill
+                        alt="preview"
+                        src={URL.createObjectURL(value)}
+                        className="object-cover"
+                    />
+                </div>
+            )}
+        </div>
+    );
 }

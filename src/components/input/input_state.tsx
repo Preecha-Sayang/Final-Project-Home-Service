@@ -1,6 +1,14 @@
 "use client";
 import * as React from "react";
-import { base, ring, state, cn, labelCls, messageCls, InputStatus } from "./input_style";
+import {
+    base,
+    ring,
+    state,
+    cn,
+    labelCls,
+    messageCls,
+    InputStatus,
+} from "./input_style";
 
 export type InputFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     label?: string;
@@ -9,8 +17,26 @@ export type InputFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     status?: InputStatus;
     leftIcon?: React.ReactNode;
     rightIcon?: React.ReactNode;
+    /** ส่ง children เพื่อใช้ element อื่นแทน <input> (เช่น <select>, <textarea>, หรือ input จาก lib ภายนอก) */
     asChild?: boolean;
     children?: React.ReactNode;
+};
+
+// element ชนิดที่เราจะ clone และอัด className/disabled เข้าไป
+type StylableControlProps = {
+    className?: string;
+    disabled?: boolean;
+};
+type StylableControl = React.ReactElement<StylableControlProps>;
+
+// ฟังก์ชันช่วยเช็คว่าเป็น native form control ที่รองรับ disabled
+const isNativeFormTag = (type: unknown): type is string => {
+    return (
+        typeof type === "string" &&
+        ["input", "select", "textarea", "button", "optgroup", "option", "fieldset"].includes(
+            type
+        )
+    );
 };
 
 const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
@@ -31,7 +57,7 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
         ref
     ) => {
         const isError = Boolean(error) || status === "error";
-        const isDisabled = disabled || status === "disabled";
+        const isDisabled = Boolean(disabled) || status === "disabled";
 
         const styleClass = cn(
             base,
@@ -55,20 +81,16 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
 
                     {asChild && React.isValidElement(children) ? (
                         (() => {
-                            // แปลง children อีกทีนึง
-                            const child = children as React.ReactElement<any>;
+                            const child = children as StylableControl;
 
-                            const supportsDisabled =
-                                typeof child.type === "string" &&
-                                ["input", "select", "textarea", "button", "optgroup", "option", "fieldset"].includes(child.type);
-
-                            const cloneProps: any = {
+                            // เตรียม prop สำหรับอัดเข้าไปใน child
+                            const cloneProps: StylableControlProps = {
                                 className: cn(styleClass, child.props?.className),
+                                // จะใส่ disabled ต่อเมื่อเป็น native tag (กันกรณี lib ภายนอกไม่รับ prop นี้)
+                                disabled: isNativeFormTag((child as React.ReactElement).type)
+                                    ? isDisabled || child.props?.disabled
+                                    : child.props?.disabled,
                             };
-
-                            if (supportsDisabled) {
-                                cloneProps.disabled = isDisabled ?? child.props?.disabled;
-                            }
 
                             return React.cloneElement(child, cloneProps);
                         })()
@@ -99,5 +121,4 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>(
 );
 
 InputField.displayName = "InputField";
-
 export default InputField;
