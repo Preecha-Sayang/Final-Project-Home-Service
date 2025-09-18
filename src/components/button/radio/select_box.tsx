@@ -53,7 +53,7 @@ function SelectBox({
           {/* ไอคอน Barcode */}
           <div className="w-12 h-12 mb-3">
             <img 
-              src="/barcode.svg.svg" 
+              src="/barcode.svg" 
               alt="Barcode" 
               className={`
                 w-full h-full object-contain transition-all duration-200
