@@ -6,6 +6,7 @@ import ButtonSecondary from "@/components/button/buttonsecondary";
 import BookingForm from "@/components/input/use_index";
 
 import { Footer } from "@/components/footer";
+import { Footer } from "@/components/footer/footer";
 
 export default function Home() {
   return (
