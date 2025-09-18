@@ -23,7 +23,9 @@ function Checkbox({
    */
   const handleChange = () => {
     if (!disabled && onChange) {
-      onChange(!checked);
+      console.log('checked', checked);
+      //checked = !checked;
+      onChange(checked);
     }
   };
 
@@ -32,7 +34,7 @@ function Checkbox({
       {/* Input element ที่ซ่อนไว้ */}
       <input
         type="checkbox"
-        id="checkbox"
+        id={id}
         checked={checked}
         disabled={disabled}
         onChange={handleChange}
