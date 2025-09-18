@@ -43,7 +43,7 @@
   --red: #dc2626;
   --bg: #f9fafb;
 }
-  /*วิธีใช้ color: var(--gray-900); */
+  /*วิธีใช้ bg-[var(--green-900)]; */
 
 
 
