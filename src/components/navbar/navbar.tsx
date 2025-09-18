@@ -6,7 +6,7 @@ export default function Navbar() {
     <div className="bg-white shadow-md px-4 py-3 flex items-center justify-between relative">
       <div className="flex items-center gap-4 ml-5">
         <Image src={logo_img} alt="HomeServices" className="" />
-        <a className="text-gray-900 font-semibold hover:text-blue-600">
+        <a className="text-gray-900 font-semibold hover:text-blue-600 mt-5">
           บริการของเรา
         </a>
       </div>
