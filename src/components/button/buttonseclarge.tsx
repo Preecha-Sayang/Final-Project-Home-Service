@@ -23,6 +23,7 @@ function ButtonSecondaryLarge({ onClick, disabled,className, children }: ButtonP
   const baseClass = `
     w-[310px] h-[55px] px-[32px] py-[12px] text-[16px] font-medium rounded-xl
     box-border border-[1px]  flex items-center justify-center gap-2
+    cursor-pointer transition-colors duration-200
   `;
 
   // 
