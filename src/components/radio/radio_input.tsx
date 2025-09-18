@@ -87,7 +87,6 @@ export function RadioButtonWithInput({
                     <span className="text-gray-500 text-sm font-medium">{postfix}</span>
                 </div>
             </div>
-
         </div>
       </div>
     </div>

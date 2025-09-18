@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 interface SelectBoxProps {
   id: string;
-    value?: string;
-    label?: string;
-    selected?: boolean;
+  value?: string;
+  label?: string;
+  selected?: boolean;
   disabled?: boolean;
   onChange?: (selected: string) => void;
   className?: string;                 

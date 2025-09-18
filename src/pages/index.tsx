@@ -68,6 +68,14 @@ export default function Home() {
 
                     />
                     <SelectBox
+                        id="select-box2"
+                        label="select box 2"
+                        value="2"
+                        selected={selectBoxValue === "2"}
+                        onChange={setSelectBoxValue}
+                        disabled={false}
+                    />
+                    <SelectBox
                         id="select-box3"
                         label="disabled box"
                         value="3"
