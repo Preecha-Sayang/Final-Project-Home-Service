@@ -1,26 +1,16 @@
 import React, { useState } from 'react';
 
-/**
- * Props สำหรับคอมโพเนนต์ Select Filter
- * @interface SelectFilterProps
- */
+
 interface SelectFilterProps {
-  id: string;                         // ID ของ input element
-  selected?: string;                  // ค่าที่เลือกอยู่ (เริ่มต้น: "Selected")
-  disabled?: boolean;                 // สถานะการปิดใช้งาน (เริ่มต้น: false)
-  onChange?: (value: string) => void; // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลง
-  options?: string[];                 // ตัวเลือกใน dropdown
-  className?: string;                 // CSS classes เพิ่มเติม
+  id: string;                         
+  selected?: string;                  
+  disabled?: boolean;                 
+  onChange?: (value: string) => void; 
+  options?: string[];                
+  className?: string;                 
 }
 
-/**
- * คอมโพเนนต์ Select Filter สำหรับ Next.js ใช้ Tailwind CSS
- * มี 3 สถานะ: Default, Hover, Hover Option (เปิด dropdown)
- * 
- * @param props - SelectFilterProps
- * @returns JSX Element ของ select filter
- */
-export default function SelectFilter({
+function SelectFilterExample({
   id,
   selected = "Selected",
   disabled = false,
@@ -125,10 +115,9 @@ export default function SelectFilter({
 /**
  * คอมโพเนนต์ตัวอย่างการใช้งาน Select Filter
  * แสดง select filter เดี่ยวที่มีทุกสถานะรวมกัน: Default, Hover, Hover Option
- * 
- * @returns JSX Element ของตัวอย่างการใช้งาน
+
  */
-export function SelectFilterExample() {
+export function SelectFilter() {
   const [selectedValue, setSelectedValue] = useState("Selected");
 
   return (
@@ -136,18 +125,18 @@ export function SelectFilterExample() {
       {/* Select Filter เดียวที่แสดงทุกสถานะ */}
       <div className="space-y-4">
        
-        
          {/* Select Filter Interactive */}
          <div className="flex justify-center">
-           <SelectFilter
+           <SelectFilterExample
              id="select-filter-interactive"
              selected={selectedValue}
              onChange={setSelectedValue}
              options={["Selected", "Unselected", "Hover"]}
            />
          </div>
-    
       </div>
     </div>
   );
 }
+
+export default SelectFilterExample;

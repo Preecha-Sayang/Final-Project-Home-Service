@@ -1,25 +1,14 @@
 import React, { useState } from 'react';
 
-/**
- * Props สำหรับคอมโพเนนต์ Select Box
- * @interface SelectBoxProps
- */
 interface SelectBoxProps {
-  id: string;                         // ID ของ input element
-  selected?: boolean;                 // สถานะการเลือก (เริ่มต้น: false)
-  disabled?: boolean;                 // สถานะการปิดใช้งาน (เริ่มต้น: false)
-  onChange?: (selected: boolean) => void; // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลง                    // ข้อความที่แสดงข้างปุ่ม (optional)
-  className?: string;                 // CSS classes เพิ่มเติม
+  id: string;                        
+  selected?: boolean;                 
+  disabled?: boolean;                 
+  onChange?: (selected: boolean) => void;                 
+  className?: string;                 
 }
 
-/**
- * คอมโพเนนต์ Select Box สำหรับ Next.js ใช้ Tailwind CSS
- * มี 3 สถานะ: Default, Hover, Selected
- * 
- * @param props - SelectBoxProps
- * @returns JSX Element ของ select box
- */
-export default function SelectBox({
+function SelectBox({
   id,
   selected = false,
   disabled = false,
@@ -85,8 +74,6 @@ export default function SelectBox({
 /**
  * คอมโพเนนต์ตัวอย่างการใช้งาน Select Box
  * แสดง select box เดี่ยวที่มีทุกสถานะรวมกัน: Default, Hover, Selected
- * 
- * @returns JSX Element ของตัวอย่างการใช้งาน
  */
 export function SelectBoxExample() {
   const [isSelected, setIsSelected] = useState(false);
@@ -104,11 +91,11 @@ export function SelectBoxExample() {
             selected={isSelected}
             disabled={isDisabled}
             onChange={setIsSelected}
-            
           />
         </div>
-    
       </div>
     </div>
   );
 }
+
+export default SelectBox;

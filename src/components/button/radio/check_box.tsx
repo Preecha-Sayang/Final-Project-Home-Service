@@ -1,26 +1,15 @@
 import React, { useState } from 'react';
 
-/**
- * Props สำหรับคอมโพเนนต์ Checkbox
- * @interface CheckboxProps
- */
 interface CheckboxProps {
-  id: string;                         // ID ของ input element
-  checked?: boolean;                  // สถานะการเลือก (เริ่มต้น: false)
-  disabled?: boolean;                 // สถานะการปิดใช้งาน (เริ่มต้น: false)
-  onChange?: (checked: boolean) => void; // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลง
-  label?: string;                     // ข้อความที่แสดงข้างปุ่ม (optional)
-  className?: string;                 // CSS classes เพิ่มเติม
+  id: string;                         
+  checked?: boolean;                  
+  disabled?: boolean;                 
+  onChange?: (checked: boolean) => void; 
+  label?: string;                     
+  className?: string;                 
 }
 
-/**
- * คอมโพเนนต์ Checkbox สำหรับ Next.js ใช้ Tailwind CSS
- * มี 4 สถานะ: Default, Hover, Checked, Disabled
- * 
- * @param props - CheckboxProps
- * @returns JSX Element ของ checkbox
- */
-export default function Checkbox({
+function Checkbox({
   id,
   checked = false,
   disabled = false,
@@ -43,7 +32,7 @@ export default function Checkbox({
       {/* Input element ที่ซ่อนไว้ */}
       <input
         type="checkbox"
-        id={id}
+        id="checkbox"
         checked={checked}
         disabled={disabled}
         onChange={handleChange}
@@ -108,32 +97,5 @@ export default function Checkbox({
   );
 }
 
-/**
- * คอมโพเนนต์ตัวอย่างการใช้งาน Checkbox
- * แสดง checkbox เดี่ยวที่มีทุกสถานะรวมกัน: Default, Hover, Checked, Disabled
- * 
- * @returns JSX Element ของตัวอย่างการใช้งาน
- */
-export function CheckboxExample() {
-  const [isChecked, setIsChecked] = useState(false);
-  const [isDisabled, setIsDisabled] = useState(false);
+export default Checkbox;
 
-  return (
-    <div className="space-y-6">
-      {/* Checkbox เดียวที่แสดงทุกสถานะ */}
-      <div className="space-y-4">
-        
-        {/* Checkbox Interactive */}
-        <Checkbox
-          id="checkbox-interactive"
-          checked={isChecked}
-          disabled={isDisabled}
-          onChange={setIsChecked}
-          label="Checkbox"
-        />
-        
-        
-      </div>
-    </div>
-  );
-}

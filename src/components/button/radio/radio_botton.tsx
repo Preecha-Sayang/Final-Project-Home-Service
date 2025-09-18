@@ -1,28 +1,16 @@
 import React, { useState } from 'react';
 
-
-/**
- * Props สำหรับคอมโพเนนต์ปุ่ม Radio Okja
- * @interface OkjaRadioProps
- */
 interface OkjaRadioProps {
-  id: string;                         // ID ของ input element
-  name: string;                       // ชื่อกลุ่มของ radio button
-  value: string;                      // ค่าที่จะส่งเมื่อถูกเลือก
-  checked?: boolean;                  // สถานะการเลือก (เริ่มต้น: false)
-  disabled?: boolean;                 // สถานะการปิดใช้งาน (เริ่มต้น: false)
-  onChange?: (value: string) => void; // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลง
-  label: string;                      // ข้อความที่แสดงข้างปุ่ม
+  id: string;                         
+  name: string;                       
+  value: string;                     
+  checked?: boolean;                 
+  disabled?: boolean;                 
+  onChange?: (value: string) => void; 
+  label: string;                      
 }
 
-/**
- * คอมโพเนนต์ปุ่ม Radio Button "Okja" สำหรับ Next.js ใช้ Tailwind CSS
- * มี 4 สถานะ: Default, Hover, Selected, Disabled
- * 
- * @param props - OkjaRadioProps
- * @returns JSX Element ของปุ่ม radio Okja
- */
-export default function Okja({
+function OkjaRadio({
   id,
   name,
   value,
@@ -96,32 +84,21 @@ export default function Okja({
   );
 }
 
-/**
- * คอมโพเนนต์ตัวอย่างการใช้งานปุ่ม Okja ใช้ Tailwind CSS
- * แสดงปุ่มเดี่ยวที่มีทุกสถานะรวมกัน: Default, Hover, Selected, Disabled
- 
- * 
- * @returns JSX Element ของตัวอย่างการใช้งาน
- */
-export function OkjaRadio() {
+// สร้าง example component สำหรับใช้ในหน้า index
+export function Okja() {
   const [selectedValue, setSelectedValue] = useState('');
-  const [amount, setAmount] = useState('');
 
   return (
-    <div className="space-y-3">
-      {/* ปุ่ม Okja ที่สามารถแสดงทุกสถานะได้ */}
-      <div className="flex items-center space-x-4">
-        <Okja
-          id="okja-button"
-          name="okja-group"
-          value="okja"
-          label="Okja"
-          checked={selectedValue === 'okja'}
-          onChange={setSelectedValue}
-        />
-        
-      </div>
-    </div>
+    <OkjaRadio
+      id="okja-radio"
+      name="okja-group"
+      value="okja"
+      label="Okja"
+      checked={selectedValue === 'okja'}
+      onChange={setSelectedValue}
+    />
   );
 }
+
+export default OkjaRadio;
 

@@ -1,24 +1,13 @@
 import React, { useState } from 'react';
 
-/**
- * Props สำหรับคอมโพเนนต์ Currency Input
- * @interface CurrencyInputProps
- */
 interface CurrencyInputProps {
-  value?: string;                        // ค่าปัจจุบันของ input
-  onChange?: (value: string) => void;    // ฟังก์ชันที่จะทำงานเมื่อมีการเปลี่ยนแปลง
-  placeholder?: string;                  // ข้อความ placeholder
-  disabled?: boolean;                    // สถานะการปิดใช้งาน
-  className?: string;                    // CSS classes เพิ่มเติม
+  value?: string;                        
+  onChange?: (value: string) => void;    
+  placeholder?: string;                 
+  disabled?: boolean;                    
+  className?: string;                    
 }
 
-/**
- * คอมโพเนนต์ Currency Input สำหรับใส่จำนวนเงินพร้อมสัญลักษณ์บาท
- * ออกแบบให้เหมือนกับในรูปภาพ: input สีเทาอ่อน, มุมโค้ง, มีสัญลักษณ์ ฿ ด้านขวา
- * 
- * @param props - CurrencyInputProps
- * @returns JSX Element ของ currency input
- */
 export default function CurrencyInput({
   value = '',
   onChange,
@@ -83,8 +72,6 @@ export default function CurrencyInput({
 
 /**
  * คอมโพเนนต์ตัวอย่างการใช้งาน Currency Input
- * 
- * @returns JSX Element ของตัวอย่างการใช้งาน
  */
 export function CurrencyInputExample() {
   const [amount, setAmount] = useState('');
