@@ -1,15 +1,14 @@
 import logo_img from "../../../public/images/logo.png";
 import Image from "next/image";
 
-export const Navbar = () => {
+export default function Navbar() {
   return (
     <div className="bg-white shadow-md px-4 py-3 flex items-center justify-between relative">
-      <div className="items-center">
-        <Image src={logo_img} alt="" />
-      </div>
-
-      <div className="hidden md:flex items-center space-x-6">
-        <a className="text-gray-700 hover:text-blue-600">บริการของเรา</a>
+      <div className="flex items-center gap-4 ml-5">
+        <Image src={logo_img} alt="HomeServices" className="" />
+        <a className="text-gray-900 font-semibold hover:text-blue-600">
+          บริการของเรา
+        </a>
       </div>
 
       <div>
