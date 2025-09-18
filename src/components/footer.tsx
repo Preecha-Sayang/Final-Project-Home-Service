@@ -6,7 +6,7 @@ export function Footer() {
           {/* logo */}
           <div className="flex items-center gap-2">
             <div>
-              <h2>Logo</h2>
+              <span></span>
             </div>
             <div>
               <h2 className="text-[var(--blue-600)] font-semibold">HomeService</h2>
