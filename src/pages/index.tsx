@@ -4,26 +4,18 @@ import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondaryLarge from "@/components/button/buttonseclarge";
 import ButtonSecondary from "@/components/button/buttonsecondary";
 import BookingForm from "@/components/input/use_index";
-
-import { Footer } from "@/components/footer";
-
+import Navbar from "@/components/navbar/Navbar";
+import DropdownAdmin from "@/components/dropdown/DropdownAdmin";
+import DropdownUser from "@/components/dropdown/DropdownUser";
 
 export default function Home() {
-  return ( 
-    <div>
-    <div className="flex gap-3 flrx-col">
-      <BookingForm />
-    </div>
-   < ButtonGhost disabled={true}  onClick={async () => {
-  await new Promise(res => setTimeout(res, 2000)); // โหลด 2 วินาที
-}}>
-  Submit
-</ ButtonGhost>
-  
-    <div>
-      <Footer />
-    </div>
-    </div>
-  );
+  return (
+    <div className="p-6 flex flex-col gap-10 bg-gray-100 min-h-screen">
+      <DropdownUser />
+      <DropdownAdmin />
+      <Navbar />
+
+      
+    </div>)
 }
 
