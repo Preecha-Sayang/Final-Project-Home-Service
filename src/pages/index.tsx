@@ -9,8 +9,12 @@ import Navbar from "@/components/navbar/Navbar";
 
 export default function Home() {
   return (
-    <div>
+    <div className="p-6 flex flex-col gap-10 bg-gray-100 min-h-screen">
+      <DropdownUser />
+      <DropdownAdmin />
+
       <Navbar />
+
       
     </div>)
 }
