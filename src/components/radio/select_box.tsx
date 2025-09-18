@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
 
 interface SelectBoxProps {
-  id: string;                        
-  selected?: boolean;                 
-  disabled?: boolean;                 
-  onChange?: (selected: boolean) => void;                 
+  id: string;
+    value?: string;
+    label?: string;
+    selected?: boolean;
+  disabled?: boolean;
+  onChange?: (selected: string) => void;
   className?: string;                 
 }
 
 function SelectBox({
   id,
-  selected = false,
+  value = "",
+  label = "label",
+    selected = false,
   disabled = false,
   onChange,
   className = ''
@@ -21,7 +25,7 @@ function SelectBox({
    */
   const handleChange = () => {
     if (!disabled && onChange) {
-      onChange(!selected);
+      onChange(value);
     }
   };
 
@@ -29,7 +33,7 @@ function SelectBox({
     <div className={`inline-block ${className}`}>
       {/* Input element ที่ซ่อนไว้ */}
       <input
-        type="checkbox"
+        type="radio"
         id={id}
         checked={selected}
         disabled={disabled}
@@ -51,7 +55,7 @@ function SelectBox({
         `}
       >
           {/* ไอคอน Barcode */}
-          <div className="w-12 h-12 mb-3">
+          <div className="w-12 h-12 mb-1">
             <img 
               src="/images/icon_qr.svg" 
               alt="Barcode" 
@@ -66,34 +70,10 @@ function SelectBox({
               `}
             />
           </div>
+          <div className="text-center">
+              {label}
+          </div>
       </label>
-    </div>
-  );
-}
-
-/**
- * คอมโพเนนต์ตัวอย่างการใช้งาน Select Box
- * แสดง select box เดี่ยวที่มีทุกสถานะรวมกัน: Default, Hover, Selected
- */
-export function SelectBoxExample() {
-  const [isSelected, setIsSelected] = useState(false);
-  const [isDisabled, setIsDisabled] = useState(false);
-
-  return (
-    <div className="space-y-6">
-      {/* Select Box เดียวที่แสดงทุกสถานะ */}
-      <div className="space-y-4">
-        
-        {/* Select Box Interactive */}
-        <div className="flex justify-center">
-          <SelectBox
-            id="select-box-interactive"
-            selected={isSelected}
-            disabled={isDisabled}
-            onChange={setIsSelected}
-          />
-        </div>
-      </div>
     </div>
   );
 }

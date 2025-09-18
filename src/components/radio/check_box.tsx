@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 
 interface CheckboxProps {
-  id: string;                         
-  checked?: boolean;                  
-  disabled?: boolean;                 
-  onChange?: (checked: boolean) => void; 
-  label?: string;                     
-  className?: string;                 
+  id: string;
+  checked?: boolean;
+  disabled?: boolean;
+  onChange?: (checked: boolean) => void;
+  label?: string;
+  className?: string;
 }
 
 function Checkbox({
@@ -21,12 +21,11 @@ function Checkbox({
    * ฟังก์ชันจัดการเมื่อมีการเปลี่ยนแปลงค่า
    * จะทำงานเฉพาะเมื่อ checkbox ไม่ถูกปิดใช้งาน
    */
-  const handleChange = () => {
-    if (!disabled && onChange) {
-      console.log('checked', checked);
-      //checked = !checked;
-      onChange(checked);
-    }
+  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+      const next = e.target.checked;
+      if (!disabled && onChange) {
+          onChange(next);
+      }
   };
 
   return (
@@ -48,14 +47,14 @@ function Checkbox({
           flex items-center text-sm font-normal select-none transition-all duration-200
           ${disabled
             ? 'cursor-not-allowed text-gray-400'
-            : 'cursor-pointer text-gray-700 hover:text-gray-900'
+            : 'cursor-pointer text-gray-700 hover:text-blue-500'
           }
         `}
       >
          {/* สี่เหลี่ยม checkbox แบบ custom - ขนาด 20px x 20px */}
          <span
            className={`
-             relative w-[20px] h-[20px] mr-2 rounded-md border-2 bg-white transition-all duration-200 flex items-center justify-center
+             relative w-[20px] h-[20px] mr-2 rounded-md border-2 transition-all duration-200 flex items-center justify-center
              ${disabled
                ? checked
                  ? 'border-gray-300 bg-gray-200'

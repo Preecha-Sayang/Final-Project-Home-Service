@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 
-interface OkjaRadioProps {
-  id: string;                         
-  name: string;                       
-  value: string;                     
-  checked?: boolean;                 
-  disabled?: boolean;                 
-  onChange?: (value: string) => void; 
-  label: string;                      
+interface RadioButtonProps {
+  id: string;
+  name: string;
+  value: string;
+  checked?: boolean;
+  disabled?: boolean;
+  onChange?: (value: string) => void;
+  label: string;
 }
 
-function OkjaRadio({
+function RadioButton({
   id,
   name,
   value,
@@ -18,12 +18,13 @@ function OkjaRadio({
   disabled = false,
   onChange,
   label
-}: OkjaRadioProps) {
+}: RadioButtonProps) {
   /**
    * ฟังก์ชันจัดการเมื่อมีการเปลี่ยนแปลงค่า
    * จะทำงานเฉพาะเมื่อปุ่มไม่ถูกปิดใช้งาน
    */
   const handleChange = () => {
+      console.log("handleChange", value);
     if (!disabled && onChange) {
       onChange(value);
     }
@@ -50,7 +51,7 @@ function OkjaRadio({
           flex items-center text-sm font-normal select-none transition-all duration-200
           ${disabled
             ? 'cursor-not-allowed text-gray-400'
-            : 'cursor-pointer text-gray-700 hover:text-gray-900'
+            : 'cursor-pointer text-gray-700 hover:text-blue-500'
           }
         `}
       >
@@ -84,21 +85,5 @@ function OkjaRadio({
   );
 }
 
-// สร้าง example component สำหรับใช้ในหน้า index
-export function Okja() {
-  const [selectedValue, setSelectedValue] = useState('');
-
-  return (
-    <OkjaRadio
-      id="okja-radio"
-      name="okja-group"
-      value="okja"
-      label="Okja"
-      checked={selectedValue === 'okja'}
-      onChange={setSelectedValue}
-    />
-  );
-}
-
-export default OkjaRadio;
+export default RadioButton;
 
