@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function Footer() {
     return (
       <footer className="bg-white">
@@ -5,16 +7,16 @@ export function Footer() {
           
           {/* logo */}
           <div className="flex items-center gap-2">
-            <div>
-              <img src=".\Logo.svg" className="w-9 h-9"></img>
-            </div>
-            <div>
-              <h2 className="text-[var(--blue-600)] font-semibold">HomeService</h2>
-            </div>
+            <Image src="/Logo.svg"
+              alt="HomeService Logo"
+              width={36}
+              height={36} 
+              />
+              <h2 className="text-[var(--blue-600)] font-semibold">HomeService</h2> 
           </div>
   
           {/* info */}
-          <div>
+          <div className="">
             <h3 className="text-[var(--gray-950)] font-medium">บริษัท โฮมเซอร์วิส จำกัด</h3>
             <p className="text-[var(--gray-800)] text-sm">
               452 ซอยสุขุมวิท 79 แขวงพระโขนงเหนือ เขตวัฒนา กรุงเทพมหานคร 10260
@@ -24,11 +26,17 @@ export function Footer() {
           {/* contact */}
           <div className="flex flex-col gap-2 text-[var(--gray-800)]">
             <div className="flex items-center gap-2">
-              <img src=".\images\icon_phone.svg"></img>
+              <Image src="/images/icon_phone.svg"
+              alt="Icon Phone"
+              width={20}
+              height={20}/>
               <span>080-540-6357</span>
             </div>
             <div className="flex items-center gap-2">
-              <img src=".\images\icon_mail.svg"></img>
+              <Image src="/images/icon_mail.svg"
+              alt="Icon Mail"
+              width={20}
+              height={20}/>
               <span>contact@homeservice.co</span>
             </div>
           </div>
