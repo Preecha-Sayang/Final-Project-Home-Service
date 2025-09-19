@@ -1,35 +1,13 @@
 import { useState } from "react";
 import OrderSummary from "@/components/ordersummary/order_summary";
 import Breadcrumb from "@/components/breadcrump/bread_crump";
-import SelectBox from "@/components/radio/select_box";
+
 
 export default function Home() {
   const [current, setCurrent] = useState("ล้างแอร์");
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-10">
-      <div className="space-y-6 ">
-        {/* Breadcrumb */}
-        <div className="text-center">
-          <Breadcrumb current={current} />
-        </div>
-
-        {/* ปุ่มเปลี่ยนค่า */}
-        <div className="text-center">
-          <button
-            onClick={() => setCurrent("ล้างแอร์")}
-            className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
-          >
-            ล้างแอร์
-          </button>
-          <button
-            onClick={() => setCurrent("ทำความสะอาด")}
-            className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-          >
-            ทำความสะอาด
-          </button>
-        </div>
-
+    <div>
         {/* Order Summary Section */}
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-6">
           <div className="space-y-6 w-full max-w-md">
@@ -60,14 +38,7 @@ export default function Home() {
               defaultOpen={false}
             />
           </div>
-          <div className="flex min-h-screen items-center justify-center bg-gray-100 p-10">
-           <div className="space-y-6 w-full max-w-md">
-          <SelectBox />
-          </div>
         </div>
-      </div>
-      </div>
-
-    </div>
+        </div>
   );
 }
