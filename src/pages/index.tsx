@@ -9,6 +9,7 @@ import { Footer } from "@/components/footer";
 
 import { Prompt } from "next/font/google";
 
+
 const fonrPrompt = Prompt({
   //Set Font เพื่อใช้ทั้งระบบ ไม่ต้องลบส่วนนี้//
   variable: "--font-prompt",
@@ -18,22 +19,11 @@ const fonrPrompt = Prompt({
 
 export default function Home() {
   return (
+    //Set Font เพื่อใช้ทั้งระบบ ไม่ต้องลบส่วนนี้//
     <div className={fonrPrompt.className}>
-      <div className="flex gap-3 flrx-col">
-        <BookingForm />
-      </div>
-      <ButtonGhost
-        disabled={true}
-        onClick={async () => {
-          await new Promise((res) => setTimeout(res, 2000)); // โหลด 2 วินาที
-        }}
-      >
-        Submit
-      </ButtonGhost>
-
-      <div>
-        <Footer />
-      </div>
+       
     </div>
+    
+
   );
 }
