@@ -23,6 +23,7 @@ function ButtonGhost({ onClick, disabled,className, children }: ButtonProps) {
   const baseClass = `
     text-[16px] font-[600] text-[var(--blue-600)]
     box-border underline flex items-center justify-center gap-2
+    cursor-pointer transition-colors duration-200
   `;
 
   // 

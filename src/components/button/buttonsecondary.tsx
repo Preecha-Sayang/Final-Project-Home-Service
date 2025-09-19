@@ -23,6 +23,7 @@ function ButtonSecondary({ onClick, disabled,className, children }: ButtonProps)
   const baseClass = `
     w-[200px] h-[45px] px-[24px] py-[10px] text-[16px] font-medium rounded-xl
     box-border border-[1px]  flex items-center justify-center gap-2
+    cursor-pointer transition-colors duration-200
   `;
 
   // 

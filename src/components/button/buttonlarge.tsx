@@ -23,6 +23,7 @@ function ButtonLarge({ onClick, disabled,className, children }: ButtonProps) {
   const baseClass = `
     w-[280px] h-[55px] px-[32px] py-[12px] text-[20px] font-medium rounded-xl
     box-border border-none flex items-center justify-center gap-2
+    cursor-pointer transition-colors duration-200
   `;
 
   // 
