@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import ImageUpload from "./image_upload";
 

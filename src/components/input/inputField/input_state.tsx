@@ -1,4 +1,3 @@
-"use client";
 import * as React from "react";
 import {
     base, ring, state, cn, labelCls, messageCls, InputStatus,

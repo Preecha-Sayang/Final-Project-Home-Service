@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import PriceRange, { Range } from "./price_range";
 

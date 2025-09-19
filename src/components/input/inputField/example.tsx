@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import InputField from "./input_state";
 import { Search, X } from "lucide-react";

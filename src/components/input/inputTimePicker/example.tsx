@@ -1,4 +1,3 @@
-"use client";
 import { useState } from "react";
 import TimePicker from "./time_picker";
 

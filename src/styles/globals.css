@@ -111,7 +111,6 @@ h5 {
     pointer-events: all;
 }
 
-/* (ทางเลือก) ปรับหน้าตา thumb ให้คลิกง่ายขึ้น */
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;

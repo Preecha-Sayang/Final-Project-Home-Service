@@ -1,6 +1,5 @@
 // หน้าเดโมรวม (เอาไว้เทสเฉยๆนะ)
 
-"use client";
 import { useState } from "react";
 
 import InputField from "./inputField/input_state";

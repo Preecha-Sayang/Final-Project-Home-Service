@@ -1,4 +1,3 @@
-"use client";
 import { cn } from "../_style";
 
 export type Range = { min: number; max: number };
