@@ -59,55 +59,67 @@ function SelectFilterExample({
              ? 'cursor-not-allowed opacity-60'
              : isOpen
                ? 'bg-blue-50'
-               : 'hover:bg-gray-50 cursor-pointer'
+               : 'hover:bg-gray-100 cursor-pointer'
            }
          `}
       >
         {/* ข้อความที่เลือก */}
-        <span className="font-medium text-gray-900 truncate">
+        <span className="font-medium text-gray-900 truncate ">
           {currentValue}
         </span>
-        
-        {/* ไอคอน Dropdown Arrow */}
-        <svg
-          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
+         
+         {/* ไอคอน Dropdown Arrow */}
+         <svg
+           className={`w-4 h-4 transition-all duration-200 ${
+             disabled
+               ? 'text-gray-300'
+               : isOpen
+                 ? 'text-blue-500 rotate-180'
+                 : 'text-gray-500 group-hover:text-gray-600'
+           }`}
+           fill="none"
+           stroke="currentColor"
+           viewBox="0 0 24 24"
+         >
+           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+         </svg>
       </button>
 
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-          {options.map((option, index) => (
-            <button
-              key={index}
-              type="button"
-              onClick={() => handleOptionSelect(option)}
-              onMouseEnter={() => setHoveredOption(option)}
-              onMouseLeave={() => setHoveredOption(null)}
-              className={`
-                w-full px-3 py-2 text-left
-                transition-colors duration-150
-                first:rounded-t-md last:rounded-b-md
-                ${option === currentValue
-                  ? 'text-blue-500 bg-blue-50'
-                  : hoveredOption === option
-                    ? 'text-gray-900 bg-gray-100'
-                    : 'text-gray-500 hover:text-gray-900'
-                }
-              `}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
-      )}
+       {/* Dropdown Menu */}
+       {isOpen && (
+         <>
+           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+             {options.map((option, index) => (
+               <button
+                 key={index}
+                 type="button"
+                 onClick={() => handleOptionSelect(option)}
+                 onMouseEnter={() => setHoveredOption(option)}
+                 onMouseLeave={() => setHoveredOption(null)}
+                 className={`
+                   w-full px-3 py-2 text-left
+                   transition-colors duration-150
+                   first:rounded-t-md last:rounded-b-md
+                   ${option === currentValue
+                     ? 'text-blue-500 bg-blue-50'
+                     : hoveredOption === option
+                       ? 'text-gray-900 bg-gray-100'
+                       : 'text-gray-500 hover:text-gray-900'
+                   }
+                 `}
+               >
+                 {option}
+               </button>
+             ))}
+           </div>
+           
+           {/* Overlay เพื่อปิด dropdown เมื่อคลิกข้างนอก */}
+           <div
+             className="fixed inset-0 z-40"
+             onClick={() => setIsOpen(false)}
+           />
+         </>
+       )}
     </div>
   );
 }
@@ -123,7 +135,7 @@ export function SelectFilter() {
   return (
     <div className="space-y-6">
       {/* Select Filter เดียวที่แสดงทุกสถานะ */}
-      <div className="space-y-4">
+      <div className="space-y-4 ">
        
          {/* Select Filter Interactive */}
          <div className="flex justify-center">
