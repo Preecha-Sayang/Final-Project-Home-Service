@@ -1,49 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  /* Blue */
-  --blue-100: #eaf0ff;
-  --blue-200: #d6e1ff;
-  --blue-300: #adc4ff;
-  --blue-400: #7aa3ff;
-  --blue-500: #3d82ff;
-  --blue-600: #2563eb;
-  --blue-700: #1d4ed8;
-  --blue-800: #1e40af;
-  --blue-900: #1e3a8a;
-  --blue-950: #172554;
+    /* Blue */
+    --blue-100: #eaf0ff;
+    --blue-200: #d6e1ff;
+    --blue-300: #adc4ff;
+    --blue-400: #7aa3ff;
+    --blue-500: #3d82ff;
+    --blue-600: #2563eb;
+    --blue-700: #1d4ed8;
+    --blue-800: #1e40af;
+    --blue-900: #1e3a8a;
+    --blue-950: #172554;
 
-  /* Gray */
-  --gray-100: #f3f4f6;
-  --gray-200: #e5e7eb;
-  --gray-300: #d1d5db;
-  --gray-400: #9ca3af;
-  --gray-500: #6b7280;
-  --gray-600: #4b5563;
-  --gray-700: #374151;
-  --gray-800: #1f2937;
-  --gray-900: #111827;
-  --gray-950: #0b0f16;
+    /* Gray */
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --gray-950: #0b0f16;
 
-  /* Purple */
-  --purple-100: #ede9fe;
-  --purple-900: #5b21b6;
+    /* Purple */
+    --purple-100: #ede9fe;
+    --purple-900: #5b21b6;
 
-  /* Yellow */
-  --yellow-100: #fef9c3;
-  --yellow-900: #78350f;
+    /* Yellow */
+    --yellow-100: #fef9c3;
+    --yellow-900: #78350f;
 
-  /* Green */
-  --green-100: #d1fae5;
-  --green-900: #064e3b;
+    /* Green */
+    --green-100: #d1fae5;
+    --green-900: #064e3b;
 
-  /* Utility */
-  --black: #000000;
-  --white: #ffffff;
-  --red: #dc2626;
-  --bg: #f9fafb;
+    /* Utility */
+    --black: #000000;
+    --white: #ffffff;
+    --red: #dc2626;
+    --bg: #f9fafb;
 }
-  /*วิธีใช้ bg-[var(--green-900)]; */
+
+/*วิธีใช้ bg-[var(--green-900)]; */
 
 @theme inline {
     --font-prompt: var(--font-prompt);
@@ -96,3 +97,66 @@ h5 {
 }
 
 /* วิธีใช้  classname="body4" */
+
+
+/* start dode: components/input */
+input[type="range"].tw-range {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+}
+
+input[type="range"].tw-range::-webkit-slider-runnable-track {
+    height: 8px;
+    background: var(--gray-300);
+    border-radius: 999px;
+}
+
+input[type="range"].tw-range::-moz-range-track {
+    height: 8px;
+    background: var(--gray-300);
+    border-radius: 999px;
+}
+
+input[type="range"].tw-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--blue-500);
+    border: 2px solid var(--white);
+    border-radius: 999px;
+    margin-top: -4px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .08);
+}
+
+input[type="range"].tw-range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--blue-500);
+    border: 2px solid var(--white);
+    border-radius: 999px;
+}
+
+select.tw-select {
+    background-color: var(--white);
+    color: var(--gray-900);
+    border-color: var(--gray-300);
+}
+
+select.tw-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--blue-500);
+    border-color: var(--blue-500);
+}
+
+select.tw-select option {
+    color: var(--gray-900);
+    background: var(--white);
+}
+
+select.tw-select option:checked {
+    background: color-mix(in_oklab, var(--blue-100) 60%, white);
+}
+
+/* end dode: components/input */
