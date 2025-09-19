@@ -4,6 +4,7 @@ import InputDropdown from "./input_dropdown";
 
 export default function Example() {
     const [val, setVal] = useState("");
+
     return (
         <InputDropdown
             label="Dropdown"

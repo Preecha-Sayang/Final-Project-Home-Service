@@ -98,36 +98,65 @@ h5 {
 
 /* วิธีใช้  classname="body4" */
 
+
 /* start dode: components/input */
-.range-overlay {
-    pointer-events: none;
-}
-
-.range-overlay::-webkit-slider-thumb {
-    pointer-events: all;
-}
-
-.range-overlay::-moz-range-thumb {
-    pointer-events: all;
-}
-
-input[type="range"]::-webkit-slider-thumb {
+input[type="range"].tw-range {
     -webkit-appearance: none;
     appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 9999px;
-    background: var(--blue-600);
-    cursor: pointer;
+    background: transparent;
 }
 
-input[type="range"]::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border: none;
-    border-radius: 9999px;
-    background: var(--blue-600);
-    cursor: pointer;
+input[type="range"].tw-range::-webkit-slider-runnable-track {
+    height: 8px;
+    background: var(--gray-300);
+    border-radius: 999px;
+}
+
+input[type="range"].tw-range::-moz-range-track {
+    height: 8px;
+    background: var(--gray-300);
+    border-radius: 999px;
+}
+
+input[type="range"].tw-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--blue-500);
+    border: 2px solid var(--white);
+    border-radius: 999px;
+    margin-top: -4px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .08);
+}
+
+input[type="range"].tw-range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--blue-500);
+    border: 2px solid var(--white);
+    border-radius: 999px;
+}
+
+select.tw-select {
+    background-color: var(--white);
+    color: var(--gray-900);
+    border-color: var(--gray-300);
+}
+
+select.tw-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--blue-500);
+    border-color: var(--blue-500);
+}
+
+select.tw-select option {
+    color: var(--gray-900);
+    background: var(--white);
+}
+
+select.tw-select option:checked {
+    background: color-mix(in_oklab, var(--blue-100) 60%, white);
 }
 
 /* end dode: components/input */

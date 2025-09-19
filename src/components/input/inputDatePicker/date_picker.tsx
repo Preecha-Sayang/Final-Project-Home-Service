@@ -1,4 +1,3 @@
-"use client";
 import { cn } from "../_style";
 
 type Props = {
@@ -15,9 +14,11 @@ export default function DatePicker({
   label, value, onChange, min, max, name, className,
 }: Props) {
   const id = name ?? `date-${label ?? "picker"}`.toLowerCase();
+
   return (
     <label className="grid gap-2">
-      {label && <span className="text-sm font-medium text-gray-800">{label}</span>}
+      {label && <span className="text-sm font-medium text-[var(--gray-800)]">{label}</span>}
+
       <input
         type="date"
         id={id}
@@ -27,9 +28,11 @@ export default function DatePicker({
         max={max}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition",
-          "focus:ring-2 focus:ring-blue-500 focus:border-blue-500",
-          "hover:border-gray-400",
+          // ให้หน้าตาเหมือนกล่องในภาพ (โค้ง, ขอบเทา, โฟกัสน้ำเงิน)
+          "block w-full rounded-md border bg-[var(--white)] px-3 py-2 text-sm outline-none transition",
+          "border-[var(--gray-300)] hover:border-[var(--gray-400)]",
+          "text-[var(--gray-900)] placeholder:text-[var(--gray-400)]",
+          "focus:ring-2 focus:ring-[var(--blue-500)] focus:border-[var(--blue-500)]",
           className
         )}
       />

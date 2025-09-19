@@ -15,3 +15,5 @@ export type { Range as PriceRangeValue } from "./inputPriceRange/price_range";
 export { default as ImageUpload } from "./inputImageUpload/image_upload";
 
 // อันนี้คือ เวลาเรียกไม่ต้อง from เต็มๆ ให้ใช้ from @/components/input;
+
+// ไม่ต้องสนใจหน้านนี้นะ พอดีกำลังวางเพิ่มเติม
