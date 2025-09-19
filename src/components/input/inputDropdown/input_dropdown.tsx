@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "./utils";
+import { cn } from "../_style";
 
 export type Option = { label: string; value: string };
 
@@ -15,16 +15,11 @@ type Props = {
 };
 
 export default function InputDropdown({
-    label,
-    options,
-    value,
-    onChange,
-    placeholder = "Select…",
-    name,
-    disabled,
-    className,
+    label, options, value, onChange,
+    placeholder = "Select…", name, disabled, className,
 }: Props) {
     const id = name ?? `select-${label ?? "field"}`.toLowerCase();
+
     return (
         <label className="grid gap-2">
             {label && <span className="text-sm font-medium text-gray-800">{label}</span>}
@@ -42,13 +37,9 @@ export default function InputDropdown({
                     className
                 )}
             >
-                <option value="" disabled>
-                    {placeholder}
-                </option>
+                <option value="" disabled>{placeholder}</option>
                 {options.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                    </option>
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
             </select>
         </label>

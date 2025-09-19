@@ -1,25 +1,20 @@
 "use client";
 import { useRef } from "react";
 import Image from "next/image";
-import { cn } from "./utils";
+import { cn } from "../_style";
 
 type Props = {
     label?: string;
     value: File | null;
     onChange: (file: File | null) => void;
-    accept?: string; // ตัวอย่าง "image/*"
+    accept?: string;
     className?: string;
 };
 
 export default function ImageUpload({
-    label,
-    value,
-    onChange,
-    accept = "image/*",
-    className,
+    label, value, onChange, accept = "image/*", className,
 }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null);
-
     const handlePick = () => inputRef.current?.click();
 
     return (
@@ -56,13 +51,7 @@ export default function ImageUpload({
 
             {value && (
                 <div className="relative mt-2 h-40 w-40 overflow-hidden rounded-md border">
-                    {/* แสดง preview แบบ blob */}
-                    <Image
-                        fill
-                        alt="preview"
-                        src={URL.createObjectURL(value)}
-                        className="object-cover"
-                    />
+                    <Image fill alt="preview" src={URL.createObjectURL(value)} className="object-cover" />
                 </div>
             )}
         </div>

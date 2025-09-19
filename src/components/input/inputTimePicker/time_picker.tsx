@@ -1,37 +1,28 @@
 "use client";
-import { cn } from "./utils";
+import { cn } from "../_style";
 
 type Props = {
   label?: string;
-  value: string;              // รูปแบบ YYYY-MM-DD
+  value: string;      // HH:mm
   onChange: (val: string) => void;
-  min?: string;
-  max?: string;
+  step?: number;      // วินาที
   name?: string;
   className?: string;
 };
 
-export default function DatePicker({
-  label,
-  value,
-  onChange,
-  min,
-  max,
-  name,
-  className,
+export default function TimePicker({
+  label, value, onChange, step = 60, name, className,
 }: Props) {
-  const id = name ?? `date-${label ?? "picker"}`.toLowerCase();
-
+  const id = name ?? `time-${label ?? "picker"}`.toLowerCase();
   return (
     <label className="grid gap-2">
       {label && <span className="text-sm font-medium text-gray-800">{label}</span>}
       <input
-        type="date"
+        type="time"
         id={id}
         name={name}
         value={value}
-        min={min}
-        max={max}
+        step={step}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
           "block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm outline-none transition",
