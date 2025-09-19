@@ -45,7 +45,9 @@
 }
   /*วิธีใช้ bg-[var(--green-900)]; */
 
-
+@theme inline {
+    --font-prompt: var(--font-prompt);
+}
 
 h1 {
     font-size: 48px;
