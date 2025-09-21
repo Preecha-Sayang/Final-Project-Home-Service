@@ -1,8 +1,4 @@
 // ทำเป็น style หลัก สำหรับใช้ใน input นะครับทุกคน ไม่มีไร
-
-/// presets กลาง — เปลี่ยน "สี" ให้ดึงจาก globals.css var()
-// ลำดับ class: layout → size → spacing → border → bg → text → outline/transition → focus/hover
-
 export type InputStatus = "default" | "success" | "error" | "disabled";
 
 // เงาบางๆ ให้ฟีลการ์ดในรูป (ไม่ได้เวอร์)
@@ -19,9 +15,17 @@ export const state = {
   success:
     "border-[var(--green-900)] placeholder:text-[var(--gray-400)] focus:ring-[var(--green-900)]",
   error:
-    "border-[var(--red)] placeholder:text-[color-mix(in_oklab,var(--red)_40%,white)] focus:ring-[var(--red)]",
+    "border-[var(--red)]  focus:ring-[var(--red)]", //placeholder:text-[color-mix(in_oklab,var(--red)_40%,white)]
   disabled:
-    "border-[var(--gray-200)] bg-[var(--gray-100)] text-[var(--gray-500)] placeholder:text-[var(--gray-400)] cursor-not-allowed",
+    [
+      "border-[var(--gray-300)]",
+      "bg-gray-100",
+      "text-[var(--gray-100)]",
+      "placeholder:text-[var(--gray-300)]",
+      "cursor-not-allowed",
+      "shadow-inner",
+      "focus:ring-0 focus:border-[var(--gray-500)]",
+    ].join(" "),
 } as const;
 
 export function cn(...classes: Array<string | false | null | undefined>) {
