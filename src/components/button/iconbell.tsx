@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Image from "next/image";
 
+
+
 function IconBell() {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +25,7 @@ function IconBell() {
         cursor-pointer
       `}
       onClick={handleClick}
-      type="submit"
+      type="button"
     >
       <Image
         src={isLoading ? './images/icon_bell_gray.svg' : './images/icon_bell_blue.svg'}
