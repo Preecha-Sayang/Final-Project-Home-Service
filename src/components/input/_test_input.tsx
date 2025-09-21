@@ -1,10 +1,11 @@
 import { useState } from "react";
-import TimePicker from "./inputTimePicker/time_picker";
+
 import PriceRange, { Range } from "./inputPriceRange/price_range";
 import ImageUpload from "./inputImageUpload/image_upload";
 import ExampleInputState from "./inputField/example";
 import ExampleInputDropdown from "./inputDropdown/example";
 import ExampleDatePicker from "./inputDatePicker/example";
+import ExampleTimePicker from "./inputTimePicker/example";
 
 export default function TestInput() {
     const [time, setTime] = useState("10:00");
@@ -19,11 +20,8 @@ export default function TestInput() {
             <ExampleInputState />
             <ExampleInputDropdown />
             <ExampleDatePicker />
+            <ExampleTimePicker />
 
-
-
-
-            <TimePicker label="เวลา" value={time} onChange={setTime} />
             <PriceRange label="ช่วงราคา" min={0} max={2000} value={budget} onChange={setBudget} />
             <ImageUpload label="รูปหน้างาน" value={photo} onChange={setPhoto} />
         </div>
