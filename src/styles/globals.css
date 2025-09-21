@@ -228,6 +228,47 @@ select.tw-select option:checked {
     background: color-mix(in_oklab, var(--blue-100) 60%, white);
 }
 
+
+/* ปรับขนาด/ทรงของวันที่ให้เป็นวงกลม */
+.rs-calendar-table-cell-content {
+  width: 32px;
+  height: 32px;
+  line-height: 32px;
+  border-radius: 9999px;
+}
+
+/* hover วัน */
+.rs-calendar-table-cell .rs-calendar-table-cell-content:hover {
+  background: var(--gray-500);
+  border-radius: 9999px;
+}
+
+/* วันที่ถูกเลือก */
+.rs-calendar-table-cell-selected .rs-calendar-table-cell-content {
+  background: var(--blue-600);
+  color: #fff;
+  border-radius: 9999px;
+}
+
+/* วันที่เป็นวันนี้ (today) */
+.rs-calendar-table-cell-is-today .rs-calendar-table-cell-content {
+  box-shadow: 0 0 0 1.5px var(--gray-400) inset;
+  border-radius: 9999px;
+}
+
+/* ปุ่ม OK (ด้านขวาใน toolbar) */
+.rs-picker-toolbar-right .rs-btn {
+  padding: 8px 30px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+/* ถ้าอยากเปลี่ยนสีปุ่ม OK */
+.rs-picker-toolbar-right .rs-btn.rs-btn-primary {
+  background: var(--blue-500);
+  border-color: var(--blue-600);
+}
+
 /* end dode: components/input */
 
 .dark {

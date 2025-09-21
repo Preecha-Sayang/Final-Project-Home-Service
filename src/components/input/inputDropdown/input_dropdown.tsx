@@ -23,21 +23,16 @@ function ChevronDownIcon({ className }: { className?: string }) {
             height="20"
             viewBox="0 0 20 20"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
         ><path d="M5.8335 8.33337L10.0002 12.5L14.1668 8.33337H5.8335Z" fill="#AAAAAA" />
         </svg>
     );
 }
 
 export default function InputDropdown({
-    label,
-    value,
-    onChange,
-    options,
+    label, value, onChange, options,
     placeholder = "Select…",
     disabled,
-    className,
-    optionClassName,
+    className, optionClassName,
 }: Props) {
     const selected = options.find(o => o.value === value) ?? null;
 
