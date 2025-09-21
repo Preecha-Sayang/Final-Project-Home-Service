@@ -19,12 +19,12 @@ export default function Payment() {
   };
 
   return (
-    <div className="">
+    <div className="mt-12">
       <div className="flex flex-row items-center justify-center gap-12">
         <div
           onClick={() => setSelectPayment("QR_CODE")}
-          className={`flex flex-col items-center justify-center gap-2 border border-[#CCD0D7] px-48 py-6 rounded-xl cursor-pointer ${
-            selectedPayment === "QR_CODE" ? "bg-blue-100" : ""
+          className={`flex flex-col items-center justify-center gap-2 border border-[var(--gray-300)] px-48 py-6 rounded-xl cursor-pointer ${
+            selectedPayment === "QR_CODE" ? "bg-[var(--blue-100)]" : ""
           }`}
         >
           {selectedPayment === "QR_CODE" ? (
@@ -32,19 +32,19 @@ export default function Payment() {
           ) : (
             <Image src={qr_code} className="w-12 h-12" alt="" />
           )}
-          <a
+          <p
             className={`${
-              selectedPayment === "QR_CODE" ? "text-blue-600" : ""
+              selectedPayment === "QR_CODE" ? "text-[var(--blue-600)]" : ""
             } `}
           >
             พร้อมเพย์
-          </a>
+          </p>
         </div>
 
         <div
           onClick={() => setSelectPayment("CREDIT_CARD")}
-          className={`flex flex-col items-center justify-center gap-2 border border-[#CCD0D7] px-48 py-6 rounded-xl cursor-pointer ${
-            selectedPayment === "CREDIT_CARD" ? "bg-blue-100" : ""
+          className={`flex flex-col items-center justify-center gap-2 border border-[var(--blue-300)] px-48 py-6 rounded-xl cursor-pointer ${
+            selectedPayment === "CREDIT_CARD" ? "bg-[var(--blue-100)]" : ""
           }`}
         >
           {selectedPayment === "CREDIT_CARD" ? (
@@ -53,13 +53,13 @@ export default function Payment() {
             <Image src={credit_card} className="w-12 h-12" alt="" />
           )}
 
-          <a
+          <p
             className={`${
-              selectedPayment === "CREDIT_CARD" ? "text-blue-600" : ""
+              selectedPayment === "CREDIT_CARD" ? "text-[var(--blue-600)]" : ""
             } `}
           >
             บัตรเครดิต
-          </a>
+          </p>
         </div>
       </div>
     </div>

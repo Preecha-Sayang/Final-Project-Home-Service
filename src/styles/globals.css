@@ -43,57 +43,57 @@
     --red: #dc2626;
     --bg: #f9fafb;
 }
+/*วิธีใช้ bg-[var(--green-900)]; */
 
 /*วิธีใช้ bg-[var(--green-900)]; */
 
 @theme inline {
-    --font-prompt: var(--font-prompt);
+  --font-prompt: var(--font-prompt);
 }
 
 h1 {
-    font-size: 48px;
-    font-weight: 700;
+  font-size: 48px;
+  font-weight: 700;
 }
 
 h2 {
-    font-size: 36px;
-    font-weight: 600;
-
+  font-size: 36px;
+  font-weight: 600;
 }
 
 h3 {
-    font-size: 28px;
-    font-weight: 600;
+  font-size: 28px;
+  font-weight: 600;
 }
 
 h4 {
-    font-size: 24px;
-    font-weight: 500;
+  font-size: 24px;
+  font-weight: 500;
 }
 
 h5 {
-    font-size: 20px;
-    font-weight: 500;
+  font-size: 20px;
+  font-weight: 500;
 }
 
 .body1 {
-    font-size: 18px;
-    font-weight: 400;
+  font-size: 18px;
+  font-weight: 400;
 }
 
 .body2 {
-    font-size: 16px;
-    font-weight: 400;
+  font-size: 16px;
+  font-weight: 400;
 }
 
 .body3 {
-    font-size: 14px;
-    font-weight: 400;
+  font-size: 14px;
+  font-weight: 400;
 }
 
 .body4 {
-    font-size: 12px;
-    font-weight: 400;
+  font-size: 12px;
+  font-weight: 400;
 }
 
 /* วิธีใช้  classname="body4" */
