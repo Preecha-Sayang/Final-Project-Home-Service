@@ -6,6 +6,7 @@ import TimePicker from "./inputTimePicker/time_picker";
 import PriceRange, { Range } from "./inputPriceRange/price_range";
 import ImageUpload from "./inputImageUpload/image_upload";
 import ExampleInputState from "./inputField/example";
+import ExampleInputDropdown from "./inputDropdown/example";
 
 export default function TestInput() {
     const [val, setVal] = useState("");
@@ -20,6 +21,7 @@ export default function TestInput() {
         <div className="flex flex-col justify-center items-center max-w-[1200px] gap-6 p-6">
             {/* * Ctrl + (คลิกที่ Example ที่ต้องการ เพื่อดูโค้ดและนำไปใช้งาน) */}
             <ExampleInputState />
+            <ExampleInputDropdown />
 
 
 

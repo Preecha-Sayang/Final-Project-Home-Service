@@ -10,7 +10,6 @@ export default function ExampleInputState() {
     const [tel, setTel] = useState("");
     const [email, setEmail] = useState("");
     const [pass, setPassword] = useState("");
-    const [lock, setLock] = useState(false);
 
     const codeName = `
 import InputField from "@/components/input/inputField/input_state";

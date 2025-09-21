@@ -1,20 +1,60 @@
-"use client";
 import { useState } from "react";
-import InputDropdown from "./input_dropdown";
+import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
+import CodeButton from "../code/codeButton";
 
-export default function Example() {
-    const [val, setVal] = useState("");
+const options: Option[] = [
+    { label: "บริการทั้งหมด", value: "all" },
+    { label: "บริการทั่วไป", value: "general" },
+    { label: "บริการห้องครัว", value: "kitchen" },
+    { label: "บริการห้องน้ำ", value: "restroom" },
+];
+
+export default function ExampleInputDropdown() {
+    const [service, setService] = useState("");
+
+    const codeDropdown = `
+import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
+
+const options: Option[] = [
+    { label: "บริการทั้งหมด", value: "all" },
+    { label: "บริการทั่วไป", value: "general" },
+    { label: "บริการห้องครัว", value: "kitchen" },
+    { label: "บริการห้องน้ำ", value: "restroom" },
+];
+
+const [service, setService] = useState("");
+
+<div className="w-[360px]">
+    <InputDropdown
+        label="Dropdown"
+        options={options}
+        value={service}
+        onChange={setService}
+        placeholder="เลือกบริการ…"
+        // disabled
+    />
+</div>
+`;
 
     return (
-        <InputDropdown
-            label="Dropdown"
-            options={[
-                { label: "ล้างแอร์", value: "ac" },
-                { label: "ซ่อมเครื่องซักผ้า", value: "washer" },
-            ]}
-            value={val}
-            onChange={setVal}
-            placeholder="เลือกบริการ…"
-        />
+        <>
+            <div className="w-[1200px] font-medium text-[var(--gray-700)]">Input State</div>
+            <div className="flex justify-center items-center">
+                <div className="w-[360px]">
+                    <InputDropdown
+                        label="Dropdown"
+                        options={options}
+                        value={service}
+                        onChange={setService}
+                        placeholder="เลือกบริการ…"
+                    // disabled
+                    />
+                </div>
+                <div>
+                    <CodeButton title="Input State" code={codeDropdown} />
+                </div>
+            </div>
+        </>
+
     );
 }
