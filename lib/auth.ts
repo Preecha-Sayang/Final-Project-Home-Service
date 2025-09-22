@@ -6,7 +6,7 @@ export interface AuthenticatedNextApiRequest extends NextApiRequest {
 }
 
 export function withAuth(
-  handler: (req: AuthenticatedNextApiRequest, res: NextApiResponse) => any
+  handler: (req: AuthenticatedNextApiRequest, res: NextApiResponse) => void | Promise<void>
 ) {
   return async (req: AuthenticatedNextApiRequest, res: NextApiResponse) => {
     const authHeader = req.headers.authorization;

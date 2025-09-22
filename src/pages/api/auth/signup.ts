@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       fullname: user.fullname
     });
     return res.status(201).json({ user, token });
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  } catch (err: unknown) {
+    return res.status(400).json({ error: (err as Error).message });
   }
 }

@@ -36,8 +36,9 @@ function Login() {
         setError(data.error || "Login ล้มเหลว");
       }
     } catch (err) {
-      setError("เกิดข้อผิดพลาด");
-    }
+  console.error(err);
+  setError("เกิดข้อผิดพลาด");
+} 
   };
 
   return (
@@ -75,7 +76,7 @@ function Login() {
 
           <div className="flex flex-row gap-1 mt-4">
             <span>ยังไม่มีบัญชีผู้ใช้ HomeService?</span>
-            <ButtonGhost onClick={() => router.push("/signup")}>
+            <ButtonGhost onClick={() => router.push("/login/register")}>
               <span>ลงทะเบียน</span>
             </ButtonGhost>
           </div>

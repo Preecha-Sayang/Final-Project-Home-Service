@@ -80,6 +80,7 @@ function Register() {
         setError(data.error || "ไม่สามารถสมัครสมาชิกได้");
       }
     } catch (err) {
+      console.error(err);
       setError("เกิดข้อผิดพลาด");
     }
   };
@@ -149,7 +150,7 @@ function Register() {
             </ButtonPrimary>
           </form>
 
-          <ButtonGhost onClick={() => router.push("/login")}>
+          <ButtonGhost onClick={() => router.push("/login/login")}>
             <span>กลับไปหน้าเข้าสู่ระบบ</span>
           </ButtonGhost>
         </div>

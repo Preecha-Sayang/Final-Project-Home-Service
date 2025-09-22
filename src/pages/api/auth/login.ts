@@ -1,6 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { query } from "../../../../lib/db";
 import { signAccessToken } from "../../../../lib/jwt";
 
@@ -35,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   });
 
   return res.status(200).json({ token, user: { user_id: user.user_id, fullname: user.fullname, email: user.email } });
-} catch (err: any) {
+} catch (err: unknown) {
   console.error("Login error:", err);
   return res.status(500).json({ error: "ไม่สามารถเข้าสู่ระบบได้" });
 }
