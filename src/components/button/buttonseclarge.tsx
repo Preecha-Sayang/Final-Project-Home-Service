@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 interface ButtonProps {
-  onClick?: () => void | Promise<any>;
+  onClick?: () => void | Promise<void | boolean>;
   children?: React.ReactNode;
   disabled?: boolean;
   className?: string;

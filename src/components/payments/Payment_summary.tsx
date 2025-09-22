@@ -1,10 +1,22 @@
-"use client";
+
 
 import Image from "next/image";
 import vector from "../../../public/images/vector.png";
-import React, { useEffect, useState } from "react";
 
-const PaymentSummary: React.FC<undefined> = ({ status, itemName, quantity, date, time, address, tatalPrice}) => {
+
+
+interface PaymentSummaryProps {
+  status?: string | React.ReactNode;  
+  itemName?: string;
+  quantity?: number;
+  date?: string;
+  time?: string;
+  address?: string;
+  totalPrice?: string | number;
+  type?: "button" | "submit" | "reset";
+}
+
+const PaymentSummary: React.FC<PaymentSummaryProps> = ({ status, itemName, quantity, date, time, address, totalPrice}:PaymentSummaryProps) => {
 
   // useEffect(() => {},[]
 
@@ -43,7 +55,7 @@ const PaymentSummary: React.FC<undefined> = ({ status, itemName, quantity, date,
 
       <div className="flex flex-row items-center justify-between gap-20 mt-6">
         <p className="tex50.00 ฿t-[var(--gray-700)]">รวม</p>
-        <p>{tatalPrice}</p>
+        <p>{totalPrice}</p>
       </div>
 
       <div className="mb-12 items-center justify-center mt-6">

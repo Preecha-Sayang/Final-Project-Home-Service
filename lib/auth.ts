@@ -1,12 +1,13 @@
-// lib/auth.ts
 import { NextApiRequest, NextApiResponse } from "next";
-import jwt from "jsonwebtoken";
+import { verifyToken, JwtPayloadBase } from "./jwt";
 
 export interface AuthenticatedNextApiRequest extends NextApiRequest {
-  user?: { userId: number; email: string };
+  user?: JwtPayloadBase;
 }
 
-export function withAuth(handler: (req: AuthenticatedNextApiRequest, res: NextApiResponse) => void) {
+export function withAuth(
+  handler: (req: AuthenticatedNextApiRequest, res: NextApiResponse) => any
+) {
   return async (req: AuthenticatedNextApiRequest, res: NextApiResponse) => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) {
@@ -15,8 +16,8 @@ export function withAuth(handler: (req: AuthenticatedNextApiRequest, res: NextAp
 
     const token = authHeader.split(" ")[1];
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-      req.user = decoded as any;
+      const decoded = verifyToken<JwtPayloadBase>(token);
+      req.user = decoded;
       return handler(req, res);
     } catch {
       return res.status(401).json({ error: "Invalid token" });

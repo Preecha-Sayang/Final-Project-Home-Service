@@ -6,7 +6,7 @@ import { withAuth, AuthenticatedNextApiRequest } from "../../../../lib/auth";
 async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   const result = await query(
     "SELECT user_id, fullname, email, phone_number, create_at FROM users WHERE user_id=$1",
-    [req.user!.userId]
+    [Number(req.user!.userId)]
   );
 
   if (result.rows.length === 0) {
@@ -17,3 +17,4 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
 }
 
 export default withAuth(handler);
+
