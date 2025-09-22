@@ -9,46 +9,15 @@ type Props = {
     min: number;
     max: number;
     step?: number;
-    value: Range;                    // ทำให้ optional
-    onChange?: (val: Range) => void;  // live change
-    onCommit?: (val: Range) => void;  // mouse up
+    value: Range;
+    onChange?: (val: Range) => void;
+    onCommit?: (val: Range) => void;
     className?: string;
 };
 
 export default function PriceRange({
     label, min, max, step = 1, value, onChange, onCommit, className,
 }: Props) {
-
-
-    const isControlled = value !== undefined;
-
-    const [inner, setInner] = React.useState<[number, number]>([
-        value?.min ?? min,
-        value?.max ?? max,
-    ]);
-
-    // sync เมื่อ value (controlled) เปลี่ยนจากข้างนอก
-    React.useEffect(() => {
-        if (isControlled && value) setInner([value.min, value.max]);
-    }, [isControlled, value?.min, value?.max]);
-
-    const current: [number, number] = isControlled
-        ? [value!.min, value!.max]
-        : inner;
-
-    const toRange = ([a, b]: number[]): Range => ({
-        min: Math.min(a, b),
-        max: Math.max(a, b),
-    });
-
-    // แปลงเป็นเปอร์เซ็นต์ของช่วง
-    const pct = (n: number) => ((n - min) / (max - min)) * 100;
-
-    // สำหรับกัน badge ซ้อนกัน (ถ้าใกล้กันเกิน 8%)
-    const p1 = pct(value.min);
-    const p2 = pct(value.max);
-    const tooClose = Math.abs(p2 - p1) < 8;
-
     return (
         <div className={cn("grid gap-3", className)}>
             {label && <span className="text-sm font-medium text-[var(--gray-800)]">{label}</span>}
@@ -116,9 +85,9 @@ export default function PriceRange({
             </div>
 
             {/* สรุปค่า */}
-            <div className="text-sm text-[var(--gray-700)]">
+            {/* <div className="text-sm text-[var(--gray-700)]">
                 เลือกช่วงราคา: <b>{value.min}</b> – <b>{value.max}</b>
-            </div>
+            </div> */}
         </div>
     );
 }
