@@ -1,14 +1,18 @@
 // API (list/reorder/delete)
-
-import { ServiceItem } from "@/components/admin/services/type_service";
 import { http } from "./http";
+import type { ServiceItem } from "@/components/admin/services/type_service";
 
 const BASE = "/services";
 
 export async function listServices(): Promise<ServiceItem[]> {
-    const { data } = await http.get<ServiceItem[]>(`${BASE}`, {
-        headers: { "Cache-Control": "no-cache" },
-    });
+    const { data } = await http.get<ServiceItem[]>(BASE);
     return data;
 }
 
+export async function reorderServices(payload: { id: string; index: number }[]) {
+    await http.post(`${BASE}/reorder`, payload);
+}
+
+export async function deleteService(id: string) {
+    await http.delete(`${BASE}/${id}`);
+}

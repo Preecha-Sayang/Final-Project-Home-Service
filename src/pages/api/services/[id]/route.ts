@@ -1,1 +1,0 @@
-// DELETE /api/services/:id (mock)
