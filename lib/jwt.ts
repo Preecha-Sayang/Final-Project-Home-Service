@@ -1,5 +1,4 @@
 
-
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 
@@ -12,7 +11,7 @@ export interface JwtPayloadBase {
   iat?: number;
   exp?: number;
 }
-
+if (!process.env.JWT_SECRET) throw new Error("JWT_SECRET not defined");
 const JWT_SECRET = process.env.JWT_SECRET!;
 const ISSUER = process.env.JWT_ISSUER || "your-app";
 const AUDIENCE = process.env.JWT_AUD || "your-app-users";
