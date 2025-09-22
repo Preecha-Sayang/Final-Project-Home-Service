@@ -19,7 +19,16 @@ export type InputFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
     validateOn?: "blur" | "change"; // ดีฟอลต์ blur
 };
 
-// ไอคอน error เริ่มต้น (ถ้า caller ไม่ส่ง rightIcon มา)
+type NativeControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
+type ChildProps = {
+    className?: string;
+    disabled?: boolean;
+    onChange?: React.ChangeEventHandler<NativeControl>;
+    onBlur?: React.FocusEventHandler<NativeControl>;
+};
+type StylableChild = React.ReactElement<ChildProps>;
+
+// ไอคอน error
 const DefaultErrorIcon = () => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path fill-rule="evenodd" clip-rule="evenodd" d="M14.3996 7.99961C14.3996 11.5342 11.5342 14.3996 7.99961 14.3996C4.46499 14.3996 1.59961 11.5342 1.59961 7.99961C1.59961 4.46499 4.46499 1.59961 7.99961 1.59961C11.5342 1.59961 14.3996 4.46499 14.3996 7.99961ZM8.79961 11.1996C8.79961 11.6414 8.44144 11.9996 7.99961 11.9996C7.55778 11.9996 7.19961 11.6414 7.19961 11.1996C7.19961 10.7578 7.55778 10.3996 7.99961 10.3996C8.44144 10.3996 8.79961 10.7578 8.79961 11.1996ZM7.99961 3.99961C7.55778 3.99961 7.19961 4.35778 7.19961 4.79961V7.99961C7.19961 8.44144 7.55778 8.79961 7.99961 8.79961C8.44144 8.79961 8.79961 8.44144 8.79961 7.99961V4.79961C8.79961 4.35778 8.44144 3.99961 7.99961 3.99961Z" fill="#B80000" />
@@ -40,7 +49,7 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>((props, r
     const isDisabled = Boolean(disabled) || status === "disabled";
     const [touched, setTouched] = React.useState(false);
 
-    // ค่าที่จะใช้ validate (รองรับทั้ง controlled & uncontrolled)
+    // ค่าที่จะใช้ validate
     const stringValue =
         typeof value === "string"
             ? value
@@ -49,7 +58,7 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>((props, r
     const computedError =
         validate ? validate(stringValue) ?? undefined : undefined;
 
-    // แสดง error ตามกฎ: ถ้ามี error ที่ส่งเข้ามาให้ override, otherwise ใช้ของ validate เมื่อ touched หรือ validateOn='change'
+    // แสดง error
     const shouldShowComputed = validate
         ? (validateOn === "change" ? true : touched)
         : false;
@@ -66,13 +75,34 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>((props, r
         className
     );
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
         if (validateOn === "change") setTouched(true);
         onChange?.(e);
     };
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
         setTouched(true);
         onBlur?.(e);
+    };
+
+    const renderChild = () => {
+        if (!(asChild && React.isValidElement(children))) return null;
+        const child = children as StylableChild;
+
+        const childOnChange: React.ChangeEventHandler<NativeControl> = (ev) => {
+            handleChange(ev as unknown as React.ChangeEvent<HTMLInputElement>);
+            child.props.onChange?.(ev);
+        };
+        const childOnBlur: React.FocusEventHandler<NativeControl> = (ev) => {
+            handleBlur(ev as unknown as React.FocusEvent<HTMLInputElement>);
+            child.props.onBlur?.(ev);
+        };
+
+        return React.cloneElement(child, {
+            className: cn(styleClass, child.props.className),
+            disabled: isDisabled || child.props.disabled,
+            onChange: childOnChange,
+            onBlur: childOnBlur,
+        });
     };
 
     return (
@@ -80,13 +110,13 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>((props, r
             {label && (
                 <label className={labelCls()}>
                     {typeof label === "string" ? (() => {
-                        // ถ้ามี * ท้ายข้อความ ให้แยกออกมาแล้วทำสีแดง
+                        // ถ้ามี * ท้ายข้อความ จะเป็นสีแดง
                         const m = label.match(/^(.*?)(\s*\*)$/);
                         if (m) {
                             return (
                                 <>
                                     {m[1]}
-                                    <span className="ml-1 text-red-600">*</span>
+                                    <span className="ml-1 text-[var(--red-600)]">*</span>
                                 </>
                             );
                         }
@@ -97,33 +127,25 @@ const InputField = React.forwardRef<HTMLInputElement, InputFieldProps>((props, r
 
             <div className="relative">
                 {leftIcon && (
-                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--gray-400)]">
                         {leftIcon}
                     </span>
                 )}
 
-                {asChild && React.isValidElement(children) ? (
-                    React.cloneElement(children as any, {
-                        className: cn(styleClass, (children as any).props?.className),
-                        disabled: isDisabled || (children as any).props?.disabled,
-                        onChange: (e: any) => { handleChange(e); (children as any).props?.onChange?.(e); },
-                        onBlur: (e: any) => { handleBlur(e); (children as any).props?.onBlur?.(e); },
-                    })
-                ) : (
+                {renderChild() ?? (
                     <input
                         ref={ref}
                         disabled={isDisabled}
                         className={styleClass}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        value={value as any}
+                        value={stringValue}
                         {...rest}
                     />
                 )}
 
                 {(rightIcon || isError) && (
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400">
-                        {/* ถ้ามี rightIcon ให้แสดงตามนั้น, ถ้า error แต่ไม่ได้ส่งไอคอนมา ให้ขึ้นไอคอน default */}
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-[var(--gray-400)]">
                         {rightIcon ?? (isError ? <DefaultErrorIcon /> : null)}
                     </span>
                 )}
