@@ -1,13 +1,14 @@
 import { useState } from "react";
 
 interface ButtonProps {
-  onClick?: () => Promise<void> | void;
+  onClick?: () => void | Promise<void | boolean>;
   children?: React.ReactNode;
   disabled?: boolean;
   className?: string;
+  type?: "button" | "submit" | "reset";
 }
 
-function ButtonLarge({ onClick, disabled,className, children }: ButtonProps) {
+function ButtonLarge({ onClick, disabled,className, children ,type = "button"}: ButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleClick = async () => {
@@ -46,6 +47,7 @@ function ButtonLarge({ onClick, disabled,className, children }: ButtonProps) {
   return (
     <button
       onClick={handleClick}
+      type={type}
       disabled={disabled || isLoading}
       className={`
         ${baseClass} ${className}
