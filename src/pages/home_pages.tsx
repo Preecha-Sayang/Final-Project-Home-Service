@@ -1,7 +1,6 @@
 import { Footer } from "@/components/footer";
 import ServiceCard from "@/components/Cards/ServiceCard";
 import ButtonPrimary from "@/components/button/buttonprimary";
-import ButtonSecondary from "@/components/button/buttonsecondary";
 import Navbar from "@/components/navbar/navbar";
 import Link from "next/link";
 
@@ -86,7 +85,7 @@ export default function Home() {
 
           <div className="flex justify-center">
             <Link href="/services">
-              <ButtonSecondary>ดูบริการทั้งหมด</ButtonSecondary>
+              <ButtonPrimary>ดูบริการทั้งหมด</ButtonPrimary>
             </Link>
           </div>
         </div>
