@@ -1,56 +1,100 @@
-"use client";
-import { cn } from "../_style";
+import { Fragment } from "react";
+import { Listbox, Transition } from "@headlessui/react";
+import { cn } from "@/lib/utils";
 
-export type Option = { label: string; value: string };
+export type Option = { label: string; value: string; disabled?: boolean };
 
 type Props = {
     label?: string;
-    options: Option[];
     value: string;
-    onChange: (val: string) => void;
+    onChange: (v: string) => void;
+    options: Option[];
     placeholder?: string;
-    name?: string;
     disabled?: boolean;
     className?: string;
+    optionClassName?: string;
 };
 
+function ChevronDownIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            className={className}
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+        ><path d="M5.8335 8.33337L10.0002 12.5L14.1668 8.33337H5.8335Z" fill="#AAAAAA" />
+        </svg>
+    );
+}
+
 export default function InputDropdown({
-    label, options, value, onChange,
-    placeholder = "Select…", name, disabled, className,
+    label, value, onChange, options,
+    placeholder = "Select…",
+    disabled,
+    className, optionClassName,
 }: Props) {
-    const id = name ?? `select-${label ?? "field"}`.toLowerCase();
+    const selected = options.find(o => o.value === value) ?? null;
 
     return (
         <label className="grid gap-2">
-            {/* label: เทาเข้มจากพาเล็ต */}
             {label && <span className="text-sm font-medium text-[var(--gray-800)]">{label}</span>}
 
-            <select
-                id={id}
-                name={name}
-                disabled={disabled}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className={cn(
-                    // โครงหลัก: ขอบเทาอ่อน พื้นขาว ตัวอักษรเทาเข้ม
-                    "block w-full rounded-md border bg-[var(--white)] px-3 py-2 text-sm outline-none transition",
-                    "border-[var(--gray-300)] text-[var(--gray-900)] placeholder:text-[var(--gray-400)]",
-                    // โฟกัสน้ำเงินตามธีม
-                    "focus:ring-2 focus:ring-[var(--blue-500)] focus:border-[var(--blue-500)]",
-                    // hover ขอบเข้มขึ้นนิด
-                    "hover:border-[var(--gray-400)]",
-                    // disabled: โทนเทาและปิดเมาส์
-                    disabled && "bg-[var(--gray-100)] text-[var(--gray-400)] cursor-not-allowed border-[var(--gray-200)]",
-                    // ทิ้งช่องให้ปรับเพิ่มภายนอก
-                    className
-                )}
-            >
-                {/* option แรกใช้เป็น placeholder (สีจัดใน select เองพอ) */}
-                <option value="" disabled>{placeholder}</option>
-                {options.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-            </select>
+            <Listbox value={value} onChange={onChange} disabled={disabled}>
+                <div className={cn("relative", className)}>
+                    <Listbox.Button
+                        className={cn(
+                            "w-full rounded-md border px-3 py-2 text-left text-sm",
+                            "border-[var(--gray-300)] text-[var(--gray-900)]",
+                            "hover:border-[var(--gray-400)]",
+                            "focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)]",
+                            "pr-9",
+                            disabled &&
+                            "bg-[var(--gray-100)] text-[var(--gray-500)] cursor-not-allowed border-[var(--gray-200)]"
+                        )}
+                    >
+                        {selected ? (
+                            selected.label
+                        ) : (
+                            <span className="text-[var(--gray-400)]">{placeholder}</span>
+                        )}
+
+                        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-[var(--gray-500)]">
+                            <ChevronDownIcon />
+                        </span>
+                    </Listbox.Button>
+
+                    <Transition
+                        as={Fragment}
+                        leave="transition ease-in duration-100"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <Listbox.Options
+                            className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md
+                         border border-[var(--gray-200)] bg-white shadow-lg"
+                        >
+                            {options.map((opt) => (
+                                <Listbox.Option key={opt.value} value={opt.value} disabled={opt.disabled}>
+                                    {({ active, selected, disabled }) => (
+                                        <div
+                                            className={cn(
+                                                "cursor-pointer select-none rounded px-3 py-2 text-sm text-[var(--gray-500)]",
+                                                active && "bg-[var(--gray-100)]",
+                                                selected && "font-medium text-[var(--gray-950)] bg-[var(--gray-100)]",
+                                                disabled && "opacity-50 cursor-not-allowed",
+                                                optionClassName
+                                            )}
+                                        >
+                                            {opt.label}
+                                        </div>
+                                    )}
+                                </Listbox.Option>
+                            ))}
+                        </Listbox.Options>
+                    </Transition>
+                </div>
+            </Listbox>
         </label>
     );
 }
