@@ -1,4 +1,4 @@
-import type { ServiceItem } from "@/components/admin/services/type_service";
+import type { ServiceItem } from "@/types/service";
 
 type Store = { services: ServiceItem[] };
 

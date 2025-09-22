@@ -1,7 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import Badge from "./badge";
-import { ServiceItem } from "./type_service";
+import { ServiceItem } from "../../../types/service";
 
 function formatDT(iso: string) {
     const d = new Date(iso);

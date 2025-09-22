@@ -1,6 +1,6 @@
 // API (list/reorder/delete)
 import { http } from "./http";
-import type { ServiceItem } from "@/components/admin/services/type_service";
+import type { ServiceItem } from "@/types/service";
 
 const BASE = "/services";
 

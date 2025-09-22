@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/client/utils";
 
 export type Option = { label: string; value: string; disabled?: boolean };
 
@@ -38,7 +38,20 @@ export default function InputDropdown({
 
     return (
         <label className="grid gap-2">
-            {label && <span className="text-sm font-medium text-[var(--gray-800)]">{label}</span>}
+            {label && <span className="text-sm font-medium text-[var(--gray-800)]">
+                {typeof label === "string" ? (() => {
+                    // ถ้ามี * ท้ายข้อความ จะเป็นสีแดง
+                    const m = label.match(/^(.*?)(\s*\*)$/);
+                    if (m) {
+                        return (
+                            <>
+                                {m[1]}
+                                <span className="ml-1 text-[var(--red)]">*</span>
+                            </>
+                        );
+                    }
+                    return label;
+                })() : label}</span>}
 
             <Listbox value={value} onChange={onChange} disabled={disabled}>
                 <div className={cn("relative", className)}>
