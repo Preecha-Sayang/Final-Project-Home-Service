@@ -2,7 +2,7 @@ import { Footer } from "@/components/footer";
 import ServiceCard from "@/components/Cards/ServiceCard";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
-
+import Navbar from "@/components/navbar/navbar";
 import Link from "next/link";
 
 export default function Home() {
@@ -30,26 +30,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <div className="bg-white shadow-md h-20 flex items-center justify-center relative">
-        <div className="max-w-6xl w-full mx-auto px-4 flex items-center justify-between">
-          {/* โลโก้ */}
-          <div className="flex items-center gap-4">
-            <img src="/images/logo.png" alt="HomeServices" className="h-8 w-auto" />
-            <a className="text-gray-900 font-semibold hover:text-blue-600 font-prompt">
-              บริการของเรา
-            </a>
-          </div>
-
-          <div>
-            <Link
-              href="/login"
-              className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors duration-200 font-prompt"
-            >
-              เข้าสู่ระบบ
-            </Link>
-          </div>
-        </div>
-      </div>
+      <Navbar />
+      
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-50 to-blue-100 h-[540px]">
@@ -73,7 +55,7 @@ export default function Home() {
             <img 
               src="/images/technichain.svg" 
               alt="Professional Technician" 
-              className="w-[520px] h-[720px] object-contain absolute top-[14px] left-[810px]"
+              className="w-[520px] h-[720px] object-contain absolute top-[30px] left-[810px]"
             />
           </div>
         </div>
