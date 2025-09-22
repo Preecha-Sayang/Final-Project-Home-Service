@@ -7,8 +7,8 @@ import user_default from "../../../public/images/user_default.png";
 
 
 type NavbarProps = {
-  token: string;
-  fullname: string;
+  token?: string;
+  fullname?: string;
   imageURL?: string;
 };
 

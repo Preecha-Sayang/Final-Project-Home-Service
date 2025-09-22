@@ -1,6 +1,7 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { Prompt } from "next/font/google";
+import { AuthProvider } from "@/context/AuthContext";
 
 const fontPrompt = Prompt({
   //Set Font เพื่อใช้ทั้งระบบ ไม่ต้องลบส่วนนี้//
@@ -12,7 +13,12 @@ const fontPrompt = Prompt({
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={fontPrompt.className}>
-      <Component {...pageProps} />
+      <AuthProvider>
+      <Component {...pageProps} />;
+      </AuthProvider>
     </div>
   );
 }
+
+//const fetchWithToken = useFetchWithToken();
+// const data = await fetchWithToken<UserData>("/api/protected/user");
