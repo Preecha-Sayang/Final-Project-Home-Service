@@ -2,6 +2,23 @@ import * as React from "react";
 import type { FiltersState, Option, Range } from "./types";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import PriceRange from "@/components/input/inputPriceRange/price_range";
+import { cn } from "@/components/input/_style";
+
+/** hook เล็ก ๆ สำหรับปิดเมื่อคลิกนอก */
+function useClickOutside<T extends HTMLElement>(open: boolean, onClose: () => void) {
+    const ref = React.useRef<T>(null);
+    React.useEffect(() => {
+        if (!open) return;
+        const onDown = (e: MouseEvent) => {
+            const el = ref.current;
+            if (!el) return;
+            if (!el.contains(e.target as Node)) onClose();
+        };
+        document.addEventListener("mousedown", onDown);
+        return () => document.removeEventListener("mousedown", onDown);
+    }, [open, onClose]);
+    return ref;
+}
 
 type Props = {
     categories: Option[];
@@ -40,11 +57,31 @@ export default function FiltersBar({
         if (e.key === "Enter") apply();
     };
 
+    // ---------- Price popover ----------
+    const [openPrice, setOpenPrice] = React.useState(false);
+    // ค่าชั่วคราวใน popup (เลือกแล้วค่อย OK)
+    const [tempPrice, setTempPrice] = React.useState<Range>(price);
+    React.useEffect(() => setTempPrice(price), [price]);
+    const priceRef = useClickOutside<HTMLDivElement>(openPrice, () => setOpenPrice(false));
+
+    const confirmPrice = () => {
+        setPrice(tempPrice);
+        setOpenPrice(false);
+    };
+
+    // แสดงช่วงราคาเป็นข้อความ
+    const priceLabel = `${price.min.toLocaleString()}–${price.max.toLocaleString()}฿`;
+
     return (
         <div className={className}>
-            <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-4">
-                {/* Search */}
-                <div className="min-w-[240px] grow">
+            {/* เดสก์ท็อป = บรรทัดเดียว / มือถือ = wrap ได้เอง */}
+            <div
+                className={cn(
+                    "flex flex-wrap md:flex-nowrap items-end gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-4"
+                )}
+            >
+                {/* Search (ขยายกินที่) */}
+                <div className="min-w-[220px] grow">
                     <label className="block text-sm font-medium text-[var(--gray-800)] mb-1">
                         ค้นหา…
                     </label>
@@ -58,12 +95,11 @@ export default function FiltersBar({
                          hover:border-[var(--gray-400)]
                          focus:ring-2 focus:ring-[var(--blue-600)] focus:border-[var(--blue-600)]"
                         />
-                        {/* ไอคอนแว่นถ้าต้องการ */}
                     </div>
                 </div>
 
                 {/* Category */}
-                <div className="w-[220px]">
+                <div className="w-full md:w-[220px]">
                     <InputDropdown
                         label="หมวดหมู่บริการ"
                         options={categories}
@@ -73,20 +109,59 @@ export default function FiltersBar({
                     />
                 </div>
 
-                {/* Price Range */}
-                <div className="w-[260px]">
-                    <PriceRange
-                        label="ราคา"
-                        min={0}
-                        max={2000}
-                        step={1}
-                        value={price}
-                        onChange={setPrice}
-                    />
+                {/* Price = ปุ่ม + popup */}
+                <div className="relative w-full md:w-[240px]" ref={priceRef}>
+                    <label className="block text-sm font-medium text-[var(--gray-800)] mb-1">ราคา</label>
+
+                    <button
+                        type="button"
+                        onClick={() => setOpenPrice((s) => !s)}
+                        className="w-full rounded-md border border-[var(--gray-300)] px-3 py-2 text-left text-sm
+                       hover:border-[var(--gray-400)]
+                       focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)]"
+                    >
+                        <span className="text-[var(--gray-900)]">{priceLabel}</span>
+                        <span className="float-right translate-y-px text-[var(--gray-500)]">
+                            {/* caret */}
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
+                                <path d="M5 7.5 10 12.5 15 7.5" fill="#AAAAAA" />
+                            </svg>
+                        </span>
+                    </button>
+
+                    {/* Panel: จัดให้ออกด้านขวาตามแบบ และซ่อน/แสดงด้วย state */}
+                    {openPrice && (
+                        <div
+                            className="absolute z-50 mt-2 w-[300px] md:right-0 rounded-2xl border border-[var(--gray-200)] bg-white p-3 shadow-xl"
+                        >
+                            <PriceRange
+                                /* ใช้ตัวเดิมเลย แต่ส่ง state ชั่วคราว */
+                                min={0}
+                                max={2000}
+                                step={1}
+                                value={tempPrice}
+                                onChange={setTempPrice}
+                            />
+                            <div className="mt-3 flex items-center justify-end gap-2">
+                                <button
+                                    onClick={() => setOpenPrice(false)}
+                                    className="rounded-md border border-[var(--gray-300)] px-3 py-1.5 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmPrice}
+                                    className="rounded-md bg-[var(--blue-600)] px-4 py-1.5 text-sm text-white hover:bg-[var(--blue-700)] cursor-pointer"
+                                >
+                                    OK
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Sort */}
-                <div className="w-[260px]">
+                <div className="w-full md:w-[260px]">
                     <InputDropdown
                         label="เรียงตาม"
                         value={sort}
@@ -99,10 +174,10 @@ export default function FiltersBar({
                 </div>
 
                 {/* Button */}
-                <div className="self-end pb-[2px]">
+                <div className="w-full md:w-auto md:self-end">
                     <button
                         onClick={apply}
-                        className="rounded-md bg-[var(--blue-600)] px-4 py-2 text-white hover:bg-[var(--blue-700)]"
+                        className="h-[38px] w-full md:w-auto rounded-md bg-[var(--blue-600)] px-5 text-white hover:bg-[var(--blue-700)] cursor-pointer"
                     >
                         ค้นหา
                     </button>

@@ -85,9 +85,9 @@ export default function PriceRange({
             </div>
 
             {/* สรุปค่า */}
-            <div className="text-sm text-[var(--gray-700)]">
+            {/* <div className="text-sm text-[var(--gray-700)]">
                 เลือกช่วงราคา: <b>{value.min}</b> – <b>{value.max}</b>
-            </div>
+            </div> */}
         </div>
     );
 }
