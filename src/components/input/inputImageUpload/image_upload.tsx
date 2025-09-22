@@ -23,11 +23,11 @@ export default function ImageUpload({
             {/* กล่องเส้นปะตามภาพ */}
             <div
                 onClick={handlePick}
-                className="flex items-center justify-center w-full min-h-[140px] rounded-lg border-2 border-dashed border-[var(--gray-300)] bg-[var(--white)] px-4 py-6 text-center hover:border-[var(--gray-400)] transition"
+                className="flex items-center justify-center w-full min-h-[140px] rounded-lg border-2 border-dashed border-[var(--gray-300)] bg-[var(--white)] px-4 py-6 text-center hover:border-[var(--gray-400)] transition cursor-pointer hover:bg-[var(--gray-300)"
             >
                 <div className="space-y-1">
                     <div className="text-sm">
-                        <span className="font-medium text-[var(--blue-600)] underline">อัพโหลดรูปภาพ</span>
+                        <span className="font-medium text-[var(--blue-500)] underline hover:text-[var(--blue-700)]">อัพโหลดรูปภาพ</span>
                         <span className="mx-2 text-[var(--gray-600)]">หรือ ลากและวางที่นี่</span>
                     </div>
                     <div className="text-xs text-[var(--gray-400)]">PNG, JPG ขนาดไม่เกิน 10MB</div>

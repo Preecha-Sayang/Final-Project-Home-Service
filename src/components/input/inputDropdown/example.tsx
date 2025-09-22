@@ -38,7 +38,7 @@ const [service, setService] = useState("");
 
     return (
         <>
-            <div className="w-[1200px] font-medium text-[var(--gray-700)]">Input State</div>
+            <div className="w-[1200px] font-medium text-[var(--gray-700)]"></div>
             <div className="flex justify-center items-center">
                 <div className="w-[360px]">
                     <InputDropdown

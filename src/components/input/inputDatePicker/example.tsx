@@ -28,7 +28,7 @@ const minToday = format(new Date(), "yyyy-MM-dd");
 
     return (
         <>
-            <div className="w-[1200px] font-medium text-[var(--gray-700)]">Input State</div>
+            <div className="w-[1200px] font-medium text-[var(--gray-700)]"></div>
             <div className="flex justify-center items-center">
                 <div className="w-[360px]">
                     <DatePicker
