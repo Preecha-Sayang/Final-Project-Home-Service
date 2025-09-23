@@ -1,7 +1,7 @@
 // src/pages/admin/login.tsx
 import { useState } from "react";
 import { useRouter } from "next/router";
-import { api } from "@/lib/client/api";     // axios instance (baseURL: "/api")
+import { api } from "lib/client/api";     // axios instance (baseURL: "/api")
 import nookies from "nookies";
 
 export default function AdminLoginPage() {

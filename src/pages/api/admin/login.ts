@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import pool from "@../../../lib/db";
-import { signAdminAccess } from "@/lib/server/jwtAdmin";
+import { signAdminAccess } from "lib/server/jwtAdmin";
 import bcrypt from "bcryptjs";
 import nookies from "nookies";
 

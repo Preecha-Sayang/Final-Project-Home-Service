@@ -1,7 +1,7 @@
 // จัดการ หมวดหมู่หลัก
 import type { NextApiRequest, NextApiResponse } from "next";
 import pool from "@../../../lib/db";
-import { withAdminAuth, AdminJwt } from "@/lib/server/withAdminAuth";
+import { withAdminAuth, AdminJwt } from "lib/server/withAdminAuth";
 
 type ReqWithAdmin = NextApiRequest & { admin: AdminJwt };
 

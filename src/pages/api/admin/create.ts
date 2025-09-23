@@ -1,6 +1,6 @@
 // จัดการ รายละเอียด/option ของบริการ
 import type { NextApiRequest, NextApiResponse } from "next";
-import { withAdminAuth, AdminJwt } from "@/lib/server/withAdminAuth";
+import { withAdminAuth, AdminJwt } from "lib/server/withAdminAuth";
 // import client DB ของคุณตามจริง
 
 export interface AdminRequest extends NextApiRequest {
