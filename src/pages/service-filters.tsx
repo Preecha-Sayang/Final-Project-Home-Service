@@ -1,6 +1,5 @@
 import * as React from "react";
-import { FiltersBar, type FiltersState, type Option, toQueryString } from "@/components/filters";
-import type { Range } from "@/components/filters/types";
+import { FiltersBar, type FiltersState, type Option } from "@/components/filters";
 
 // mock service type
 type Service = {

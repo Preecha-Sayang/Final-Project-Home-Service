@@ -18,12 +18,25 @@ export default function ImageUpload({
 
     return (
         <div className={cn("grid gap-2", className)}>
-            {label && <span className="text-sm font-medium text-[var(--gray-800)]">{label}</span>}
+            {label && <span className="text-sm font-medium text-[var(--gray-800)]">
+                {typeof label === "string" ? (() => {
+                    // ถ้ามี * ท้ายข้อความ จะเป็นสีแดง
+                    const m = label.match(/^(.*?)(\s*\*)$/);
+                    if (m) {
+                        return (
+                            <>
+                                {m[1]}
+                                <span className="ml-1 text-[var(--red)]">*</span>
+                            </>
+                        );
+                    }
+                    return label;
+                })() : label}</span>}
 
             {/* กล่องเส้นปะตามภาพ */}
             <div
                 onClick={handlePick}
-                className="flex items-center justify-center w-full min-h-[140px] rounded-lg border-2 border-dashed border-[var(--gray-300)] bg-[var(--white)] px-4 py-6 text-center hover:border-[var(--gray-400)] transition cursor-pointer hover:bg-[var(--gray-300)"
+                className="flex items-center justify-center w-full min-h-[140px] rounded-lg border-2 border-dashed border-[var(--gray-300)] bg-[var(--white)] px-4 py-6 text-center hover:border-[var(--gray-400)] transition cursor-pointer hover:bg-[var(--gray-300)]"
             >
                 <div className="space-y-1">
                     <div className="text-sm">

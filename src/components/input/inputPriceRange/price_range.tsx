@@ -15,9 +15,25 @@ type Props = {
     className?: string;
 };
 
+
+
 export default function PriceRange({
     label, min, max, step = 1, value, onChange, onCommit, className,
 }: Props) {
+    // ---- เพิ่ม handler สำหรับ log แล้วค่อยกระจายต่อไปให้ props ----
+    const handleValueChange = ([a, b]: number[]) => {
+        const v = { min: Math.min(a, b), max: Math.max(a, b) };
+        console.log("[PriceRange] change:", v);
+        onChange?.(v);
+    };
+
+    const handleValueCommit = ([a, b]: number[]) => {
+        const v = { min: Math.min(a, b), max: Math.max(a, b) };
+        console.log("[PriceRange] commit:", v);
+        onCommit?.(v);
+    };
+
+
     return (
         <div className={cn("grid gap-3", className)}>
             {label && <span className="text-sm font-medium text-[var(--gray-800)]">{label}</span>}
@@ -32,8 +48,8 @@ export default function PriceRange({
                         max={max}
                         step={step}
                         value={[value.min, value.max]}
-                        onValueChange={([a, b]) => onChange?.({ min: Math.min(a, b), max: Math.max(a, b) })}
-                        onValueCommit={([a, b]) => onCommit?.({ min: Math.min(a, b), max: Math.max(a, b) })}
+                        onValueChange={handleValueChange}
+                        onValueCommit={handleValueCommit}
                         className="relative mx-2 flex w-[calc(100%-1rem)] select-none touch-none items-center"
                     >
                         <Slider.Track className="relative h-2 w-full rounded-full bg-[var(--gray-300)]">
