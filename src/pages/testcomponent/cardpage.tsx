@@ -18,30 +18,6 @@ export default function CardPage() {
         />
       </div>
 
-
-      {/* Service Cards Section */}
-      <div className="flex flex-wrap justify-center items-center gap-4 md:gap-6 mb-8">
-        <ServiceCard
-          imgSrc="/images/icon_tasklist.svg"
-          category="category"
-          title="ServiceCard"
-          price="Price"
-          onAction={() => alert("Call to Action clicked!")}
-          onMoreInfo={() => alert("More Info clicked!")}
-        />
-
-
-        <ServiceCard
-          imgSrc="/images/icon_tasklist.svg"
-          category="category"
-          title="ServiceCard"
-          price="Price"
-          onAction={() => alert("Call to Action clicked!")}
-          onMoreInfo={() => alert("More Info clicked!")}
-        />
-      </div>
-
-
       {/* Order Cards Section - Each card on separate line */}
       <div className="flex flex-col items-center gap-4 md:gap-6">
         <OrderCard

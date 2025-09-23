@@ -1,25 +1,37 @@
 import ButtonGhost from "../button/buttonghost";
 import Image from 'next/image';
-
+import { useRouter } from 'next/router';
 
 interface ServiceCardProps {
   imgSrc: string;
   category: string;
   title: string;
   price: string;
-  onAction?: () => Promise<void> | void;
-  onMoreInfo?: () => Promise<void> | void;
+  serviceId?: number;
+  description?: string;
 }
 
+function ServiceCard({ imgSrc, category, title, price, serviceId, description }: ServiceCardProps) {
+  const router = useRouter();
 
-function ServiceCard({ imgSrc, category, title, price, onAction, onMoreInfo }: ServiceCardProps) {
+  const handleAction = () => {
+    if (serviceId) {
+      router.push(`/services/${serviceId}`);
+    }
+  };
+
+  const handleMoreInfo = () => {
+    if (description) {
+      alert(description);
+    }
+  };
   return (
-    <div className="w-full max-w-[349px] md:w-[349px] rounded-lg overflow-hidden bg-white border border-gray-300 transition-all duration-300 hover:shadow-[2px_2px_24px_0px_rgba(23,51,106,0.12)] cursor-pointer">
+    <div className="w-full max-w-[349px] md:w-[349px] rounded-lg overflow-hidden bg-white border border-gray-300 transition-all duration-300 hover:shadow-[2px_2px_24px_0px_rgba(23,51,106,0.5)]">
       {/* Image placeholder - 60% of card height */}
       <div className="h-48 md:h-[240px] w-full bg-blue-100 flex items-center justify-center rounded-t-lg">
         <Image
           src={imgSrc}
-          alt={title}
+          alt={`${title} image`}
           width={349}
           height={400}
           className="h-full w-full object-cover"
@@ -51,12 +63,12 @@ function ServiceCard({ imgSrc, category, title, price, onAction, onMoreInfo }: S
 
         {/* button */}
         <div className="flex justify-between mt-2 gap-2">
-          <ButtonGhost onClick={onMoreInfo}>
-            More information
-          </ButtonGhost>
+          {/* <ButtonGhost onClick={handleMoreInfo}>
+            รายละเอียดเพิ่มเติม
+          </ButtonGhost> */}
          
-          <ButtonGhost onClick={onAction}>
-            Call to Action
+          <ButtonGhost onClick={handleAction}>
+            เลือกบริการ
           </ButtonGhost>
 </div>
       </div>
@@ -66,3 +78,31 @@ function ServiceCard({ imgSrc, category, title, price, onAction, onMoreInfo }: S
 
 
 export default ServiceCard;
+
+/* ----------------------------------------------------
+  📘 วิธีใช้งาน ServiceCard (ตัวอย่างสั้น ๆ)
+
+  1) Import component
+     import ServiceCard from "../components/Cards/ServiceCard";
+
+  2) ดึงข้อมูลจาก API ด้วย useServices hook
+     const { services, loading, error } = useServices();
+
+  3) Render โดยใช้ .map (ไม่ต้องส่ง callback functions)
+     {services.map(service => (
+        <ServiceCard
+          key={service.service_id}
+          imgSrc={service.image_url}
+          category={service.category}
+          title={service.servicename}
+          price={service.price}
+          serviceId={service.service_id}
+          description={service.description}
+        />
+     ))}
+
+  ✅ Best Practice:
+  - ServiceCard จัดการ navigation เอง
+  - ไม่ต้องส่ง onAction/onMoreInfo callbacks
+  - ใช้ serviceId และ description เป็น props
+---------------------------------------------------- */
