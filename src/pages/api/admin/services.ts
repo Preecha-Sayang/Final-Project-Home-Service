@@ -1,5 +1,5 @@
 import type { NextApiResponse } from "next";
-import { withAdminAuth, AdminRequest } from "@/lib/server/withAdminAuth";
+import { withAdminAuth, AdminRequest } from "lib/server/withAdminAuth";
 // import pool/client DB ตามจริง
 
 async function handler(req: AdminRequest, res: NextApiResponse) {

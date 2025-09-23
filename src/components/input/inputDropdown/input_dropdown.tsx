@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { Listbox, Transition } from "@headlessui/react";
-import { cn } from "@/lib/client/utils";
+import { cn } from "lib/client/utils";
 
 export type Option = { label: string; value: string; disabled?: boolean };
 

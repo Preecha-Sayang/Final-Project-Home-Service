@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { api } from "@/lib/client/api";
-import { uploadToCloudinary } from "@/lib/client/upload";
+import { api } from "lib/client/api";
+import { uploadToCloudinary } from "lib/client/upload";
 import { SubItem, ServicePayload, UNITS } from "@/types/service";
 import { useRouter } from "next/navigation";
 import InputField from "@/components/input/inputField/input_state";
