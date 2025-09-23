@@ -1,8 +1,21 @@
+<<<<<<< HEAD:src/pages/testcomponent/cardpage.tsx
 import ServiceCard from "../../components/Cards/ServiceCard";
 import BookingCard from "../../components/Cards/BookingCard";
+=======
+import ServiceCard from "../components/Cards/ServiceCard";
+import OrderCard from "../components/Cards/OrderCard";
+import RequestCard from "../components/Cards/RequestCard";
+import PopularService from "../components/PopularServices";
+
+
+>>>>>>> 9d22136 (Refactor: Update API endpoint and add services data fetching):src/pages/cardpage.tsx
 
 export default function CardPage() {
   return (
+    <>
+
+    <PopularService/>
+
     <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       {/* Request Card Section */}
       <div className="flex flex-col items-center gap-6 mb-8">
@@ -58,5 +71,6 @@ export default function CardPage() {
         />
       </div>
     </div>
+    </>
   );
 }
