@@ -23,7 +23,7 @@ export default function Toolbar({ search, onSearchChange, onCreate }: Props) {
             </div>
             <button
                 onClick={onCreate}
-                className="inline-flex items-center gap-2 rounded-lg bg-[var(--blue-600)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--blue-700)] active:bg-[var(--blue-800)]"
+                className="inline-flex items-center gap-2 rounded-lg bg-[var(--blue-600)] px-3 py-2 text-sm font-medium text-white hover:bg-[var(--blue-700)] active:bg-[var(--blue-800)] cursor-pointer"
             >
                 <Plus className="h-4 w-4" />
                 เพิ่มบริการ

@@ -36,7 +36,7 @@ export default function ImageUpload({
             {/* กล่องเส้นปะตามภาพ */}
             <div
                 onClick={handlePick}
-                className="flex items-center justify-center w-full min-h-[140px] rounded-lg border-2 border-dashed border-[var(--gray-300)] bg-[var(--white)] px-4 py-6 text-center hover:border-[var(--gray-400)] transition cursor-pointer hover:bg-[var(--gray-300)]"
+                className="flex items-center justify-center w-full min-h-[140px] rounded-lg border-2 border-dashed border-[var(--gray-300)] bg-[var(--white)] px-4 py-6 text-center hover:border-[var(--gray-400)] transition cursor-pointer hover:bg-[var(--gray-100)]"
             >
                 <div className="space-y-1">
                     <div className="text-sm">
