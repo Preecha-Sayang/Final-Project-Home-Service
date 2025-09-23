@@ -3,6 +3,7 @@ import ServiceCard from "@/components/Cards/ServiceCard";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import Navbar from "@/components/navbar/navbar";
 import Link from "next/link";
+import DropdownUser from "@/components/dropdown/DropdownUser";
 
 export default function Home() {
   const services = [
@@ -28,13 +29,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <Navbar />
+
+      <Navbar token="mytoken" fullname="Anuna" />
       
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-50 to-blue-100 h-[540px]">
-        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-full">
+        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-full relative">
           <div className="flex-1">
             <div className="text-6xl font-bold text-blue-700 mb-8 font-prompt">
               เรื่องบ้าน...ให้เราช่วยดูแลคุณ
@@ -54,7 +55,7 @@ export default function Home() {
             <img 
               src="/images/technichain.svg" 
               alt="Professional Technician" 
-              className="w-[520px] h-[720px] object-contain absolute top-[30px] left-[810px]"
+              className="w-[520px] h-[720px] object-contain absolute top-[0px] left-[610px]"
             />
           </div>
         </div>
@@ -63,6 +64,8 @@ export default function Home() {
       {/* Our Services Section */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-end mb-4">
+          </div>
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12 font-prompt">
             บริการยอดฮิตของเรา
           </h2>
@@ -125,6 +128,6 @@ export default function Home() {
 
       {/* Footer */}
       <Footer />
-    </div>
+   </div>
   );
 }
