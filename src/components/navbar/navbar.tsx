@@ -13,7 +13,7 @@ type NavbarProps = {
 };
 
 export default function Navbar({ token, fullname, imageURL }: NavbarProps) {
-  token = "hgf";
+  token = "";
 
 
   const getImageURL = imageURL === undefined ? user_default : imageURL;
@@ -36,12 +36,12 @@ export default function Navbar({ token, fullname, imageURL }: NavbarProps) {
           </button>
         </div>
       ) : (
-        <div className="flex flex-row items-center justify-center gap-4 mr-30">
+        <div className="flex flex-row items-center justify-center gap-4 mr-30 ">
           <p>{fullname}</p>
           <Image
             src={getImageURL}
             alt="user"
-            className="h-10 w-10 rounded-full cursor-pointer "
+            className="h-10 w-10 rounded-full cursor-pointer"
           />
           <div className="rounded-full bg-[var(--gray-100)] px-2 py-2 ">
             <Image
