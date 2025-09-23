@@ -1,7 +1,7 @@
 // pages/api/profile.ts
 import type { NextApiResponse } from "next";
 import { query } from "../../../../lib/db";
-import { withAuth, AuthenticatedNextApiRequest } from "../../../../lib/auth";
+import { withAuth, AuthenticatedNextApiRequest } from "../../../middlewere/auth";
 
 async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   const result = await query(

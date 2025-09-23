@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from "uuid";
 export interface JwtPayloadBase {
   userId: string;           // userId
   email?: string;
-  fullname?: string;
   jti?: string;
   iat?: number;
   exp?: number;

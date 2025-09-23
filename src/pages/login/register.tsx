@@ -98,14 +98,14 @@ function Register() {
 
           <form onSubmit={handleSubmit} className="w-[440px] flex flex-col gap-4 mb-6">
             <InputField
-              label="ชื่อ - นามสกุล"
+              label="ชื่อ - นามสกุล*"
               placeholder="กรุณากรอกชื่อ นามสกุล"
               required
               value={form.fullname}
               onChange={(e) => handleChange("fullname", e.target.value)}
             />
             <InputField
-              label="เบอร์โทรศัพท์"
+              label="เบอร์โทรศัพท์*"
               type="tel"
               pattern="[0-9]*"
               inputMode="numeric"
@@ -118,7 +118,7 @@ function Register() {
               }}
             />
             <InputField
-              label="อีเมล"
+              label="อีเมล*"
               type="email"
               placeholder="กรุณากรอกอีเมล"
               required
@@ -126,7 +126,7 @@ function Register() {
               onChange={(e) => handleChange("email", e.target.value)}
             />
             <InputField
-              label="รหัสผ่าน"
+              label="รหัสผ่าน*"
               type="password"
               placeholder="กรุณากรอกรหัสผ่าน"
               required

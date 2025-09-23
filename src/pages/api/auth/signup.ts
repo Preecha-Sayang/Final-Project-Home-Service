@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcrypt";
 import { query } from "../../../../lib/db";
-import { signAccessToken } from "../../../../lib/jwt";
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
@@ -19,13 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const user = result.rows[0];
 
-    // ✅ Sign JWT หลังสมัคร
-    const { token } = signAccessToken({
-      userId: String(user.user_id),
-      email: user.email,
-      fullname: user.fullname
-    });
-    return res.status(201).json({ user, token });
+
   } catch (err: unknown) {
     return res.status(400).json({ error: (err as Error).message });
   }
