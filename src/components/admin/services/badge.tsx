@@ -10,7 +10,7 @@ export default function Badge({ label }: { label: string }) {
 
     const cls = tone[label] || "bg-[var(--gray-100)] text-[var(--gray-700)] ring-1 ring-[var(--gray-200)]";
     return (
-        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>
+        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium cursor-pointer ${cls}`}>
             {label}
         </span>
     );

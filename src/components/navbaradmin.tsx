@@ -14,19 +14,17 @@ interface NavbarProps {
 function NavbarAdmin({ menuItems }: NavbarProps) {
   const router = useRouter();
 
-    const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("token");
     router.push("/admin/login"); //เวลากดlogout แล้วอยากให้ไปหน้าไหน
   };
-
-
 
   return (
     <div className="bg-[var(--blue-950)] w-[240px] h-screen flex flex-col rounded-none">
       {/* Header */}
       <div id="header" className="h-[105px] flex justify-center items-center">
         <div className="w-[192px] h-[46px] bg-[var(--blue-100)] rounded-xl flex justify-center items-center cursor-pointer"
-        onClick={() => router.push("/")} 
+          onClick={() => router.push("/admin/categories")}
         >
           <Image src="/images/logo.png" alt="logo" width={168} height={30} />
         </div>
@@ -49,10 +47,10 @@ function NavbarAdmin({ menuItems }: NavbarProps) {
       </div>
 
       {/* Footer */}
-      <div id="footer" 
+      <div id="footer"
         className="h-[55px] hover:bg-[var(--blue-500)] cursor-pointer flex items-center px-[24px] mb-[50px]"
         onClick={handleLogout}
-       >
+      >
         <Image src="/images/icon_logout.svg" alt="logout_logo" width={24} height={24} />
         <span className="body5 text-[var(--gray-100)] ml-[16px]">ออกจากระบบ</span>
       </div>
@@ -69,6 +67,6 @@ export default NavbarAdmin;
 //   { label: "Promotion Code", path: "/", icon: "/images/icon_promotion.svg" }
 // ]
 
-    // <div>
-    //   <NavbarAdmin menuItems={menuitems}/>
-    // </div>
+// <div>
+//   <NavbarAdmin menuItems={menuitems}/>
+// </div>
