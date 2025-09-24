@@ -33,7 +33,7 @@ export default function AdminLogin() {
       if (res.ok) {
         // เก็บ JWT ใน localStorage
         localStorage.setItem("token", data.token);
-        router.push("/admin/");
+        router.push("/admin/categories");
       } else {
         setError(data.error || "เข้าสู่ระบบไม่สำเร็จ");
       }
@@ -60,22 +60,14 @@ export default function AdminLogin() {
               onSubmit={handleSubmit}
             >
               <InputField
-                label={
-                  <>
-                    Email<span className="text-red-500">*</span>
-                  </>
-                }
+                label="Email*"
                 type="email"
                 required
                 value={form.email}
                 onChange={(e) => handleChange("email", e.target.value)}
               />
               <InputField
-                label={
-                  <>
-                    password<span className="text-red-500">*</span>
-                  </>
-                }
+                label="password*"
                 type="password"
                 required
                 value={form.password}

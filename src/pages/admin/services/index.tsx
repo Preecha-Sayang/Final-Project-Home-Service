@@ -2,10 +2,13 @@
 import Toolbar from "@/components/admin/services/toolbar";
 import ServiceTable from "@/components/admin/services/service_table";
 import { ServiceItem } from "@/types/service";
-import { deleteService, listServices, reorderServices, createService, updateService } from "lib/client/servicesApi";
+import { deleteService, listServices, reorderServices } from "lib/client/servicesApi";
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
+
+import AdminShell from "@/pages/admin/index";
+import BackHeader from "@/components/admin/common/BackHeader";
 
 // === การป้องกันหน้า /admin ===
 // import type { GetServerSideProps } from "next";
@@ -44,13 +47,8 @@ export default function AdminServicesPage() {
     const [items, setItems] = useState<ServiceItem[]>([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
-
-    const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: ServiceItem; loading?: boolean }>({
-        open: false,
-    });
-
+    const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: ServiceItem; loading?: boolean }>({ open: false });
     const router = useRouter();
-
 
     useEffect(() => {
         let alive = true;
@@ -59,9 +57,7 @@ export default function AdminServicesPage() {
             try {
                 const data = await listServices();
                 if (alive) setItems(data);
-            } finally {
-                setLoading(false);
-            }
+            } finally { setLoading(false); }
         })();
         return () => { alive = false; };
     }, []);
@@ -86,15 +82,12 @@ export default function AdminServicesPage() {
     async function handleDelete(item: ServiceItem) {
         const prev = items;
         setItems(items.filter(x => x.id !== item.id).map((x, i) => ({ ...x, index: i + 1 })));
-        try {
-            await deleteService(item.id);
-        } catch {
-            setItems(prev); // rollback
-        }
+        try { await deleteService(item.id); } catch { setItems(prev); }
     }
 
     return (
-        <>
+        <AdminShell>
+            <BackHeader title="บริการ" subtitle="รายการ" backHref="/admin/categories" />
             <div className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
                 <Toolbar
                     search={search}
@@ -118,9 +111,7 @@ export default function AdminServicesPage() {
             <ConfirmDialog
                 open={confirmDel.open}
                 title="ยืนยันการลบรายการ?"
-                description={
-                    <>คุณต้องการลบรายการ ‘{confirmDel.item?.name}’ ใช่หรือไม่</>
-                }
+                description={<>คุณต้องการลบรายการ ‘{confirmDel.item?.name}’ ใช่หรือไม่</>}
                 loading={!!confirmDel.loading}
                 onCancel={() => setConfirmDel({ open: false })}
                 onConfirm={async () => {
@@ -130,7 +121,6 @@ export default function AdminServicesPage() {
                     setConfirmDel({ open: false, item: undefined, loading: false });
                 }}
             />
-        </>
+        </AdminShell>
     );
 }
-

@@ -89,6 +89,14 @@ export default function ServiceEditor({ mode, id }: Props) {
             })),
         };
 
+        useEffect(() => {
+            const onSave = () => {
+                handleSubmit();
+            };
+            window.addEventListener("service-editor:save", onSave);
+            return () => window.removeEventListener("service-editor:save", onSave);
+        }, []);
+
         setSaving(true);
         try {
             if (mode === "create") {
@@ -103,22 +111,13 @@ export default function ServiceEditor({ mode, id }: Props) {
     }
 
     return (
-        <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
-            <div className="mb-5 flex items-center justify-end gap-2">
-                <button
-                    onClick={() => router.push("/admin/services/page")}
-                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer"
-                >ยกเลิก</button>
-                <button
-                    onClick={handleSubmit}
-                    disabled={saving || loading}
-                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
-                >{mode === "create" ? (saving ? "กำลังสร้าง..." : "สร้าง") : (saving ? "กำลังบันทึก..." : "บันทึก")}</button>
-            </div>
-
-            {loading ? (
-                <div className="py-16 text-center text-gray-500">Loading…</div>
-            ) : (
+  <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
+    {/* ปุ่มเก่า
+        <div className="mb-5 flex items-center justify-end gap-2"> ... </div>
+    */}
+    {loading ? (
+      <div className="py-16 text-center text-gray-500">Loading…</div>
+    ) : (
                 <div className="grid gap-6">
                     <InputField
                         label="ชื่อบริการ *"

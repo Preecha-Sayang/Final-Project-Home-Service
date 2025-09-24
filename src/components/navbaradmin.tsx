@@ -19,14 +19,12 @@ function NavbarAdmin({ menuItems }: NavbarProps) {
     router.push("/admin/login"); //เวลากดlogout แล้วอยากให้ไปหน้าไหน
   };
 
-
-
   return (
     <div className="bg-[var(--blue-950)] w-[240px] h-screen flex flex-col rounded-none">
       {/* Header */}
       <div id="header" className="h-[105px] flex justify-center items-center">
         <div className="w-[192px] h-[46px] bg-[var(--blue-100)] rounded-xl flex justify-center items-center cursor-pointer"
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/admin/categories")}
         >
           <Image src="/images/logo.png" alt="logo" width={168} height={30} />
         </div>
