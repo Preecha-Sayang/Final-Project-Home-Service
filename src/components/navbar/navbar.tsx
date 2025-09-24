@@ -13,7 +13,7 @@ type NavbarProps = {
 };
 
 export default function Navbar({ token, fullname, imageURL }: NavbarProps) {
-  token = "sdfs";
+  token = "";
 
 
   const getImageURL = imageURL === undefined ? user_default : imageURL;

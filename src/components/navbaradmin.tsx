@@ -16,7 +16,7 @@ function NavbarAdmin({ menuItems }: NavbarProps) {
 
     const handleLogout = () => {
     localStorage.removeItem("token");
-    router.push("/"); //เวลากดlogout แล้วอยากให้ไปหน้าไหน
+    router.push("/admin/login"); //เวลากดlogout แล้วอยากให้ไปหน้าไหน
   };
 
 
