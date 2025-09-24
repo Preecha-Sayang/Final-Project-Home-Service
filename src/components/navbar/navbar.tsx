@@ -7,16 +7,15 @@ import user_default from "../../../public/images/user_default.png";
 
 
 type NavbarProps = {
-  token: string;
-  fullname: string;
+  token?: string;
+  fullname?: string;
   imageURL?: string;
 };
 
 export default function Navbar({ token, fullname, imageURL }: NavbarProps) {
-  token = "";
 
-
-  const getImageURL = imageURL === undefined ? user_default : imageURL;
+  
+  const getImageURL = imageURL === undefined ? user_default : imageURL
 
   return (
     <div className="bg-[var(--white)]; shadow-md px-4 py-3 flex items-center justify-between relative">
@@ -42,6 +41,8 @@ export default function Navbar({ token, fullname, imageURL }: NavbarProps) {
             src={getImageURL}
             alt="user"
             className="h-10 w-10 rounded-full cursor-pointer"
+            width={20}
+            height={20}
           />
           <div className="rounded-full bg-[var(--gray-100)] px-2 py-2 ">
             <Image

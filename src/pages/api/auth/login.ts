@@ -30,7 +30,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { token } = signAccessToken({
     userId: String(user.user_id),
     email: user.email,
-    fullname: user.fullname
   });
 
   return res.status(200).json({ token, user: { user_id: user.user_id, fullname: user.fullname, email: user.email } });

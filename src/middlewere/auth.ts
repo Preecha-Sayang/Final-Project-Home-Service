@@ -1,5 +1,7 @@
+//เอาไว้ใส่ api backend ที่ต้องตรวจว่าtoken ไหมก่อนส่งไปขอข้อมูลที่ database
+
 import { NextApiRequest, NextApiResponse } from "next";
-import { verifyToken, JwtPayloadBase } from "./jwt";
+import { verifyToken, JwtPayloadBase } from "../../lib/jwt";
 
 export interface AuthenticatedNextApiRequest extends NextApiRequest {
   user?: JwtPayloadBase;

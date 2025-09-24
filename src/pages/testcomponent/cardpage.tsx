@@ -1,5 +1,5 @@
-import ServiceCard from "../components/Cards/ServiceCard";
-import BookingCard from "../components/Cards/BookingCard";
+import ServiceCard from "../../components/Cards/ServiceCard";
+import BookingCard from "../../components/Cards/BookingCard";
 
 export default function CardPage() {
   return (
