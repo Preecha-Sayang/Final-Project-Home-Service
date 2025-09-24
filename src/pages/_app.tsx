@@ -12,7 +12,7 @@ const fontPrompt = Prompt({
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={fontPrompt.className}>
-      <Component {...pageProps} />;
+      <Component {...pageProps} />
     </div>
   );
 }
