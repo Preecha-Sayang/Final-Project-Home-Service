@@ -1,5 +1,4 @@
-import StateList from "@/components/state_list and stepper/state_list";
-import Stepper from "@/components/state_list and stepper/stepper";
+
 
 
 export default function Home() {
