@@ -1,5 +1,6 @@
 import { useServices, Service } from "../hooks/useServices";
 import ServiceCard from "./Cards/ServiceCard";
+import { CldImage } from 'next-cloudinary';
 
 export default function PopularServices() {
   const { services, loading, error } = useServices(true); // topOnly = true

@@ -6,6 +6,7 @@ import ServiceCard from "../components/Cards/ServiceCard";
 import OrderCard from "../components/Cards/OrderCard";
 import RequestCard from "../components/Cards/RequestCard";
 import PopularService from "../components/PopularServices";
+import { CldImage } from 'next-cloudinary';
 
 
 >>>>>>> 9d22136 (Refactor: Update API endpoint and add services data fetching):src/pages/cardpage.tsx
