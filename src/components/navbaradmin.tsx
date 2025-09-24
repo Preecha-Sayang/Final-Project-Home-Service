@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 interface MenuItem {
   label: string;
@@ -13,6 +14,11 @@ interface NavbarProps {
 
 function NavbarAdmin({ menuItems }: NavbarProps) {
   const router = useRouter();
+
+  const cur = router.asPath;
+  const isActive = (itemPath: string) => {
+    return cur === itemPath || cur.startsWith(itemPath + "/");
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -32,18 +38,32 @@ function NavbarAdmin({ menuItems }: NavbarProps) {
 
       {/* Body */}
       <div id="body" className="flex-1 flex flex-col">
-        {menuItems.map((item) => (
-          <div
-            key={item.label}
-            className="h-[55px] hover:bg-[var(--blue-500)] cursor-pointer"
-            onClick={() => router.push(item.path)}
-          >
-            <div className="px-[24px] py-[15px] flex flex-row items-center">
-              <Image src={item.icon} alt={`${item.label}_icon`} width={24} height={24} />
-              <span className="body5 text-[var(--gray-100)] ml-[16px]">{item.label}</span>
-            </div>
-          </div>
-        ))}
+        {menuItems.map((item) => {
+          const active = isActive(item.path);
+          return (
+            <Link
+              href={item.path}
+              key={item.label}
+              className={[
+                "h-[55px] cursor-pointer",
+                active ? "bg-[var(--blue-700)]" : "hover:bg-[var(--blue-500)]",
+              ].join(" ")}
+              aria-current={active ? "page" : undefined}
+            >
+              <div className="px-[24px] py-[15px] flex flex-row items-center">
+                <Image src={item.icon} alt={`${item.label}_icon`} width={24} height={24} />
+                <span
+                  className={[
+                    "body5 ml-[16px]",
+                    active ? "text-white font-medium" : "text-[var(--gray-100)]",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Footer */}

@@ -25,9 +25,9 @@ export default function NewServicePage() {
     );
 
     return (
-        <AdminShell>
+        <>
             <BackHeader subtitle="บริการ" title="เพิ่มบริการ" backHref="/admin/services" actions={actions} />
             <ServiceEditor mode="create" />
-        </AdminShell>
+        </>
     );
 }

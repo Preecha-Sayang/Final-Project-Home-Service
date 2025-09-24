@@ -28,7 +28,7 @@ export default function ServiceDetailPage() {
     }, [id]);
 
     return (
-        <AdminShell>
+        <>
             <BackHeader
                 subtitle="บริการ"
                 title={item?.name ?? "รายละเอียดบริการ"}
@@ -118,6 +118,6 @@ export default function ServiceDetailPage() {
                     </div>
                 </div>
             )}
-        </AdminShell>
+        </>
     );
 }

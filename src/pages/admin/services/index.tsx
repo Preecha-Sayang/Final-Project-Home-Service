@@ -86,7 +86,7 @@ export default function AdminServicesPage() {
     }
 
     return (
-        <AdminShell>
+        <>
             <BackHeader title="บริการ" subtitle="รายการ" backHref="/admin/categories" />
             <div className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
                 <Toolbar
@@ -121,6 +121,6 @@ export default function AdminServicesPage() {
                     setConfirmDel({ open: false, item: undefined, loading: false });
                 }}
             />
-        </AdminShell>
+        </>
     );
 }

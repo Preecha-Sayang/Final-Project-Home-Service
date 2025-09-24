@@ -25,7 +25,7 @@ export default function EditServicePage() {
     );
 
     return (
-        <AdminShell>
+        <>
             <BackHeader
                 subtitle="บริการ"
                 title="แก้ไขบริการ"
@@ -33,6 +33,6 @@ export default function EditServicePage() {
                 actions={actions}
             />
             <ServiceEditor mode="edit" id={id} />
-        </AdminShell>
+        </>
     );
 }
