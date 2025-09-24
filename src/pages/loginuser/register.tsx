@@ -6,6 +6,7 @@ import Checkbox from "@/components/radio/check_box";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import * as yup from "yup";
+import { Agreement, Policy } from "@/components/agreement";
 
 // สร้าง schema validation
 const schema = yup.object().shape({
@@ -43,6 +44,8 @@ function Register() {
   });
   const [checked, setChecked] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [showAgreementModal, setShowAgreementModal] = useState(false); // สถานะของป๊อปอัพข้อตกลง
+  const [showPolicyModal, setShowPolicyModal] = useState(false); // สถานะของป๊อปอัพนโยบาย
 
   const handleChange = (name: string, value: string) => {
     setForm({ ...form, [name]: value });
@@ -56,7 +59,6 @@ function Register() {
     });
   };
 
-  // ฟังก์ชันการจัดการ checkbox
   const checkboxset = (e: boolean) => {
     setChecked(e);
     setErrors((prevErrors) => {
@@ -114,17 +116,10 @@ function Register() {
     <>
       <Navbar />
       <div className="w-full min-h-screen flex justify-center items-start pt-20 bg-gray-50">
-        <div className="w-[610px] bg-white border border-gray-200 rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
-          <span className="font-bold text-3xl text-blue-900 mb-6">
-            ลงทะเบียน
-          </span>
+        <div className="w-[90%] md:w-[550px] lg:w-[610px] bg-white border border-gray-200 rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
+          <span className="font-bold text-3xl text-blue-900 mb-6">ลงทะเบียน</span>
 
-          {/* แสดง error รวมของฟอร์มถ้ามี */}
-          {errors.form && (
-            <p className="text-red-500 mb-4 whitespace-pre-wrap">{errors.form}</p>
-          )}
-
-          <form onSubmit={handleSubmit} className="w-[440px] flex flex-col gap-4 mb-6" noValidate>
+          <form onSubmit={handleSubmit} className="w-full sm:w-[440px] md:w-[400px] flex flex-col gap-4 mb-6" noValidate>
             <InputField
               label="ชื่อ - นามสกุล*"
               placeholder="กรุณากรอกชื่อ นามสกุล"
@@ -170,14 +165,31 @@ function Register() {
               onFocus={() => handleFocus("password")}
             />
 
+            {/* Pop-up Agreement */}
+            {showAgreementModal && (
+              <Agreement onClose={() => setShowAgreementModal(false)} />
+            )}
+
+            {/* Pop-up Policy */}
+            {showPolicyModal && (
+              <Policy onClose={() => setShowPolicyModal(false)} />
+            )}
+
             <div className="flex items-center gap-2">
               <Checkbox
                 id="agree"
                 checked={checked}
                 onChange={(val) => checkboxset(val)}
               />
-              <span className="text-sm text-gray-700">
-                ยอมรับข้อตกลงและเงื่อนไขและนโยบายความเป็นส่วนตัว
+              <span className="text-sm text-gray-700 inline">
+                ยอมรับ{" "}
+                <ButtonGhost className="!text-sm inline" onClick={() => setShowAgreementModal(true)}>
+                  ข้อตกลง
+                </ButtonGhost>
+                และ{" "}
+                <ButtonGhost className="!text-sm inline" onClick={() => setShowPolicyModal(true)}>
+                  นโยบายความเป็นส่วนตัว
+                </ButtonGhost>
               </span>
             </div>
             {/* แสดง error ของ agree */}

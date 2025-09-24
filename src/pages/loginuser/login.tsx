@@ -42,36 +42,36 @@ export default function Login() {
 
       const result = await res.json();
 
-    if (res.ok) {
-      localStorage.setItem("token", result.token);
-      router.push("/");
-    } else if (res.status === 401) {
-      // แสดง error ที่ email และ password พร้อมกัน
-      setError("email", {
-        type: "manual",
-        message: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
-      });
-      setError("password", {
-        type: "manual",
-        message: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
-      });
-    } else {
-      alert(result.error || "เกิดข้อผิดพลาด");
+      if (res.ok) {
+        localStorage.setItem("token", result.token);
+        router.push("/");
+      } else if (res.status === 401) {
+        // แสดง error ที่ email และ password พร้อมกัน
+        setError("email", {
+          type: "manual",
+          message: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+        });
+        setError("password", {
+          type: "manual",
+          message: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+        });
+      } else {
+        alert(result.error || "เกิดข้อผิดพลาด");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("เกิดข้อผิดพลาด");
     }
-  } catch (err) {
-    console.error(err);
-    alert("เกิดข้อผิดพลาด");
-  }
-};
+  };
 
   return (
     <>
       <Navbar />
       <div className="w-full h-full flex justify-center items-center mt-12">
-        <div className="w-[610px] border rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
+        <div className="w-[90%] md:w-[550px] lg:w-[610px] border rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
           <span className="font-bold text-[32px] text-[var(--blue-950)] mb-6">เข้าสู่ระบบ</span>
 
-          <form className="w-[440px] flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <form className="w-full flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)} noValidate>
             <Controller
               name="email"
               control={control}
@@ -108,7 +108,7 @@ export default function Login() {
             </ButtonPrimary>
           </form>
 
-          <div className="flex flex-row gap-1 mt-4">
+          <div className="flex flex-col md:flex-row gap-1 mt-4 ">
             <span>ยังไม่มีบัญชีผู้ใช้ HomeService?</span>
             <ButtonGhost onClick={() => router.push("/loginuser/register")}>
               <span>ลงทะเบียน</span>
@@ -117,5 +117,5 @@ export default function Login() {
         </div>
       </div>
     </>
-  );
+  )
 }
