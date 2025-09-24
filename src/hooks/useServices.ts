@@ -21,7 +21,7 @@ export function useServices(topOnly: boolean = false) {
     useEffect(() => {
       async function fetchServices() {
         try {
-          const endpoint = `/api/servicesData${topOnly ? "?topOnly=true" : ""}`;
+          const endpoint = `/api/services-cards${topOnly ? "?topOnly=true" : ""}`;
           const res = await fetch(endpoint);
           if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
           const data: Service[] = await res.json();

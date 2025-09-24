@@ -69,12 +69,12 @@ export default async function handler(
         MAX(o.unit_price) AS max_price
       FROM services s
       JOIN service_categories c ON s.category_id = c.category_id
-      JOIN service_option o ON s.service_id = o.service_id
+      LEFT JOIN service_option o ON s.service_id = o.service_id
       GROUP BY s.service_id, s.servicename, s.image_url, s.description, c.name
     `;
 
     if (topOnly === "true") {
-      query += ` ORDER BY s.service_id DESC LIMIT 3;`; // ดึง top 3
+      query += ` ORDER BY RANDOM() LIMIT 3;`; // ดึงแรนด้อม 3 อัน
     } else {
       query += ` ORDER BY s.service_id ASC;`; // ดึงทุก service
     }
@@ -111,4 +111,3 @@ export default async function handler(
     return response.status(500).json({ message: "Internal server error" });
   }
 }
-
