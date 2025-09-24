@@ -22,7 +22,9 @@ export default function Navbar({ token, fullname, imageURL }: NavbarProps) {
       {/* โลโก้ */}
 
       <div className="flex items-center gap-4 ml-30">
-        <Image src={logo_img} alt="HomeServices" className="" />
+        <button>
+          <Image src={logo_img} alt="HomeServices" className="" />
+        </button>
         <p className="text-[var(--gray-900)] font-semibold mt-5">
           บริการของเรา
         </p>
