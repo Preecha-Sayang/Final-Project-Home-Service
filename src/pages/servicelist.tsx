@@ -3,6 +3,7 @@ import ServiceCard from "../components/Cards/ServiceCard";
 import { FiltersBar, type FiltersState, type Option } from "@/components/filters";
 import { useServices, type Service } from "../hooks/useServices";
 import { usePriceRange } from "../hooks/usePriceRange";
+import { useCategories } from "../hooks/useCategories";
 import { createDefaultFilters } from "../constants/filters";
 import Navbar from "../components/navbar/navbar";
 import Head from "next/head";
@@ -44,6 +45,9 @@ export default function ServiceListPage() {
   // Hook ดึง price range จากฐานข้อมูล
   const { priceRange, loading: priceLoading } = usePriceRange();
   
+  // Hook ดึง categories จาก API
+  const { categories: categoriesData, loading: categoriesLoading, error: categoriesError } = useCategories();
+  
   // State management เหมือน service-filters
   const [items, setItems] = React.useState<Service[]>([]);
   const [total, setTotal] = React.useState(0);
@@ -55,14 +59,13 @@ export default function ServiceListPage() {
     [priceRange]
   );
   
-  // Get unique categories for filter dropdown - Dynamic from API
+  // Get categories for filter dropdown - จาก API
   const categories: Option[] = React.useMemo(() => {
-    const uniqueCategories = [...new Set(servicesAll.map(service => service.category))];
-    return uniqueCategories.map(category => ({
-      label: category,
-      value: category
+    return categoriesData.map(category => ({
+      label: category.name,
+      value: category.name
     }));
-  }, [servicesAll]);
+  }, [categoriesData]);
   
   // Handle filter application - เหมือน service-filters
   const handleApplyFilters = async (filters: FiltersState) => {
@@ -79,13 +82,13 @@ export default function ServiceListPage() {
   
   // Initialize with all services when data loads
   React.useEffect(() => {
-    if (servicesAll.length > 0 && !priceLoading) {
+    if (servicesAll.length > 0 && !priceLoading && !categoriesLoading) {
       handleApplyFilters(defaultFilters);
     }
-  }, [servicesAll, priceLoading, defaultFilters]);
+  }, [servicesAll, priceLoading, categoriesLoading, defaultFilters]);
   
   // Loading state
-  if (loading || priceLoading) {
+  if (loading || priceLoading || categoriesLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Head>
@@ -106,7 +109,7 @@ export default function ServiceListPage() {
   }
   
   // Error state
-  if (error) {
+  if (error || categoriesError) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Head>
@@ -120,7 +123,7 @@ export default function ServiceListPage() {
           <div className="text-center">
             <div className="bg-red-50 border border-red-200 rounded-lg p-6">
               <h2 className="text-xl font-semibold text-red-800 mb-2">เกิดข้อผิดพลาด</h2>
-              <p className="text-red-600">{error}</p>
+              <p className="text-red-600">{error || categoriesError}</p>
             </div>
           </div>
         </div>
