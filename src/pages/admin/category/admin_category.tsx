@@ -1,4 +1,6 @@
 import { useState } from "react";
+import NavbarAdmin from "@/components/navbaradmin";
+import InputField from "@/components/input/inputField/input_state";
 
 export default function CategoryPage() {
   const [categories, setCategories] = useState([
@@ -10,7 +12,7 @@ export default function CategoryPage() {
   return (
     <div className="flex">
       {/* Sidebar */}
-      <Sidebar />
+      <InputField />
 
       {/* Main Content */}
       <div className="flex-1 bg-gray-100 min-h-screen p-6">
@@ -20,7 +22,7 @@ export default function CategoryPage() {
 
           <div className="flex items-center gap-4">
             {/* SearchBar */}
-            <SearchBar placeholder="ค้นหาหมวดหมู่..." />
+            <NavbarAdmin placeholder="ค้นหาหมวดหมู่..." />
 
             <button className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700">
               เพิ่มหมวดหมู่ +
