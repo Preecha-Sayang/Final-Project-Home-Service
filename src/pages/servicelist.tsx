@@ -2,6 +2,8 @@ import * as React from "react";
 import ServiceCard from "../components/Cards/ServiceCard";
 import { FiltersBar, type FiltersState, type Option } from "@/components/filters";
 import { useServices, type Service } from "../hooks/useServices";
+import { usePriceRange } from "../hooks/usePriceRange";
+import { createDefaultFilters } from "../constants/filters";
 import Navbar from "../components/navbar/navbar";
 import Head from "next/head";
 
@@ -39,10 +41,19 @@ export default function ServiceListPage() {
   // Hook ดึงข้อมูล service ทั้งหมด
   const { services: servicesAll, loading, error } = useServices();
   
+  // Hook ดึง price range จากฐานข้อมูล
+  const { priceRange, loading: priceLoading } = usePriceRange();
+  
   // State management เหมือน service-filters
   const [items, setItems] = React.useState<Service[]>([]);
   const [total, setTotal] = React.useState(0);
   const [isFiltering, setIsFiltering] = React.useState(false);
+  
+  // สร้าง default filters จาก price range
+  const defaultFilters = React.useMemo(() => 
+    createDefaultFilters(priceRange), 
+    [priceRange]
+  );
   
   // Get unique categories for filter dropdown - Dynamic from API
   const categories: Option[] = React.useMemo(() => {
@@ -66,22 +77,15 @@ export default function ServiceListPage() {
     setIsFiltering(false);
   };
   
-  // Initialize with all services when data loads - เหมือน service-filters
+  // Initialize with all services when data loads
   React.useEffect(() => {
-    if (servicesAll.length > 0) {
-      handleApplyFilters({
-        q: "",
-        category: "",
-        price: { min: 0, max: 5000 },
-        sort: "asc",
-        page: 1,
-        pageSize: 12,
-      });
+    if (servicesAll.length > 0 && !priceLoading) {
+      handleApplyFilters(defaultFilters);
     }
-  }, [servicesAll]);
+  }, [servicesAll, priceLoading, defaultFilters]);
   
   // Loading state
-  if (loading) {
+  if (loading || priceLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Head>
@@ -135,38 +139,21 @@ export default function ServiceListPage() {
       <Navbar token="user" fullname="ผู้ใช้" />
 
       {/* Hero Section */}
-      <div className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">รายการบริการ</h1>
-            <p className="text-lg text-gray-600 mb-2">
-              ค้นหาและกรองบริการตามความต้องการของคุณ
-            </p>
-            <p className="text-sm text-gray-500">
-              พบบริการทั้งหมด {servicesAll.length} รายการ
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* เดี๋ยวกลับมาแก้ */}
+
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
+
         {/* Filters Bar */}
         <FiltersBar
           className="mb-6"
           categories={categories}
           onApply={handleApplyFilters}
-          defaultFilters={{
-            q: "",
-            category: "",
-            price: { min: 0, max: 5000 },
-            sort: "asc",
-            page: 1,
-            pageSize: 12,
-          }}
+          defaultFilters={defaultFilters}
         />
 
-        {/* Results - เหมือน service-filters แต่ใช้ ServiceCard */}
+        {/* Results - ServiceCard */}
         {isFiltering ? (
           <div className="py-10 text-center text-gray-600">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
