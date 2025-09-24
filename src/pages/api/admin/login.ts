@@ -1,8 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import pool from "../../../../lib/db";
-import { signAdminAccess } from "../../../../lib/server/jwtAdmin";
+import pool from "@../../../lib/db";
+import { signAdminAccess } from "lib/server/jwtAdmin";
+import bcrypt from "bcryptjs";
 
-// import bcrypt from "bcryptjs";
+
+
 
 export default async function handler(
   req: NextApiRequest,

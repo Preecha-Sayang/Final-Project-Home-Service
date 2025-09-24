@@ -3,24 +3,24 @@ import ServiceCard from "@/components/Cards/ServiceCard";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import Navbar from "@/components/navbar/navbar";
 import Link from "next/link";
-import DropdownUser from "@/components/dropdown/DropdownUser";
+
 
 export default function Home() {
   const services = [
     {
-      imgSrc: "/images/ทำความสะอาดทั่วไป.svg",
+      imgSrc: "/images/ทำความสะอาดทั่วไป.png",
       category: "บริการทั่วไป",
       title: "ทำความสะอาดทั่วไป",
       price: "ค่าบริการประมาณ 500.00 - 1,000.00 ฿",
     },
     {
-      imgSrc: "/images/ล้างแอร์.svg", 
+      imgSrc: "/images/ล้างแอร์.png", 
       category: "บริการทั่วไป",
       title: "ล้างแอร์",
       price: "ค่าบริการประมาณ 500.00 - 1,000.00 ฿",
     },
     {
-      imgSrc: "/images/ซ่อมเครื่องซักผ้า.svg",
+      imgSrc: "/images/ซ่อมเครื่องซักผ้า.png",
       category: "บริการทั่วไป", 
       title: "ซ่อมเครื่องซักผ้า",
       price: "ค่าบริการประมาณ 500.00 ฿",
@@ -53,7 +53,7 @@ export default function Home() {
           </div>
           <div className=" flex justify-end">
             <img 
-              src="/images/technichain.svg" 
+              src="/images/technicain.png" 
               alt="Professional Technician" 
               className="w-[520px] h-[720px] object-contain absolute top-[0px] left-[610px]"
             />
