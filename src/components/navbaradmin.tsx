@@ -1,6 +1,8 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import logo from "@/../public/images/logo.png"
+import icon_logout from "@/../public/images/icon_logout.svg"
 
 interface MenuItem {
   label: string;
@@ -29,10 +31,10 @@ function NavbarAdmin({ menuItems }: NavbarProps) {
     <div className="bg-[var(--blue-950)] w-[240px] h-screen flex flex-col rounded-none">
       {/* Header */}
       <div id="header" className="h-[105px] flex justify-center items-center">
-        <div className="w-[192px] h-[46px] bg-[var(--blue-100)] rounded-xl flex justify-center items-center cursor-pointer"
+        <div className="w-[192px] h-[46px] px-2 bg-[var(--blue-100)] rounded-xl flex justify-center items-center cursor-pointer"
           onClick={() => router.push("/admin/categories")}
         >
-          <Image src="/images/logo.png" alt="logo" width={168} height={30} />
+          <Image src={logo} alt="logo" width={168} height={30} style={{ width: 168, height: 30 }} sizes="168px" priority />
         </div>
       </div>
 
@@ -51,7 +53,7 @@ function NavbarAdmin({ menuItems }: NavbarProps) {
               aria-current={active ? "page" : undefined}
             >
               <div className="px-[24px] py-[15px] flex flex-row items-center">
-                <Image src={item.icon} alt={`${item.label}_icon`} width={24} height={24} />
+                <Image src={item.icon} alt={`${item.label}_icon`} width={24} height={24} style={{ width: 24, height: 24 }} />
                 <span
                   className={[
                     "body5 ml-[16px]",
@@ -71,7 +73,7 @@ function NavbarAdmin({ menuItems }: NavbarProps) {
         className="h-[55px] hover:bg-[var(--blue-500)] cursor-pointer flex items-center px-[24px] mb-[50px]"
         onClick={handleLogout}
       >
-        <Image src="/images/icon_logout.svg" alt="logout_logo" width={24} height={24} />
+        <Image src={icon_logout} alt="logout_logo" width={24} height={24} sizes="24px" style={{ width: 24, height: 24 }} />
         <span className="body5 text-[var(--gray-100)] ml-[16px]">ออกจากระบบ</span>
       </div>
     </div>

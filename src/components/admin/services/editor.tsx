@@ -73,29 +73,22 @@ export default function ServiceEditor({ mode, id }: Props) {
     const patchRow = (rowId: string, p: Partial<SubItem>) => setSubItems(s => s.map(x => x.id === rowId ? { ...x, ...p } : x));
 
     async function handleSubmit() {
-        if (!name.trim()) return alert("กรุณากรอกชื่อบริการ");
-        if (!category.trim()) return alert("กรุณาเลือกหมวดหมู่");
+        if (!name.trim()) { alert("กรุณากรอกชื่อบริการ"); return; }
+        if (!category.trim()) { alert("กรุณาเลือกหมวดหมู่"); return; }
 
         // เดี๋ยวค่อยเอา imageFile ไปอัป Cloudinary แล้วเอา URL มาเซ็ตเป็น imageUrl อีกที **กันลืม
         const body: Partial<ServiceItem> = {
             name: name.trim(),
             category: category.trim(),
-            imageUrl: imageUrl || "", // เมื่อทำอัปโหลดจริง ค่อย set
+            imageUrl: imageUrl || "",
             subItems: subItems.map((x, i) => ({
-                id: x.id, name: x.name.trim(),
+                id: x.id,
+                name: x.name.trim(),
                 unitName: x.unitName.trim(),
                 price: Number(x.price || 0),
                 index: i + 1,
             })),
         };
-
-        useEffect(() => {
-            const onSave = () => {
-                handleSubmit();
-            };
-            window.addEventListener("service-editor:save", onSave);
-            return () => window.removeEventListener("service-editor:save", onSave);
-        }, []);
 
         setSaving(true);
         try {
@@ -110,14 +103,20 @@ export default function ServiceEditor({ mode, id }: Props) {
         } finally { setSaving(false); }
     }
 
+    function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        void handleSubmit();
+    }
+
     return (
-  <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
-    {/* ปุ่มเก่า
-        <div className="mb-5 flex items-center justify-end gap-2"> ... </div>
-    */}
-    {loading ? (
-      <div className="py-16 text-center text-gray-500">Loading…</div>
-    ) : (
+        <form
+            id="service-form"
+            onSubmit={onSubmit}
+            className="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]"
+        >
+            {loading ? (
+                <div className="py-16 text-center text-gray-500">Loading…</div>
+            ) : (
                 <div className="grid gap-6">
                     <InputField
                         label="ชื่อบริการ *"
@@ -140,21 +139,13 @@ export default function ServiceEditor({ mode, id }: Props) {
                         <span className="text-sm font-medium text-[var(--gray-800)]">รูปภาพ</span>
                         {imageUrl && !imageFile ? (
                             <div className="grid gap-2">
-                                {/* ภาพจาก url (mock) ของ next/no-img-element*/}
                                 <img src={imageUrl} alt="" className="h-40 w-full max-w-md rounded-xl object-cover" />
-                                <button
-                                    type="button"
-                                    className="w-max text-sm text-blue-600 hover:underline"
-                                    onClick={() => setImageUrl("")}
-                                >ลบรูปภาพ</button>
+                                <button type="button" className="w-max text-sm text-blue-600 hover:underline" onClick={() => setImageUrl("")}>
+                                    ลบรูปภาพ
+                                </button>
                             </div>
                         ) : (
-                            <ImageUpload
-                                value={imageFile}
-                                onChange={(f) => setImageFile(f)}
-                                label=""
-                                className="max-w-xl"
-                            />
+                            <ImageUpload value={imageFile} onChange={(f) => setImageFile(f)} label="" className="max-w-xl" />
                         )}
                     </div>
 
@@ -172,7 +163,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                     onDragStart={(e) => onDragStart(e, it.id)}
                                     onDragOver={onDragOver}
                                     onDrop={(e) => onDrop(e, it.id)}
-                                    className="grid grid-cols-12 items-center gap-3 rounded-xl border border-gray-200 bg-white p-3"
+                                    className="grid grid-cols-12 items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 cursor-pointer"
                                 >
                                     <div className="col-span-1 flex justify-center text-gray-400">
                                         <GripVertical className="h-4 w-4" />
@@ -184,7 +175,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                             value={it.name}
                                             onChange={(e) => patchRow(it.id, { name: e.target.value })}
                                             validate={(v) => v.trim() ? null : "กรอกชื่อรายการ"}
-                                            validateOn="change"
+                                            validateOn="blur"
                                         />
                                     </div>
 
@@ -194,7 +185,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                             value={it.unitName}
                                             onChange={(e) => patchRow(it.id, { unitName: e.target.value })}
                                             validate={(v) => v.trim() ? null : "กรอกหน่วย"}
-                                            validateOn="change"
+                                            validateOn="blur"
                                         />
                                     </div>
 
@@ -206,17 +197,12 @@ export default function ServiceEditor({ mode, id }: Props) {
                                             inputMode="decimal"
                                             rightIcon={<span className="text-[var(--gray-500)]">฿</span>}
                                             validate={(v) => isNaN(Number(v)) ? "ตัวเลขเท่านั้น" : null}
-                                            validateOn="change"
+                                            validateOn="blur"
                                         />
                                     </div>
 
                                     <div className="col-span-1 flex justify-end">
-                                        <button
-                                            type="button"
-                                            onClick={() => removeRow(it.id)}
-                                            className="rounded-md p-2 text-gray-500 hover:bg-rose-50 hover:text-rose-700"
-                                            title="ลบรายการ"
-                                        >
+                                        <button type="button" onClick={() => removeRow(it.id)} className="rounded-md p-2 text-gray-500 hover:bg-rose-50 hover:text-rose-700 cursor-pointer" title="ลบรายการ">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
@@ -224,16 +210,12 @@ export default function ServiceEditor({ mode, id }: Props) {
                             ))}
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={addRow}
-                            className="mt-1 inline-flex items-center gap-2 self-start rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        >
+                        <button type="button" onClick={addRow} className="mt-1 inline-flex items-center gap-2 self-start rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
                             <Plus className="h-4 w-4" /> เพิ่มรายการ
                         </button>
                     </div>
                 </div>
             )}
-        </div>
+        </form>
     );
 }

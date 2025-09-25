@@ -13,16 +13,18 @@ const fontPrompt = Prompt({
 });
 
 export default function App({ Component, pageProps }: AppProps) {
-  
+
   //admin/** (ยกเว้น /admin/login)
   const router = useRouter();
   const path = router.pathname;
   const inAdmin = path.startsWith("/admin") && path !== "/admin/login";
-  if (inAdmin) { 
+  if (inAdmin) {
     return (
-      <AdminShell>
-        <Component {...pageProps} />
-      </AdminShell>
+      <div className={fontPrompt.className}>
+        <AdminShell>
+          <Component {...pageProps} />
+        </AdminShell>
+      </div >
     );
   }
   //================================^
@@ -30,7 +32,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={fontPrompt.className}>
       <AuthProvider>
-      <Component {...pageProps} />;
+        <Component {...pageProps} />
       </AuthProvider>
     </div>
   );

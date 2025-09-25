@@ -4,7 +4,6 @@ import { getService } from "lib/client/servicesApi";
 import type { ServiceItem } from "@/types/service";
 import Badge from "@/components/admin/services/badge";
 
-import AdminShell from "@/pages/admin/index";
 import BackHeader from "@/components/admin/common/BackHeader";
 
 export default function ServiceDetailPage() {
@@ -36,7 +35,7 @@ export default function ServiceDetailPage() {
                 actions={
                     <button
                         onClick={() => router.push(`/admin/services/${id}/edit`)}
-                        className="h-9 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700"
+                        className="h-9 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700 cursor-pointer"
                     >
                         แก้ไข
                     </button>
