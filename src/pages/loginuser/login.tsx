@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useAuth } from "@/context/AuthContext"; // ✅ import context
 
 interface LoginFormInputs {
   email: string;
@@ -22,6 +23,7 @@ const schema = yup.object().shape({
 
 export default function Login() {
   const router = useRouter();
+  const { login } = useAuth(); // ✅ ดึง login จาก context
 
   const {
     control,
@@ -43,7 +45,8 @@ export default function Login() {
       const result = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("token", result.token);
+        const { accessToken, refreshToken } = result;
+        login(accessToken, refreshToken); // ✅ login ผ่าน context
         router.push("/");
       } else if (res.status === 401) {
         // แสดง error ที่ email และ password พร้อมกัน
@@ -117,5 +120,5 @@ export default function Login() {
         </div>
       </div>
     </>
-  )
+  );
 }
