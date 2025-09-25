@@ -76,12 +76,12 @@ export default function ServiceTable({
                             onDragStart={(e) => onDragStart(e, row.id)}
                             onDragOver={onDragOver}
                             onDrop={(e) => onDrop(e, row.id)}
-                            className="group border-t border-gray-100 text-sm hover:bg-gray-50">
+                            className="group border-t border-[var(--gray-100)] text-sm hover:bg-[var(--gray-100)]">
 
-                            <td className="px-3 py-3 text-gray-600">{row.index}</td>
-                            <td className="px-3 py-3 text-gray-400"><GripVertical className="h-4 w-4 cursor-pointer" /></td>
+                            <td className="px-3 py-3 text-[var(--gray-600)]">{row.index}</td>
+                            <td className="px-3 py-3 text-[var(--gray-400)]"><GripVertical className="h-4 w-4 cursor-pointer" /></td>
 
-                            <td className="px-3 py-3 font-medium text-gray-900">
+                            <td className="px-3 py-3 font-medium text-[var(--gray-900)]">
                                 {onView ? (
                                     <button
                                         type="button"
@@ -96,15 +96,15 @@ export default function ServiceTable({
                             </td>
 
                             <td className="px-3 py-3"><Badge label={row.category} /></td>
-                            <td className="px-3 py-3 text-gray-700">{formatDT(row.createdAt)}</td>
-                            <td className="px-3 py-3 text-gray-700">{formatDT(row.updatedAt)}</td>
+                            <td className="px-3 py-3 text-[var(--gray-700)]">{formatDT(row.createdAt)}</td>
+                            <td className="px-3 py-3 text-[var(--gray-700)]">{formatDT(row.updatedAt)}</td>
                             <td className="px-3 py-3">
                                 <div className="flex items-center justify-center gap-2">
-                                    <button className="rounded-md p-2 text-gray-500 hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
+                                    <button className="rounded-md p-2 text-[var(--gray-500)] hover:bg-rose-50 hover:text-rose-700 cursor-pointer"
                                         title="ลบ" onClick={() => onDelete(row)}>
                                         <Trash2 className="h-4 w-4" />
                                     </button>
-                                    <button className="rounded-md p-2 text-gray-500 hover:bg-blue-50 hover:text-blue-700 cursor-pointer"
+                                    <button className="rounded-md p-2 text-[var(--gray-500)] hover:bg-blue-50 hover:text-[var(--blue-700)] cursor-pointer"
                                         title="แก้ไข" onClick={() => onEdit(row)}>
                                         <Pencil className="h-4 w-4" />
                                     </button>

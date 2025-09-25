@@ -19,15 +19,15 @@ export default function BackHeader({ title, subtitle, backHref, actions, classNa
     };
 
     return (
-        <div className={["w-full bg-white rounded-2xl border border-gray-100 px-5 py-4 mb-6 flex items-center justify-between", className].join(" ")}>
+        <div className={["w-full bg-white rounded-2xl border border-[var(--gray-100)] px-5 py-4 mb-6 flex items-center justify-between", className].join(" ")}>
             <div>
                 <button onClick={goBack} className="flex items-center gap-3 group cursor-pointer" aria-label="ย้อนกลับ">
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-gray-200 group-hover:bg-gray-50">
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[var(--gray-200)]group-hover:bg-[var(--gray-100)]">
                         <ChevronLeft size={18} />
                     </span>
                     <div className="text-left">
-                        {subtitle && <div className="text-xs text-gray-500">{subtitle}</div>}
-                        <div className="text-base font-medium text-gray-900">{title}</div>
+                        {subtitle && <div className="text-xs text-[var(--gray-500)]">{subtitle}</div>}
+                        <div className="text-base font-medium text-[var(--gray-900)]">{title}</div>
                     </div>
                 </button>
             </div>

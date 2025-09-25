@@ -83,18 +83,18 @@ export default function AdminServicesPage() {
 
     return (
         <>
-            <div className="w-full bg-white rounded-2xl border border-gray-100 px-5 py-4 mb-6 flex items-center justify-between">
-                <div className="text-xl font-medium text-gray-900">รายการ</div>
+            <div className="w-full bg-white rounded-2xl border border-[var(--gray-100)] px-5 py-4 mb-6 flex items-center justify-between">
+                <div className="text-xl font-medium text-[var(--gray-900)]">รายการ</div>
                 <div className="flex items-center gap-2">
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="ค้นหาบริการ..."
-                        className="h-9 w-64 rounded-lg border border-gray-300 px-3 text-sm"
+                        className="h-9 w-64 rounded-lg border border-[var(--gray-300)] px-3 text-sm"
                     />
                     <button
                         onClick={() => router.push("/admin/services/new")}
-                        className="h-9 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700 cursor-pointer"
+                        className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
                     >
                         + เพิ่มบริการ
                     </button>

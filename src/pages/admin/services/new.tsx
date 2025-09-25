@@ -6,13 +6,13 @@ const ServiceEditor = dynamic(() => import("@/components/admin/services/editor")
 export default function NewServicePage() {
     const actions = (
         <div className="flex gap-2">
-            <a href="/admin/services" className="h-9 inline-flex items-center rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-800 hover:bg-gray-50 cursor-pointer">
+            <a href="/admin/services" className="h-9 inline-flex items-center rounded-lg border border-[var(--gray-200)] bg-white px-3 text-sm text-[var(--gray-800)] hover:bg-[var(--gray-100)] cursor-pointer">
                 ยกเลิก
             </a>
             <button
                 type="submit"
                 form="service-form"
-                className="h-9 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white hover:bg-blue-700 cursor-pointer"
+                className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
             >
                 สร้าง
             </button> {/*ทำแจ้งเตือน popup*/}

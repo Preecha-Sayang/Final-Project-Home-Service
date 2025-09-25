@@ -112,10 +112,10 @@ export default function ServiceEditor({ mode, id }: Props) {
         <form
             id="service-form"
             onSubmit={onSubmit}
-            className="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]"
+            className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]"
         >
             {loading ? (
-                <div className="py-16 text-center text-gray-500">Loading…</div>
+                <div className="py-16 text-center text-[var(--gray-500)]">Loading…</div>
             ) : (
                 <div className="grid gap-6">
                     <InputField
@@ -140,7 +140,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                         {imageUrl && !imageFile ? (
                             <div className="grid gap-2">
                                 <img src={imageUrl} alt="" className="h-40 w-full max-w-md rounded-xl object-cover" />
-                                <button type="button" className="w-max text-sm text-blue-600 hover:underline" onClick={() => setImageUrl("")}>
+                                <button type="button" className="w-max text-sm text-[var(--blue-600)] hover:underline" onClick={() => setImageUrl("")}>
                                     ลบรูปภาพ
                                 </button>
                             </div>
@@ -149,11 +149,11 @@ export default function ServiceEditor({ mode, id }: Props) {
                         )}
                     </div>
 
-                    <hr className="my-2 border-gray-200" />
+                    <hr className="my-2 border-[var(--gray-200)]" />
 
                     {/* รายการบริการย่อย */}
                     <div className="grid gap-3">
-                        <div className="text-sm font-medium text-gray-800">รายการบริการย่อย</div>
+                        <div className="text-sm font-medium text-[var(--gray-800)]">รายการบริการย่อย</div>
 
                         <div className="grid gap-2">
                             {subItems.map((it) => (
@@ -163,9 +163,9 @@ export default function ServiceEditor({ mode, id }: Props) {
                                     onDragStart={(e) => onDragStart(e, it.id)}
                                     onDragOver={onDragOver}
                                     onDrop={(e) => onDrop(e, it.id)}
-                                    className="grid grid-cols-12 items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 cursor-pointer"
+                                    className="grid grid-cols-12 items-center gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-3 cursor-pointer"
                                 >
-                                    <div className="col-span-1 flex justify-center text-gray-400">
+                                    <div className="col-span-1 flex justify-center text-[var(--gray-400)]">
                                         <GripVertical className="h-4 w-4" />
                                     </div>
 
@@ -202,7 +202,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                     </div>
 
                                     <div className="col-span-1 flex justify-end">
-                                        <button type="button" onClick={() => removeRow(it.id)} className="rounded-md p-2 text-gray-500 hover:bg-rose-50 hover:text-rose-700 cursor-pointer" title="ลบรายการ">
+                                        <button type="button" onClick={() => removeRow(it.id)} className="rounded-md p-2 text-[var(--gray-500)] hover:bg-rose-50 hover:text-rose-700 cursor-pointer" title="ลบรายการ">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
@@ -210,7 +210,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                             ))}
                         </div>
 
-                        <button type="button" onClick={addRow} className="mt-1 inline-flex items-center gap-2 self-start rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
+                        <button type="button" onClick={addRow} className="mt-1 inline-flex items-center gap-2 self-start rounded-lg border border-[var(--gray-300)] px-3 py-2 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer">
                             <Plus className="h-4 w-4" /> เพิ่มรายการ
                         </button>
                     </div>
