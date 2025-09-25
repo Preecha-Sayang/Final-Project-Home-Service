@@ -1,5 +1,4 @@
 // ลำดับ | (ไอคอนลาก) | ชื่อบริการ | หมวดหมู่ | สร้างเมื่อ | แก้ไขล่าสุด | Action
-import Toolbar from "@/components/admin/services/toolbar";
 import ServiceTable from "@/components/admin/services/service_table";
 import { ServiceItem } from "@/types/service";
 import { deleteService, listServices, reorderServices } from "lib/client/servicesApi";
@@ -7,40 +6,37 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
 
-import AdminShell from "@/pages/admin/index";
-import BackHeader from "@/components/admin/common/BackHeader";
-
 // === การป้องกันหน้า /admin ===
-// import type { GetServerSideProps } from "next";
-// import nookies from "nookies";
-// import jwt from "jsonwebtoken";
+import type { GetServerSideProps } from "next";
+import nookies from "nookies";
+import jwt from "jsonwebtoken";
 
-// type AdminJwt = { adminId: string; role: "superadmin" | "manager" | "staff"; email?: string };
+type AdminJwt = { adminId: string; role: "superadmin" | "manager" | "staff"; email?: string };
 
-// export const getServerSideProps: GetServerSideProps = async (ctx) => {
-//     const { admin_token } = nookies.get(ctx); // อ่านคุกกี้ชื่อ admin_token
-//     const secret = process.env.JWT_SECRET;
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+    const { admin_token } = nookies.get(ctx); // อ่านคุกกี้ชื่อ admin_token
+    const secret = process.env.JWT_SECRET;
 
-//     // ไม่มี token หรือไม่ได้ตั้ง secret -> เด้งไป login
-//     if (!admin_token || !secret) {
-//         return { redirect: { destination: "/admin/login", permanent: false } };
-//     }
+    // ไม่มี token หรือไม่ได้ตั้ง secret -> เด้งไป login
+    if (!admin_token || !secret) {
+        return { redirect: { destination: "/admin/login", permanent: false } };
+    }
 
-//     try {
-//         // verify ต้องเป็น string เสมอ
-//         const payload = jwt.verify(admin_token as string, secret, {
-//             algorithms: ["HS256"],
-//             issuer: process.env.JWT_ISSUER || "homeservice-app",
-//             audience: process.env.JWT_AUD || "homeservice-admins",
-//         }) as AdminJwt;
+    try {
+        // verify ต้องเป็น string เสมอ
+        const payload = jwt.verify(admin_token as string, secret, {
+            algorithms: ["HS256"],
+            issuer: process.env.JWT_ISSUER || "homeservice-app",
+            audience: process.env.JWT_AUD || "homeservice-admins",
+        }) as AdminJwt;
 
-//         // จะส่งข้อมูล admin ลง props ก็ได้ (ถ้าหน้าต้องใช้)
-//         return { props: { admin: payload } };
-//     } catch {
-//         // หมดอายุ/ปลอม -> เด้ง
-//         return { redirect: { destination: "/admin/login", permanent: false } };
-//     }
-// };
+        // จะส่งข้อมูล admin ลง props ก็ได้ (ถ้าหน้าต้องใช้)
+        return { props: { admin: payload } };
+    } catch {
+        // หมดอายุ/ปลอม -> เด้ง
+        return { redirect: { destination: "/admin/login", permanent: false } };
+    }
+};
 // ^=== การป้องกันหน้า /admin ===^
 
 export default function AdminServicesPage() {
@@ -86,21 +82,31 @@ export default function AdminServicesPage() {
     }
 
     return (
-        <AdminShell>
-            <BackHeader title="บริการ" subtitle="รายการ" backHref="/admin/categories" />
-            <div className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
-                <Toolbar
-                    search={search}
-                    onSearchChange={setSearch}
-                    // onCreate={() => alert("'เพิ่มบริการ'")}
-                    onCreate={() => router.push("/admin/services/new")}
-                />
+        <>
+            <div className="w-full bg-white rounded-2xl border border-[var(--gray-100)] px-5 py-4 mb-6 flex items-center justify-between">
+                <div className="text-xl font-medium text-[var(--gray-900)]">รายการ</div>
+                <div className="flex items-center gap-2">
+                    <input
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="ค้นหาบริการ..."
+                        className="h-9 w-64 rounded-lg border border-[var(--gray-300)] px-3 text-sm"
+                    />
+                    <button
+                        onClick={() => router.push("/admin/services/new")}
+                        className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
+                    >
+                        + เพิ่มบริการ
+                    </button>
+                </div>
+            </div>
 
+
+            <div className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
                 <ServiceTable
                     items={filtered}
                     loading={loading}
                     search={search}
-                    // onEdit={(item) => alert(`แก้ไข ${item.name}`)}
                     onEdit={(item) => router.push(`/admin/services/${item.id}/edit`)}
                     onDelete={(item) => setConfirmDel({ open: true, item, loading: false })}
                     onReorder={handleReorder}
@@ -121,6 +127,6 @@ export default function AdminServicesPage() {
                     setConfirmDel({ open: false, item: undefined, loading: false });
                 }}
             />
-        </AdminShell>
+        </>
     );
 }

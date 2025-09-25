@@ -1,10 +1,9 @@
 import InputField from "@/components/input/inputField/input_state";
 import ButtonPrimary from "@/components/button/buttonprimary";
-import ButtonGhost from "@/components/button/buttonghost";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import logo_img from "../../../public/images/logo.png";
+import logo from "../../../public/images/logo.png";
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -46,7 +45,7 @@ export default function AdminLogin() {
   return (
     <>
       <div className="w-full h-full flex flex-wrap justify-center items-center mt-28">
-        <Image src={logo_img} alt="HomeServices" className="" />
+        <Image src={logo} alt="HomeServices" className="" width={447.67} height={79} priority sizes="447.67px" />
         <div className="w-full h-full flex justify-center items-center mt-10">
           <div className="w-[550px] h-[450px] border rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
             <p className="font-bold text-[32px] text-[var(--blue-950)] mb-6">
