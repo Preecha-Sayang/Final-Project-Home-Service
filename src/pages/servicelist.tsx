@@ -7,6 +7,7 @@ import { useCategories } from "../hooks/useCategories";
 import { createDefaultFilters } from "../constants/filters";
 import Navbar from "../components/navbar/navbar";
 import Head from "next/head";
+import Image from "next/image";
 
 // Function to filter services based on filter state - ปรับปรุงให้เหมือน service-filters
 function filterServices(services: Service[], filters: FiltersState): Service[] {
@@ -155,7 +156,34 @@ export default function ServiceListPage() {
       <Navbar token="user" fullname="ผู้ใช้" />
 
       {/* Hero Section */}
-      {/* เดี๋ยวกลับมาแก้ */}
+      <div className="relative h-[240px] md:h-[350px] overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src="/images/service_bg_banner.jpg"
+            alt="บริการของเรา"
+            className="w-full h-full object-cover filter blur-xs"
+            width={144}
+            height={240}
+          />
+        </div>
+        
+        {/* Dark Blue Overlay */}
+        <div className="absolute inset-0 bg-blue-900" style={{ backgroundColor: 'rgba(0, 0, 128, 0.4)' }}></div>
+        
+        {/* Content */}
+        <div className="relative z-10 h-full flex items-center justify-center">
+          <div className="text-center text-white px-4 max-w-4xl mx-auto">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+              บริการของเรา
+            </h1>
+            <p className="text-lg md:text-xl lg:text-2xl font-medium leading-relaxed opacity-90">
+              ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน และอื่น ๆ อีกมากมาย<br />
+              โดยพนักงานแม่บ้าน และช่างมืออาชีพ
+            </p>
+          </div>
+        </div>
+      </div>
 
 
       {/* Main Content */}
@@ -186,11 +214,11 @@ export default function ServiceListPage() {
               <div className="text-center py-12">
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
                   <h2 className="text-xl font-semibold text-gray-700 mb-2">ไม่พบบริการ</h2>
-                  <p className="text-gray-500">ลองปรับเปลี่ยนเงื่อนไขการค้นหาดูครับ</p>
+                  <p className="text-gray-500">กรุณาปรับเปลี่ยนเงื่อนไขการค้นหา</p>
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {items.map((service) => (
                   <ServiceCard
                     key={service.service_id}

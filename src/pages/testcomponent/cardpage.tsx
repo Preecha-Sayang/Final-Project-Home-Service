@@ -1,15 +1,8 @@
-<<<<<<< HEAD:src/pages/testcomponent/cardpage.tsx
-import ServiceCard from "../../components/Cards/ServiceCard";
-import BookingCard from "../../components/Cards/BookingCard";
-=======
-import ServiceCard from "../components/Cards/ServiceCard";
-import OrderCard from "../components/Cards/OrderCard";
-import RequestCard from "../components/Cards/RequestCard";
-import PopularService from "../components/PopularServices";
-import { CldImage } from 'next-cloudinary';
 
+import OrderCard from "../../components/Cards/OrderCard";
+import RequestCard from "../../components/Cards/RequestCard";
+import PopularService from "../../components/PopularServices";
 
->>>>>>> 9d22136 (Refactor: Update API endpoint and add services data fetching):src/pages/cardpage.tsx
 
 export default function CardPage() {
   return (
