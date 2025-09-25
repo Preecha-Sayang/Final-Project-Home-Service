@@ -26,6 +26,7 @@ type Props = {
     defaultFilters?: Partial<FiltersState>;
     onApply: (filters: FiltersState) => void;     // ยิงกลับให้เพจเอาไป fetch เอง
     className?: string;
+    selectedCategory?: string;  // รับ category ที่เลือกจากภายนอก
 };
 
 export default function FiltersBar({
@@ -33,6 +34,7 @@ export default function FiltersBar({
     defaultFilters,
     onApply,
     className,
+    selectedCategory,
 }: Props) {
     // Hook ดึง price range จากฐานข้อมูล
     const { priceRange, loading: priceLoading } = usePriceRange();
@@ -51,6 +53,13 @@ export default function FiltersBar({
             setPrice(priceRange);
         }
     }, [priceRange, priceLoading, defaultFilters?.price]);
+
+    // อัปเดต category state เมื่อ selectedCategory เปลี่ยนจากภายนอก
+    React.useEffect(() => {
+        if (selectedCategory !== undefined) {
+            setCategory(selectedCategory);
+        }
+    }, [selectedCategory]);
 
     const apply = () => {
         onApply({

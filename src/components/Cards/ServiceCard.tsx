@@ -9,9 +9,10 @@ interface ServiceCardProps {
   price: string;
   serviceId?: number;
   description?: string;
+  onCategoryClick?: (category: string) => void;
 }
 
-function ServiceCard({ imgSrc, category, title, price, serviceId, description }: ServiceCardProps) {
+function ServiceCard({ imgSrc, category, title, price, serviceId, description, onCategoryClick }: ServiceCardProps) {
   const router = useRouter();
 
   const handleAction = () => {
@@ -23,6 +24,12 @@ function ServiceCard({ imgSrc, category, title, price, serviceId, description }:
   const handleMoreInfo = () => {
     if (description) {
       alert(description);
+    }
+  };
+
+  const handleCategoryClick = () => {
+    if (onCategoryClick) {
+      onCategoryClick(category);
     }
   };
   return (
@@ -44,7 +51,11 @@ function ServiceCard({ imgSrc, category, title, price, serviceId, description }:
         <div className="flex flex-col gap-2">
          
           {/* Category Tag */}
-          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-md w-fit">
+          <span 
+            className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-sm font-semibold rounded-md w-fit cursor-pointer hover:bg-blue-200 transition-colors duration-200"
+            onClick={handleCategoryClick}
+            title={`คลิกเพื่อค้นหาบริการในหมวดหมู่ ${category}`}
+          >
             {category}
           </span>
 

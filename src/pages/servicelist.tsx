@@ -52,6 +52,7 @@ export default function ServiceListPage() {
   const [items, setItems] = React.useState<Service[]>([]);
   const [total, setTotal] = React.useState(0);
   const [isFiltering, setIsFiltering] = React.useState(false);
+  const [selectedCategory, setSelectedCategory] = React.useState<string>("");
   
   // สร้าง default filters จาก price range
   const defaultFilters = React.useMemo(() => 
@@ -78,6 +79,18 @@ export default function ServiceListPage() {
     setItems(filtered);
     setTotal(filtered.length);
     setIsFiltering(false);
+  };
+
+  // Handle category selection from ServiceCard
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategory(category);
+    
+    // Apply filter immediately with the selected category
+    const newFilters = {
+      ...defaultFilters,
+      category: category,
+    };
+    handleApplyFilters(newFilters);
   };
   
   // Initialize with all services when data loads
@@ -154,6 +167,7 @@ export default function ServiceListPage() {
           categories={categories}
           onApply={handleApplyFilters}
           defaultFilters={defaultFilters}
+          selectedCategory={selectedCategory}
         />
 
         {/* Results - ServiceCard */}
@@ -186,6 +200,7 @@ export default function ServiceListPage() {
                     price={service.price}
                     serviceId={service.service_id}
                     description={service.description}
+                    onCategoryClick={handleCategorySelect}
                   />
                 ))}
               </div>
