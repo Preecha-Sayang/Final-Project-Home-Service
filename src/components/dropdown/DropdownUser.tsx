@@ -17,7 +17,7 @@ export default function DropdownUser({ imageURL, fullname }: DropdownUserProps) 
     { label: "ข้อมูลผู้ใช้งาน", icon: <User size={18} />, href: "#" },
     { label: "รายการคำสั่งซ่อม", icon: <List size={18} />, href: "#" },
     { label: "ประวัติการซ่อม", icon: <Clock size={18} />, href: "#" },
-    { label: "ออกจากระบบ", icon: <LogOut size={18} />, href: "/home_pages" },
+    { label: "ออกจากระบบ", icon: <LogOut size={18} />, href: "/login/logout" },
   ];
 
   return (
