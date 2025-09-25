@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function Footer() {
     return (
@@ -6,6 +7,7 @@ export function Footer() {
         <div className="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row md:justify-between md:items-center gap-6">
           
           {/* logo */}
+          <Link href="/home_pages" className="cursor-pointer">
           <div className="flex items-center gap-2">
             <Image src="/Logo.svg"
               alt="HomeService Logo"
@@ -13,7 +15,8 @@ export function Footer() {
               height={36} 
               />
               <h2 className="text-[var(--blue-600)] font-semibold">HomeService</h2> 
-          </div>
+            </div>
+            </Link> 
   
           {/* info */}
           <div className="">

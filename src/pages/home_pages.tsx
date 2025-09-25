@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
 
-      <Navbar token="mytoken" fullname="Anuna" />
+      <Navbar />
       
 
       {/* Hero Section */}
@@ -55,7 +55,7 @@ export default function Home() {
             <img 
               src="/images/technicain.png" 
               alt="Professional Technician" 
-              className="w-[520px] h-[720px] object-contain absolute top-[0px] left-[610px]"
+              className="w-[520px] h-auto object-contain absolute top-[24px] left-[610px]"
             />
           </div>
         </div>
@@ -131,3 +131,4 @@ export default function Home() {
    </div>
   );
 }
+
