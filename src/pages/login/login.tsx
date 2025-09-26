@@ -43,7 +43,7 @@ function Login() {
 
   return (
     <>
-      <Navbar token="sdfs" fullname="sdfs" />
+      <Navbar />
       <div className="w-full h-full flex justify-center items-center mt-12">
         <div className="w-[610px] border rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
           <span className="font-bold text-[32px] text-[var(--blue-950)] mb-6">
