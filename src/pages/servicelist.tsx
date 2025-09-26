@@ -186,56 +186,63 @@ export default function ServiceListPage() {
       </div>
 
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+{/* Main Content */}
+<div className="container mx-auto px-4 py-8">
 
-        {/* Filters Bar */}
-        <FiltersBar
-          className="mb-6"
-          categories={categories}
-          onApply={handleApplyFilters}
-          defaultFilters={defaultFilters}
-          selectedCategory={selectedCategory}
-        />
+  {/* Filters Bar */}
+  <div className="flex justify-center mb-6">
+    <FiltersBar
+      categories={categories}
+      onApply={handleApplyFilters}
+      defaultFilters={defaultFilters}
+      selectedCategory={selectedCategory}
+    />
+  </div>
 
-        {/* Results - ServiceCard */}
-        {isFiltering ? (
-          <div className="py-10 text-center text-gray-600">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2">กำลังกรองข้อมูล...</p>
-          </div>
-        ) : (
-          <>
-            <div className="mb-6 text-sm text-gray-600">
-              แสดงผล {total} รายการ
-            </div>
-            
-            {items.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
-                  <h2 className="text-xl font-semibold text-gray-700 mb-2">ไม่พบบริการ</h2>
-                  <p className="text-gray-500">กรุณาปรับเปลี่ยนเงื่อนไขการค้นหา</p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items.map((service) => (
-                  <ServiceCard
-                    key={service.service_id}
-                    imgSrc={service.image_url}
-                    category={service.category}
-                    title={service.servicename}
-                    price={service.price}
-                    serviceId={service.service_id}
-                    description={service.description}
-                    onCategoryClick={handleCategorySelect}
-                  />
-                ))}
-              </div>
-            )}
-          </>
-        )}
+  
+
+  {/* Results - Service Cards */}
+  {isFiltering ? (
+    <div className="py-10 text-center text-gray-600">
+      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p className="mt-2">กำลังกรองข้อมูล...</p>
+    </div>
+  ) : (
+    <>
+      <div className="md:ml-35 mb-6 text-sm text-gray-600">
+        <span>แสดงผล {total} รายการ</span>
       </div>
+
+      {items.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8">
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">ไม่พบบริการ</h2>
+            <p className="text-gray-500">กรุณาปรับเปลี่ยนเงื่อนไขการค้นหา</p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.map((service) => (
+              <ServiceCard
+                key={service.service_id}
+                imgSrc={service.image_url}
+                category={service.category}
+                title={service.servicename}
+                price={service.price}
+                serviceId={service.service_id}
+                description={service.description}
+                onCategoryClick={handleCategorySelect}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
+  )}
+</div>
+
+
 
       {/* Footer spacing */}
       <div className="h-16"></div>
