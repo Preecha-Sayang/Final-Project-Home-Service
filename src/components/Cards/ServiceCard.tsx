@@ -91,7 +91,7 @@ function ServiceCard({ imgSrc, category, title, price, serviceId, description, o
 export default ServiceCard;
 
 /* ----------------------------------------------------
-  📘 วิธีใช้งาน ServiceCard (ตัวอย่างสั้น ๆ)
+  วิธีใช้งาน ServiceCard
 
   1) Import component
      import ServiceCard from "../components/Cards/ServiceCard";
@@ -112,8 +112,4 @@ export default ServiceCard;
         />
      ))}
 
-  ✅ Best Practice:
-  - ServiceCard จัดการ navigation เอง
-  - ไม่ต้องส่ง onAction/onMoreInfo callbacks
-  - ใช้ serviceId และ description เป็น props
 ---------------------------------------------------- */

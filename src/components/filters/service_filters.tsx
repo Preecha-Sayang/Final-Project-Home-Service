@@ -96,9 +96,8 @@ export default function FiltersBar({
         <div className={className}>
             {/* เดสก์ท็อป = บรรทัดเดียว / มือถือ = wrap ได้เอง */}
             <div
-                className={cn(
+                className={cn( 
                     "flex flex-wrap md:flex-nowrap items-end gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-4"
-                    // "flex flex-wrap md:flex-nowrap items-center gap-0 rounded-xl border border-[var(--gray-200)] bg-white p-4"
                 )}
             >
                 {/* Search (ขยายกินที่) */}
@@ -205,7 +204,7 @@ export default function FiltersBar({
                             { label: "บริการแนะนำ", value: "recommended" },
                             { label: "บริการยอดนิยม", value: "popular" },
                             { label: "ตามตัวอักษร (ก-ฮ)", value: "asc" },
-                            { label: "ตามตัวอักษร ฮ-ก)", value: "desc" },
+                            { label: "ตามตัวอักษร (ฮ-ก)", value: "desc" },
                         ]}
                     />
                 </div>

@@ -5,11 +5,11 @@ import { useServices, type Service } from "../hooks/useServices";
 import { usePriceRange } from "../hooks/usePriceRange";
 import { useCategories } from "../hooks/useCategories";
 import { createDefaultFilters } from "../constants/filters";
+import { Footer } from "../components/footer";
 import Navbar from "../components/navbar/navbar";
 import Head from "next/head";
 import Image from "next/image";
 
-// Function to filter services based on filter state - ปรับปรุงให้เหมือน service-filters
 function filterServices(services: Service[], filters: FiltersState): Service[] {
   let filtered = services.filter((service) => {
     // Search by service name
@@ -20,7 +20,7 @@ function filterServices(services: Service[], filters: FiltersState): Service[] {
     const matchesCategory = !filters.category || 
       service.category === filters.category;
     
-    // Filter by price range - แก้ไขให้ถูกต้อง
+    // Filter by price range
     const matchesPrice = service.min_price <= filters.price.max && 
       service.max_price >= filters.price.min;
     
@@ -49,7 +49,7 @@ export default function ServiceListPage() {
   // Hook ดึง categories จาก API
   const { categories: categoriesData, loading: categoriesLoading, error: categoriesError } = useCategories();
   
-  // State management เหมือน service-filters
+  // State management
   const [items, setItems] = React.useState<Service[]>([]);
   const [total, setTotal] = React.useState(0);
   const [isFiltering, setIsFiltering] = React.useState(false);
@@ -69,11 +69,10 @@ export default function ServiceListPage() {
     }));
   }, [categoriesData]);
   
-  // Handle filter application - เหมือน service-filters
+  // Handle filter application
   const handleApplyFilters = async (filters: FiltersState) => {
     setIsFiltering(true);
     
-    // Simulate API delay for better UX
     await new Promise(resolve => setTimeout(resolve, 300));
     
     const filtered = filterServices(servicesAll, filters);
@@ -199,8 +198,6 @@ export default function ServiceListPage() {
     />
   </div>
 
-  
-
   {/* Results - Service Cards */}
   {isFiltering ? (
     <div className="py-10 text-center text-gray-600">
@@ -245,7 +242,8 @@ export default function ServiceListPage() {
 
 
       {/* Footer spacing */}
-      <div className="h-16"></div>
+      {/* <div className="h-16"></div> */}
+      <Footer />
     </div>
   );
 }
