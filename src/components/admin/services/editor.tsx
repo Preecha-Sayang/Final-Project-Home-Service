@@ -1,4 +1,3 @@
-//ส่วน แก้ไข/สร้างบริการ
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
@@ -7,51 +6,66 @@ import InputField from "@/components/input/inputField/input_state";
 import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
 import ImageUpload from "@/components/input/inputImageUpload/image_upload";
 
-import type { ServiceItem, SubItem } from "@/types/service";
-import { createService, getService, updateService } from "lib/client/servicesApi";
+import type { SubItem } from "@/types/service";
+import { getService } from "lib/client/servicesApi";
+
+import { Pool } from "pg";
 
 type Mode = "create" | "edit";
 type Props = { mode: Mode; id?: string };
 
+declare global {
+  var pgPool: Pool | undefined;
+}
+
 // (mock)
 const CATEGORY_OPTIONS: Option[] = [
-    { label: "บริการทั่วไป", value: "บริการทั่วไป" },
-    { label: "บริการห้องครัว", value: "บริการห้องครัว" },
-    { label: "บริการห้องน้ำ", value: "บริการห้องน้ำ" },
+    { label: "บริการทั่วไป", value: "1" },
+    { label: "บริการห้องครัว", value: "4" },
+    { label: "บริการห้องน้ำ", value: "5" },
 ];
 
 function emptySub(i: number): SubItem {
     return { id: `tmp-${Date.now()}-${i}`, name: "", unitName: "", price: 0, index: i + 1 };
 }
+
 export default function ServiceEditor({ mode, id }: Props) {
     const router = useRouter();
+
     const [loading, setLoading] = useState(mode === "edit");
     const [saving, setSaving] = useState(false);
 
     const [name, setName] = useState("");
-    const [category, setCategory] = useState<string>("");
-    const [imageFile, setImageFile] = useState<File | null>(null);   // mock
-    const [imageUrl, setImageUrl] = useState<string>("");            // mock preview จาก DB (ตอนแก้ไข)
+    const [categoryId, setCategoryId] = useState<number>(1);
+
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageUrl, setImageUrl] = useState<string>(""); // preview ตอนแก้ไข (url เดิมจาก DB)
+
     const [subItems, setSubItems] = useState<SubItem[]>([emptySub(0), emptySub(1)]);
 
-    // สำหรับแก้ไข
+    // โหลดข้อมูลเดิม (โหมดแก้ไข)
     useEffect(() => {
         if (mode !== "edit" || !id) return;
         (async () => {
             setLoading(true);
             try {
-                const s = await getService(id);
-                setName(s.name);
-                setCategory(s.category);
-                setImageUrl(s.imageUrl ?? "");
+                const s: any = await getService(id);
+                setName(s.name ?? s.servicename ?? "");
+                setCategoryId(Number(s.category_id ?? 1));
+                setImageUrl(s.imageUrl ?? s.image_url ?? "");
                 setSubItems(
-                    (s.subItems ?? []).slice().sort((a, b) => a.index - b.index).map((x, i) => ({ ...x, index: i + 1 }))
+                    (s.subItems ?? [])
+                        .slice()
+                        .sort((a: SubItem, b: SubItem) => a.index - b.index)
+                        .map((x: SubItem, i: number) => ({ ...x, index: i + 1 }))
                 );
-            } finally { setLoading(false); }
+            } finally {
+                setLoading(false);
+            }
         })();
     }, [mode, id]);
 
-    // สำหรับลากเปลี่ยนรายการย่อย (drag / add / delete / edit)
+    // --- DnD สำหรับรายการย่อย
     const dragSrc = useRef<string | null>(null);
     function onDragStart(e: React.DragEvent<HTMLDivElement>, sid: string) {
         dragSrc.current = sid; e.dataTransfer.effectAllowed = "move";
@@ -72,35 +86,38 @@ export default function ServiceEditor({ mode, id }: Props) {
     const removeRow = (rowId: string) => setSubItems(s => s.filter(x => x.id !== rowId).map((x, i) => ({ ...x, index: i + 1 })));
     const patchRow = (rowId: string, p: Partial<SubItem>) => setSubItems(s => s.map(x => x.id === rowId ? { ...x, ...p } : x));
 
+    // ยิงไป API (POST/PATCH) พร้อมไฟล์ (อัป Cloudinary ตอนกดปุ่ม)
     async function handleSubmit() {
         if (!name.trim()) { alert("กรุณากรอกชื่อบริการ"); return; }
-        if (!category.trim()) { alert("กรุณาเลือกหมวดหมู่"); return; }
+        if (!categoryId) { alert("กรุณาเลือกหมวดหมู่"); return; }
 
-        // เดี๋ยวค่อยเอา imageFile ไปอัป Cloudinary แล้วเอา URL มาเซ็ตเป็น imageUrl อีกที **กันลืม
-        const body: Partial<ServiceItem> = {
-            name: name.trim(),
-            category: category.trim(),
-            imageUrl: imageUrl || "",
-            subItems: subItems.map((x, i) => ({
-                id: x.id,
-                name: x.name.trim(),
-                unitName: x.unitName.trim(),
-                price: Number(x.price || 0),
-                index: i + 1,
-            })),
-        };
+        const fd = new FormData();
+        fd.append("servicename", name.trim());
+        fd.append("category_id", String(categoryId));
+        fd.append("admin_id", "1");
+        fd.append("subItems", JSON.stringify(subItems));
+        if (!imageFile && imageUrl) fd.append("image_url", imageUrl);
+        if (imageFile) fd.append("file", imageFile);
 
         setSaving(true);
         try {
             if (mode === "create") {
-                const created = await createService(body);
-                router.push(`/admin/services/${created.id}`);
+                const res = await fetch("/api/services", { method: "POST", body: fd });
+                const data = await res.json();
+                if (!res.ok || !data?.ok) throw new Error(data?.message || "Create failed");
+                router.push(`/admin/services/${data.service.service_id}/edit`);
             } else {
                 if (!id) return;
-                const updated = await updateService(id, body);
-                router.push(`/admin/services/${updated.id}`);
+                const res = await fetch(`/api/services/${id}`, { method: "PATCH", body: fd });
+                const data = await res.json();
+                if (!res.ok || !data?.ok) throw new Error(data?.message || "Update failed");
+                router.push(`/admin/services/${data.service.service_id}/edit`);
             }
-        } finally { setSaving(false); }
+        } catch (e: any) {
+            alert(e.message);
+        } finally {
+            setSaving(false);
+        }
     }
 
     function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -123,25 +140,26 @@ export default function ServiceEditor({ mode, id }: Props) {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="เช่น ล้างแอร์"
-                        validate={(v) => v.trim() ? null : "กรุณากรอกชื่อบริการ"}
+                        validate={(v) => (v.trim() ? null : "กรุณากรอกชื่อบริการ")}
                     />
 
                     <InputDropdown
-                        label="หมวดหมู่ *"
-                        value={category}
-                        onChange={setCategory}
+                        label="หมวดหมู่*"
+                        value={String(categoryId)}
+                        onChange={(v) => setCategoryId(Number(v))}
                         options={CATEGORY_OPTIONS}
                         placeholder="เลือกหมวดหมู่"
                     />
 
-                    {/* รูปภาพ (mock upload) */}
+                    {/* รูปภาพ */}
                     <div className="grid gap-2">
                         <span className="text-sm font-medium text-[var(--gray-800)]">รูปภาพ</span>
                         {imageUrl && !imageFile ? (
                             <div className="grid gap-2">
                                 <img src={imageUrl} alt="" className="h-40 w-full max-w-md rounded-xl object-cover" />
+                                {/* ปุ่มนี้แค่เอารูปเดิมออกจาก preview เพื่อเลือกใหม่ การลบของเก่าที่ Cloudinary จะเกิดตอน PATCH หากแนบไฟล์ใหม่ */}
                                 <button type="button" className="w-max text-sm text-[var(--blue-600)] hover:underline" onClick={() => setImageUrl("")}>
-                                    ลบรูปภาพ
+                                    เลือกรูปใหม่
                                 </button>
                             </div>
                         ) : (
@@ -151,10 +169,9 @@ export default function ServiceEditor({ mode, id }: Props) {
 
                     <hr className="my-2 border-[var(--gray-200)]" />
 
-                    {/* รายการบริการย่อย */}
+                    {/* รายการบริการย่อย (ยังไม่ผูก DB ในตัวอย่างนี้) */}
                     <div className="grid gap-3">
                         <div className="text-sm font-medium text-[var(--gray-800)]">รายการบริการย่อย</div>
-
                         <div className="grid gap-2">
                             {subItems.map((it) => (
                                 <div
@@ -213,6 +230,10 @@ export default function ServiceEditor({ mode, id }: Props) {
                         <button type="button" onClick={addRow} className="mt-1 inline-flex items-center gap-2 self-start rounded-lg border border-[var(--gray-300)] px-3 py-2 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer">
                             <Plus className="h-4 w-4" /> เพิ่มรายการ
                         </button>
+                    </div>
+
+                    <div className="text-right text-sm text-[var(--gray-500)]">
+                        {saving ? "กำลังบันทึก..." : ""}
                     </div>
                 </div>
             )}

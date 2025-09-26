@@ -7,36 +7,36 @@ import { useRouter } from "next/router";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
 
 // === การป้องกันหน้า /admin ===
-import type { GetServerSideProps } from "next";
-import nookies from "nookies";
-import jwt from "jsonwebtoken";
+// import type { GetServerSideProps } from "next";
+// import nookies from "nookies";
+// import jwt from "jsonwebtoken";
 
-type AdminJwt = { adminId: string; role: "superadmin" | "manager" | "staff"; email?: string };
+// type AdminJwt = { adminId: string; role: "superadmin" | "manager" | "staff"; email?: string };
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-    const { admin_token } = nookies.get(ctx); // อ่านคุกกี้ชื่อ admin_token
-    const secret = process.env.JWT_SECRET;
+// export const getServerSideProps: GetServerSideProps = async (ctx) => {
+//     const { admin_token } = nookies.get(ctx); // อ่านคุกกี้ชื่อ admin_token
+//     const secret = process.env.JWT_SECRET;
 
-    // ไม่มี token หรือไม่ได้ตั้ง secret -> เด้งไป login
-    if (!admin_token || !secret) {
-        return { redirect: { destination: "/admin/login", permanent: false } };
-    }
+//     // ไม่มี token หรือไม่ได้ตั้ง secret -> เด้งไป login
+//     if (!admin_token || !secret) {
+//         return { redirect: { destination: "/admin/login", permanent: false } };
+//     }
 
-    try {
-        // verify ต้องเป็น string เสมอ
-        const payload = jwt.verify(admin_token as string, secret, {
-            algorithms: ["HS256"],
-            issuer: process.env.JWT_ISSUER || "homeservice-app",
-            audience: process.env.JWT_AUD || "homeservice-admins",
-        }) as AdminJwt;
+//     try {
+//         // verify ต้องเป็น string เสมอ
+//         const payload = jwt.verify(admin_token as string, secret, {
+//             algorithms: ["HS256"],
+//             issuer: process.env.JWT_ISSUER || "homeservice-app",
+//             audience: process.env.JWT_AUD || "homeservice-admins",
+//         }) as AdminJwt;
 
-        // จะส่งข้อมูล admin ลง props ก็ได้ (ถ้าหน้าต้องใช้)
-        return { props: { admin: payload } };
-    } catch {
-        // หมดอายุ/ปลอม -> เด้ง
-        return { redirect: { destination: "/admin/login", permanent: false } };
-    }
-};
+//         // จะส่งข้อมูล admin ลง props ก็ได้ (ถ้าหน้าต้องใช้)
+//         return { props: { admin: payload } };
+//     } catch {
+//         // หมดอายุ/ปลอม -> เด้ง
+//         return { redirect: { destination: "/admin/login", permanent: false } };
+//     }
+// };
 // ^=== การป้องกันหน้า /admin ===^
 
 export default function AdminServicesPage() {

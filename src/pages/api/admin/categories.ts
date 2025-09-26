@@ -1,30 +1,25 @@
-// จัดการ หมวดหมู่หลัก
+// ดึง หมวดหมู่มาแสดงเป็นตัวเลือก
 import type { NextApiRequest, NextApiResponse } from "next";
-import pool from "@../../../lib/db";
-import { withAdminAuth, AdminJwt } from "lib/server/withAdminAuth";
+import pool from "lib/db";
 
-type ReqWithAdmin = NextApiRequest & { admin: AdminJwt };
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== "GET") return res.status(405).end();
 
-async function handler(req: ReqWithAdmin, res: NextApiResponse) {
-    if (req.method !== "POST") return res.status(405).end();
+    try {
+        const { rows } = await pool.query(
+            `SELECT category_id AS value, name AS label 
+                FROM service_categories 
+                ORDER BY category_id
+            `);
 
-    const { name } = req.body ?? {};
-    if (!name?.trim()) return res.status(400).json({ message: "name required" });
+        res.status(200).json(rows);
 
-    const { rows } = await pool.query(
-        `INSERT INTO service_categories (name, created_by_admin)
-     VALUES ($1,$2)
-     RETURNING category_id AS id, name`,
-        [name.trim(), req.admin.adminId]
-    );
-
-    return res.json({ category: rows[0] });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: "Failed to fetch categories.",
+        });
+    }
 }
 
-export default withAdminAuth<ReqWithAdmin>(handler, ["superadmin", "manager"]);
-
-
-// หน้าที่หลัก: เพิ่ม หมวดหมู่ (service_categories) ใหม่ลง DB
-// ใช้ pool.query → ต่อกับฐานข้อมูลจริง
-// คืนค่า: category (id + name)
-// จำกัดสิทธิ์: ["superadmin", "manager"]
+// ***กำหนดค่าไว้ก่อน เดี๋ยวมาทำต่อ***
