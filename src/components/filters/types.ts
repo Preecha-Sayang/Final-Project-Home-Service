@@ -5,7 +5,7 @@ export type FiltersState = {
     q: string;
     category: string;
     price: Range;
-    sort: "asc" | "desc";// ปรับคีย์ตามที่ DB รองรับได้
+    sort: "asc" | "desc" | "recommended" | "popular";// ปรับคีย์ตามที่ DB รองรับได้
     page?: number;
     pageSize?: number;
 };

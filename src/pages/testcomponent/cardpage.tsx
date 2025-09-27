@@ -1,34 +1,34 @@
-import ServiceCard from "../../components/Cards/ServiceCard";
-import BookingCard from "../../components/Cards/BookingCard";
+
+import OrderCard from "../../components/Cards/OrderCard";
+import RequestCard from "../../components/Cards/RequestCard";
+import PopularService from "../../components/PopularServices";
+
 
 export default function CardPage() {
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      {/* Service Cards Section */}
-      <div className="flex flex-wrap justify-center items-center gap-6 mb-8">
-        <ServiceCard
-          imgSrc="https://picsum.photos/349/240"
-          category="category"
-          title="ServiceCard"
-          price="Price"
-          onAction={() => alert("Call to Action clicked!")}
-          onMoreInfo={() => alert("More Info clicked!")}
-        />
+    <>
 
-        <ServiceCard
-          imgSrc="https://picsum.photos/349/240"
-          category="category"
-          title="ServiceCard"
-          price="Price"
-          onAction={() => alert("Call to Action clicked!")}
-          onMoreInfo={() => alert("More Info clicked!")}
+    <PopularService/>
+
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      {/* Request Card Section */}
+      <div className="flex flex-col items-center gap-6 mb-8">
+        <RequestCard
+          title="ล้างแอร์"
+          operationDateTime="25/04/2563 เวลา 13.00 น."
+          orderCode="AD04071205"
+          items="ล้างแอร์ 9,000 - 18,000 BTU, ติดผนัง 2 เครื่อง"
+          totalPrice="1,550.00"
+          address="444/4 คอนโดสุภาลัย เสนานิคม จตุจักร กรุงเทพฯ"
+          onAccept={() => alert("รับงาน clicked!")}
+          onReject={() => alert("ปฏิเสธ clicked!")}
         />
       </div>
 
-      {/* Booking Cards Section - Each card on separate line */}
-      <div className="flex flex-col items-center gap-6">
-        <BookingCard
-          itemCode="..."
+      {/* Order Cards Section - Each card on separate line */}
+      <div className="flex flex-col items-center gap-4 md:gap-6">
+        <OrderCard
+          orderCode="..."
           operationDateTime="..."
           employee="..."
           items={["รายการซ่อม"]}
@@ -36,8 +36,8 @@ export default function CardPage() {
           totalPrice="..."
           onViewDetails={() => alert("ดูรายละเอียด clicked!")}
         />
-        <BookingCard
-          itemCode="..."
+        <OrderCard
+          orderCode="..."
           operationDateTime="..."
           employee="..."
           items={["รายการซ่อม"]}
@@ -45,8 +45,8 @@ export default function CardPage() {
           totalPrice="..."
           onViewDetails={() => alert("ดูรายละเอียด clicked!")}
         />
-        <BookingCard
-          itemCode="..."
+        <OrderCard
+          orderCode="..."
           operationDateTime="..."
           employee="..."
           items={["รายการซ่อม"]}
@@ -54,8 +54,8 @@ export default function CardPage() {
           totalPrice="..."
           onViewDetails={() => alert("ดูรายละเอียด clicked!")}
         />
-        <BookingCard
-          itemCode="..."
+        <OrderCard
+          orderCode="..."
           operationDateTime="..."
           employee="..."
           items={["รายการซ่อม"]}
@@ -65,5 +65,6 @@ export default function CardPage() {
         />
       </div>
     </div>
+    </>
   );
 }
