@@ -1,22 +1,22 @@
 // ชนิดข้อมูล ServiceItem (types/service.ts)
 
 export type ServiceItem = {
-    id: string;
-    index: number;
+    id: number;
     name: string;
     category: string;
-    imageUrl?: string;    // ยัง mock
+    index: number;
+    imageUrl?: string | null;
     createdAt: string;
     updatedAt: string;
-    subItems?: SubItem[]; // รายการย่อย (mock)
+    subItems?: SubItem[];
 };
 
 export type SubItem = {
-    id: string;           // mock id
+    id: string;
     name: string;
-    unitName: string;     // หน่วยบริการ (เช่น เครื่อง / จุด / ชม.)
+    unitName: string;
     price: number;
-    index: number;        // ลำดับ
+    index: number;
 };
 
 export type ServicePayload = {

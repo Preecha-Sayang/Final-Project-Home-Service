@@ -1,12 +1,6 @@
-// สำหรับสร้างบริการใหม่ แบบไม่ต้องส่ง serviceId
+// เอาไว้อัปโหลดอย่างเดียว
 import type { NextApiRequest, NextApiResponse } from "next";
 import { v2 as cloudinary } from "cloudinary";
-import formidable, { Files, Fields, File } from "formidable";
-import fs from "node:fs/promises";
-
-export const config = {
-    api: { bodyParser: false },
-};
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -14,35 +8,56 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET!,
 });
 
-function parseForm(req: NextApiRequest): Promise<{ fields: Fields; files: Files }> {
-    const form = formidable({ multiples: false });
-    return new Promise((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-            if (err) return reject(err);
-            resolve({ fields, files });
-        });
-    });
+async function fileToDataURI(file: Blob, mime: string) {
+    const buf = Buffer.from(await file.arrayBuffer());
+    return `data:${mime};base64,${buf.toString("base64")}`;
 }
+
+export const config = {
+    api: { bodyParser: false },
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== "POST") return res.status(405).end();
+    if (req.method !== "POST") return res.status(405).json({
+        ok: false, message: "Method not allowed.",
+    });
 
     try {
-        const { files } = await parseForm(req);
-        const file = (Array.isArray(files.file) ? files.file[0] : (files.file as File | undefined));
-        if (!file) return res.status(400).json({ ok: false, message: "No file." });
 
-        const filepath = (file as any).filepath || (file as any).path;
-        const data = await fs.readFile(filepath);
-        const mime = file.mimetype || "application/octet-stream";
-        const dataURL = `data:${mime};base64,${data.toString("base64")}`;
+        const form: FormData = await (req as any).formData?.() ?? null;
+        if (!form) return res.status(400).json({
+            ok: false, message: "No form data",
+        });
 
+        const file = form.get("file") as File | null;
+        if (!file) return res.status(400).json({
+            ok: false, message: "No file",
+        });
+
+        const dataURL = await fileToDataURI(file, file.type || "image/jpeg");
         const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || "uploads";
-        const up = await cloudinary.uploader.upload(dataURL, { folder, resource_type: "image" });
 
-        return res.status(200).json({ ok: true, cloudinary: { url: up.secure_url, public_id: up.public_id } });
-    } catch (e: any) {
-        console.error(e);
-        return res.status(500).json({ ok: false, message: e?.message || "Upload failed." });
+        const up = await cloudinary.uploader.upload(dataURL, {
+            folder,
+            resource_type: "image",
+        });
+
+        return res.status(200).json({
+            ok: true,
+            cloudinary: {
+                public_id: up.public_id,
+                url: up.secure_url,
+                width: up.width,
+                height: up.height,
+                format: up.format,
+            },
+        });
+    } catch (err: any) {
+        console.error(err);
+        return res.status(500).json({
+            ok: false, message: err?.message || "Upload failed.",
+        });
     }
 }
+
+// อัปโหลดขึ้น Cloudinary อย่างเดียว แล้ว ส่งลิงก์กลับ (ไม่ได้ยุ่ง DB)
