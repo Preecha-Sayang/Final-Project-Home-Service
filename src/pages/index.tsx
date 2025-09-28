@@ -4,31 +4,10 @@ import ButtonPrimary from "@/components/button/buttonprimary";
 import Navbar from "@/components/navbar/navbar";
 import Link from "next/link";
 import {useEffect, useState} from "react";
+import PopularServices from "@/components/PopularServices";
 
 
 export default function Home() {
-    const services = [
-        {
-            imgSrc: "/images/ทำความสะอาดทั่วไป.png",
-            category: "บริการทั่วไป",
-            title: "ทำความสะอาดทั่วไป",
-            price: "ค่าบริการประมาณ 500.00 - 1,000.00 ฿",
-        },
-        {
-            imgSrc: "/images/ล้างแอร์.png",
-            category: "บริการทั่วไป",
-            title: "ล้างแอร์",
-            price: "ค่าบริการประมาณ 500.00 - 1,000.00 ฿",
-        },
-        {
-            imgSrc: "/images/ซ่อมเครื่องซักผ้า.png",
-            category: "บริการทั่วไป",
-            title: "ซ่อมเครื่องซักผ้า",
-            price: "ค่าบริการประมาณ 500.00 ฿",
-        },
-    ];
-
-
 
     return (
         <div className="min-h-screen bg-white">
@@ -71,28 +50,12 @@ export default function Home() {
                     <h2 className="text-3xl font-bold text-center text-gray-900 mb-12 font-prompt">
                         บริการยอดฮิตของเรา
                     </h2>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-                        {services.map((service, index) => (
-                            <ServiceCard
-                                key={index}
-                                imgSrc={service.imgSrc}
-                                category={service.category}
-                                title={service.title}
-                                price={service.price}
-                                onAction={() => {
-                                    // Navigate to service detail
-                                    console.log(`Selected service: ${service.title}`);
-                                }}
-                            />
-                        ))}
-                    </div>
-
-                    <div className="flex justify-center">
-                        <Link href="/services">
-                            <ButtonPrimary>ดูบริการทั้งหมด</ButtonPrimary>
-                        </Link>
-                    </div>
+                    <PopularServices/>
+                </div>
+                <div className="flex justify-center mt-12">
+                    <Link href="/services">
+                        <ButtonPrimary>ดูบริการทั้งหมด</ButtonPrimary>
+                    </Link>
                 </div>
             </section>
 
