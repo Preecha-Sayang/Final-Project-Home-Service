@@ -5,6 +5,7 @@ import user_default from "../../../public/images/user_default.png";
 import Link from "next/link";
 import {useEffect, useState} from "react";
 import IconBell from "../button/iconbell";
+import { useAuth } from "@/context/AuthContext";
 
 type NavbarProps = {
   imageURL?: string;
@@ -13,25 +14,20 @@ type NavbarProps = {
 export default function Navbar({ imageURL }: NavbarProps) {
   const getImageURL = imageURL === undefined ? user_default : imageURL;
 
-  const [token, setToken] = useState<string | null>(null);
   const [fullname, setFullname] = useState<string | undefined>(undefined);
+  const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
   
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setToken(localStorage.getItem('token'));
-    }
-  }, []);
 
   useEffect(() => {
-    if (!token) return;
+    if (!accessToken) return;
     fetch("/api/protected/protectapi", {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${accessToken}` },
     })
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => setFullname(data?.fullname))
         .catch(() => {});
-  }, [token]);
+  }, [accessToken]);
 
 
 
@@ -58,9 +54,9 @@ export default function Navbar({ imageURL }: NavbarProps) {
         </Link>
       </div>
       
-      {!token ? (
+      {!isLoggedIn ? (
         <div className="mr-15">
-          <Link href="/login/login" className="px-2 py-2 border border-[var(--blue-600)] text-[var(--blue-600)] rounded-lg cursor-pointer">
+          <Link href="/loginuser/login" className="px-2 py-2 border border-[var(--blue-600)] text-[var(--blue-600)] rounded-lg cursor-pointer">
             เข้าสู่ระบบ
           </Link>
         </div>

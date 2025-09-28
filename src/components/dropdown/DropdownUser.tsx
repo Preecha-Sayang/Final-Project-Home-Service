@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { User, List, Clock, LogOut } from "lucide-react";
 import Image, { StaticImageData } from "next/image";
+import { useAuth } from "@/context/AuthContext"; // ✅ import context
 
 type DropdownUserProps = {
   imageURL?: string | StaticImageData;
@@ -13,11 +14,18 @@ export default function DropdownUser({ imageURL, fullname }: DropdownUserProps) 
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
+  const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+    router.refresh();
+  };
+
   const menuItems = [
     { label: "ข้อมูลผู้ใช้งาน", icon: <User size={18} />, href: "#" },
     { label: "รายการคำสั่งซ่อม", icon: <List size={18} />, href: "#" },
     { label: "ประวัติการซ่อม", icon: <Clock size={18} />, href: "#" },
-    { label: "ออกจากระบบ", icon: <LogOut size={18} />, href: "/login/logout" },
   ];
 
   return (
@@ -44,12 +52,20 @@ export default function DropdownUser({ imageURL, fullname }: DropdownUserProps) 
               key={idx}
               href={item.href}
               className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
-              onClick={() => setIsOpen(false)}
+              onClick={()=>setIsOpen(false)}
             >
               {item.icon}
               <span>{item.label}</span>
             </a>
           ))}
+          <a
+            href="#"
+            className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+            onClick={handleLogout}
+          >
+            <LogOut size={18} />
+            <span>ออกจากระบบ</span>
+          </a>
         </div>
       )}
     </div>
