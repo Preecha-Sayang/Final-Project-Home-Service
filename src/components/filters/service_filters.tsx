@@ -93,7 +93,7 @@ export default function FiltersBar({
     const priceLabel = `${price.min.toLocaleString()}–${price.max.toLocaleString()}฿`;
 
     return (
-        <div className={`sticky top-0 z-50 ${className}`}>
+        <div className={`sticky top-20 z-30 ${className}`}>
             {/* เดสก์ท็อป = บรรทัดเดียว / มือถือ = wrap ได้เอง */}
             <div className="w-full bg-white shadow-sm flex flex-wrap md:flex-nowrap items-end gap-3 md:px-80 py-4">
                 {/* Search (ขยายกินที่) */}

@@ -14,6 +14,7 @@ import { FiltersBar } from "@/components/filters";
 import { useServices } from "../hooks/useServices";
 import { usePriceRange } from "../hooks/usePriceRange";
 import { useCategories } from "../hooks/useCategories";
+import { useAuth } from "../context/AuthContext";
 
 // Types & Utils
 import { FiltersState } from "@/components/filters";
@@ -100,6 +101,8 @@ const PageLayout = ({ children, isLoading, hasError, errorMessage }: {
   hasError: boolean;
   errorMessage: string;
 }) => {
+  const { isLoggedIn } = useAuth();
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -108,7 +111,7 @@ const PageLayout = ({ children, isLoading, hasError, errorMessage }: {
           <meta name="description" content={PAGE_CONFIG.description} />
         </Head>
         
-        <Navbar token="user" fullname="ผู้ใช้" />
+        <Navbar />
         
         <div className="container mx-auto px-4 py-8">
           <LoadingState message={PAGE_CONFIG.loadingMessage} />
@@ -125,7 +128,7 @@ const PageLayout = ({ children, isLoading, hasError, errorMessage }: {
           <meta name="description" content={PAGE_CONFIG.description} />
         </Head>
         
-        <Navbar token="user" fullname="ผู้ใช้" />
+        <Navbar />
         
         <div className="container mx-auto px-4 py-8">
           <ErrorState message={errorMessage} />
@@ -141,7 +144,7 @@ const PageLayout = ({ children, isLoading, hasError, errorMessage }: {
         <meta name="description" content={PAGE_CONFIG.description} />
       </Head>
 
-      <Navbar token="user" fullname="ผู้ใช้" />
+      <Navbar />
       {children}
       <Footer />
     </div>
@@ -252,6 +255,34 @@ export default function ServiceListPage() {
           </>
         )}
       </div>
+
+      {/* Spacing between content and about section */}
+      <div className="py-8"></div>
+
+      {/* About Section */}
+      <section className="py-16 bg-blue-600 relative">
+  {/* Image ชิดขอบ section */}
+  <img
+  src="/images/house 1.svg"
+  alt="House Icon"
+  className="absolute bottom-0 right-0 h-[280px] object-contain"
+/>
+
+
+  <div className="max-w-7xl mx-auto px-4">
+    <div className="flex items-center justify-center text-white">
+      <div className="text-center max-w-4xl">
+        <p className="text-xl leading-relaxed">
+          เพราะเราคือช่าง ผู้ให้บริการเรื่องบ้านอันดับ 1 แบบครบวงจร โดยทีมช่างมืออาชีพมากกว่า 100 ทีม<br />
+          สามารถตอบโจทย์ด้านการบริการเรื่องบ้านของคุณ และสร้าง<br />
+          ความสะดวกสบายในการติดต่อกับทีมช่าง ได้ทุกที่ ทุกเวลา ตลอด 24 ชม.<br />
+          มั่นใจ ช่างไม่ทิ้งงาน พร้อมรับประกันคุณภาพงาน
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
     </PageLayout>
   );
 }
