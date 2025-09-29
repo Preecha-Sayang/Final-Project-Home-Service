@@ -1,6 +1,3 @@
-import Image from "next/image";
-
-
 import { useState } from "react";
 import { User, List, Clock, LayoutDashboard, LogOut } from "lucide-react";
 
