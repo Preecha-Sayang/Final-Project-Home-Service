@@ -3,22 +3,22 @@ import Head from "next/head";
 import Image from 'next/image';
 
 // Components
-import LoadingState from "../components/common/LoadingState";
-import ErrorState from "../components/common/ErrorState";
-import HeroSection from "../components/common/HeroSection";
-import { Footer } from "../components/footer";
-import Navbar from "../components/navbar/navbar";
-import ServiceCard from "../components/Cards/ServiceCard";
+import LoadingState from "../../components/common/LoadingState";
+import ErrorState from "../../components/common/ErrorState";
+import HeroSection from "../../components/common/HeroSection";
+import { Footer } from "../../components/footer";
+import Navbar from "../../components/navbar/navbar";
+import ServiceCard from "../../components/Cards/ServiceCard";
 import { FiltersBar } from "@/components/filters";
 
 // Hooks
-import { useServices } from "../hooks/useServices";
-import { usePriceRange } from "../hooks/usePriceRange";
-import { useCategories } from "../hooks/useCategories";
+import { useServices } from "../../hooks/useServices";
+import { usePriceRange } from "../../hooks/usePriceRange";
+import { useCategories } from "../../hooks/useCategories";
 
 // Types & Utils
 import { FiltersState } from "@/components/filters";
-import { createDefaultFilters } from "../constants/filters";
+import { createDefaultFilters } from "../../constants/filters";
 
 // ============================================================================
 // PAGE METADATA

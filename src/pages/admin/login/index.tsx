@@ -3,7 +3,7 @@ import ButtonPrimary from "@/components/button/buttonprimary";
 import { useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
-import logo from "../../../public/images/logo.png";
+import logo from "../../../../public/images/logo.png";
 
 export default function AdminLogin() {
   const router = useRouter();
