@@ -46,7 +46,7 @@ export default function Navbar({ imageURL }: NavbarProps) {
           {/* บริการของเรา - แสดงทั้งบนมือถือและเดสก์ท็อป */}
           <Link href="/service" className="cursor-pointer">
             <p className="flex items-center text-[var(--gray-900)] font-semibold mt-1.5 text-sm lg:text-base">
-              บริการของเรา {/*เหลือใส่ href ไปหน้า services list*/}
+              บริการของเรา 
             </p>
           </Link>
         </div>
