@@ -29,7 +29,7 @@ export default function ConfirmDialog({
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
                 <button
                     onClick={onCancel}
-                    className="float-right -mt-2 -mr-2 rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                    className="float-right -mt-2 -mr-2 rounded-md p-2 text-[var(--gray-400)] hover:bg-[var(--gray-100)] hover:text-[var(--gray-600)] cursor-pointer"
                     aria-label="close"
                 >
                     ✕
@@ -44,9 +44,9 @@ export default function ConfirmDialog({
                 </div>
 
                 {/* text */}
-                <h3 className="mb-1 text-center text-lg font-semibold text-gray-900">{title}</h3>
+                <h3 className="mb-1 text-center text-lg font-semibold text-[var(--gray-900)]">{title}</h3>
                 {description && (
-                    <p className="mb-5 text-center text-md text-gray-600">{description}</p>
+                    <p className="mb-5 text-center text-md text-[var(--gray-600)]">{description}</p>
                 )}
 
                 {/* actions */}
@@ -54,14 +54,14 @@ export default function ConfirmDialog({
                     <button
                         onClick={onConfirm}
                         disabled={loading}
-                        className="min-w-[120px] rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-60 cursor-pointer"
+                        className="min-w-[120px] rounded-lg bg-[var(--blue-600)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--blue-700)] disabled:opacity-60 cursor-pointer"
                     >
                         {loading ? "กำลังลบ..." : confirmLabel}
                     </button>
                     <button
                         onClick={onCancel}
                         disabled={loading}
-                        className="min-w-[120px] rounded-lg border border-blue-500 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-60 cursor-pointer"
+                        className="min-w-[120px] rounded-lg border border-[var(--blue-500)] px-4 py-2 text-sm font-medium text-[var(--blue-600)] hover:bg-[var(--blue-100)] disabled:opacity-60 cursor-pointer"
                     >
                         {cancelLabel}
                     </button>

@@ -20,7 +20,7 @@ export default function EditServicePage() {
             <button
                 type="submit"
                 form="service-form"
-                className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
+                className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-[var(--gray-100)] hover:bg-[var(--blue-700)] cursor-pointer"
             >
                 บันทึก
             </button>

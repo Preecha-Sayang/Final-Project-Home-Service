@@ -8,28 +8,16 @@ import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dr
 import ImageUpload from "@/components/input/inputImageUpload/image_upload";
 
 import type { SubItem } from "@/types/service";
-import { getService } from "lib/client/servicesApi";
-import { listCategories } from "lib/client/servicesApi";
-
-import { Pool } from "pg";
+import { getService, listCategories } from "lib/client/servicesApi";
 
 type Mode = "create" | "edit";
 type Props = { mode: Mode; id?: string };
 
-declare global {
-    var pgPool: Pool | undefined;
-}
-
-// // (mock)
-// const CATEGORY_OPTIONS: Option[] = [
-//     { label: "บริการทั่วไป", value: "1" },
-//     { label: "บริการห้องครัว", value: "4" },
-//     { label: "บริการห้องน้ำ", value: "5" },
-// ];
-
 function emptySub(i: number): SubItem {
     return { id: `tmp-${Date.now()}-${i}`, name: "", unitName: "", price: 0, index: i + 1 };
 }
+
+type OptionRow = { service_option_id: number; name: string; unit: string; unit_price: number | string };
 
 export default function ServiceEditor({ mode, id }: Props) {
     const router = useRouter();
@@ -42,35 +30,18 @@ export default function ServiceEditor({ mode, id }: Props) {
     const [catOptions, setCatOptions] = useState<Option[]>([]);
 
     const [imageFile, setImageFile] = useState<File | null>(null);
-    const [imageUrl, setImageUrl] = useState<string>(""); // preview ตอนแก้ไข (url เดิมจาก DB)
+    const [imageUrl, setImageUrl] = useState<string>("");
 
     const [subItems, setSubItems] = useState<SubItem[]>([emptySub(0), emptySub(1)]);
+    const [basePrice, setBasePrice] = useState<number | null>(null);
+    const [description, setDescription] = useState<string>("");
 
-    const [basePrice, setBasePrice] = useState<number | null>(null); //เพิ่มตาม db
-    const [description, setDescription] = useState<string>(""); //เพิ่มตาม db
+    // options (อยู่หน้าแก้ไขเท่านั้น)
+    const [options, setOptions] = useState<OptionRow[]>([]);
+    const [loadingOptions, setLoadingOptions] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
-    // โหลดข้อมูลเดิม (โหมดแก้ไข)
-    useEffect(() => {
-        if (mode !== "edit" || !id) return;
-        (async () => {
-            setLoading(true);
-            try {
-                const s: Awaited<ReturnType<typeof getService>> = await getService(id);
-                setName(s.name ?? "");
-                setCategoryId(Number((s as { categoryId?: number }).categoryId ?? 1));
-                setImageUrl(s.imageUrl ?? "");
-                setSubItems(
-                    (s.subItems ?? [])
-                        .slice()
-                        .sort((a, b) => a.index - b.index)
-                        .map((x, i) => ({ ...x, index: i + 1 }))
-                );
-            } finally {
-                setLoading(false);
-            }
-        })();
-    }, [mode, id]);
-
+    // โหลด category list
     useEffect(() => {
         (async () => {
             const cats = await listCategories();
@@ -78,7 +49,56 @@ export default function ServiceEditor({ mode, id }: Props) {
         })();
     }, []);
 
-    // --- DnD สำหรับรายการย่อย
+    // โหลดข้อมูลเดิม
+    useEffect(() => {
+        if (mode !== "edit" || !id) return;
+        (async () => {
+            setLoading(true);
+            try {
+                const s = await getService(id);
+                setName(s.name ?? "");
+                setCategoryId(Number((s as any).categoryId ?? (s as any).category_id ?? 1));
+                setImageUrl(s.imageUrl ?? (s as any).image_url ?? "");
+                setBasePrice((s as any).price ?? null);
+                setDescription((s as any).description ?? "");
+
+                setSubItems(
+                    (s.subItems ?? [])
+                        .slice()
+                        .sort((a, b) => a.index - b.index)
+                        .map((x, i) => ({ ...x, index: i + 1 }))
+                );
+
+                // ดึงรายการย่อยจาก API
+                setLoadingOptions(true);
+                const r = await fetch(`/api/services/${id}/options`);
+                const d = await r.json();
+                if (d?.ok) setOptions(d.options as OptionRow[]);
+            } finally {
+                setLoading(false);
+                setLoadingOptions(false);
+            }
+        })();
+    }, [mode, id]);
+
+    // ลบ option (อยู่หน้าแก้ไข)
+    const removeOption = async (optId: number) => {
+        if (!confirm("ยืนยันลบรายการย่อยนี้?")) return;
+        const prev = options;
+        setDeletingId(optId);
+        setOptions(o => o.filter(x => x.service_option_id !== optId));
+        try {
+            const res = await fetch(`/api/service-options/${optId}`, { method: "DELETE" });
+            if (!res.ok) throw new Error("ลบไม่สำเร็จ");
+        } catch (e) {
+            alert((e as Error).message);
+            setOptions(prev);
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
+    // --- DnD ของ subItems (ในฟอร์ม)
     const dragSrc = useRef<string | null>(null);
     function onDragStart(e: React.DragEvent<HTMLDivElement>, sid: string) {
         dragSrc.current = sid; e.dataTransfer.effectAllowed = "move";
@@ -99,7 +119,7 @@ export default function ServiceEditor({ mode, id }: Props) {
     const removeRow = (rowId: string) => setSubItems(s => s.filter(x => x.id !== rowId).map((x, i) => ({ ...x, index: i + 1 })));
     const patchRow = (rowId: string, p: Partial<SubItem>) => setSubItems(s => s.map(x => x.id === rowId ? { ...x, ...p } : x));
 
-    // ยิงไป API (POST/PATCH) พร้อมไฟล์ (อัป Cloudinary ตอนกดปุ่ม)
+    // ส่งฟอร์ม (create / edit)
     async function handleSubmit() {
         if (!name.trim()) { alert("กรุณากรอกชื่อบริการ"); return; }
         if (!categoryId) { alert("กรุณาเลือกหมวดหมู่"); return; }
@@ -108,8 +128,8 @@ export default function ServiceEditor({ mode, id }: Props) {
         fd.append("servicename", name.trim());
         fd.append("category_id", String(categoryId));
         fd.append("admin_id", "1");
-        if (basePrice != null) fd.append("price", String(basePrice)); //เพิ่ม price
-        if (description) fd.append("description", description); //เพิ่ม description
+        if (basePrice != null) fd.append("price", String(basePrice));
+        if (description) fd.append("description", description);
         fd.append("subItems", JSON.stringify(subItems));
         if (!imageFile && imageUrl) fd.append("image_url", imageUrl);
         if (imageFile) fd.append("file", imageFile);
@@ -129,8 +149,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                 router.push(`/admin/services/${data.service.service_id}`);
             }
         } catch (e: unknown) {
-            const message = e instanceof Error ? e.message : String(e);
-            alert(message);
+            alert(e instanceof Error ? e.message : String(e));
         } finally {
             setSaving(false);
         }
@@ -141,16 +160,18 @@ export default function ServiceEditor({ mode, id }: Props) {
         void handleSubmit();
     }
 
+    const fmtMoney = (n: number | string) =>
+        new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n || 0));
+
     return (
-        <form
-            id="service-form"
-            onSubmit={onSubmit}
-            className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]"
-        >
+        <form id="service-form" onSubmit={onSubmit}
+            className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
             {loading ? (
                 <div className="py-16 text-center text-[var(--gray-500)]">Loading…</div>
             ) : (
                 <div className="grid gap-6">
+
+                    {/* เหมือนหน้า preview: ชื่อ/หมวดหมู่/รูป */}
                     <InputField
                         label="ชื่อบริการ *"
                         value={name}
@@ -167,40 +188,20 @@ export default function ServiceEditor({ mode, id }: Props) {
                         placeholder="เลือกหมวดหมู่"
                     />
 
-                    {/* รูปภาพ */}
                     <div className="grid gap-2">
                         <span className="text-sm font-medium text-[var(--gray-800)]">รูปภาพ</span>
                         {imageUrl && !imageFile ? (
-                            <div className="grid gap-2">
-                                <Image src={imageUrl} alt="" className="h-40 w-full max-w-md rounded-xl object-cover" />
-                                {/* ปุ่มนี้แค่เอารูปเดิมออกจาก preview เพื่อเลือกใหม่ การลบของเก่าที่ Cloudinary จะเกิดตอน PATCH หากแนบไฟล์ใหม่ */}
-                                <button type="button" className="w-max text-sm text-[var(--blue-600)] hover:underline" onClick={() => setImageUrl("")}>
-                                    เลือกรูปใหม่
-                                </button>
+                            <div className="relative h-40 w-full max-w-md overflow-hidden rounded-xl border border-[var(--gray-300)]">
+                                <Image src={imageUrl} alt="service image" fill sizes="(max-width:768px) 100vw, 400px" className="object-cover" priority />
                             </div>
                         ) : (
-                            // แบบ อัปโหลดตอนกด “บันทึก” ของฟอร์ม
-                            <ImageUpload
-                                label="รูปบริการ"
-                                value={imageFile}
-                                onChange={setImageFile}
-                            />
-
-                            // แบบ อัปโหลดในคอมโพเนนต์
-                            // <ImageUpload
-                            //   label="รูปบริการ"
-                            //   value={file}
-                            //   onChange={setFile}
-                            //   standaloneUpload
-                            //   serviceId={currentServiceId}
-                            //   onUploaded={(url) => setImageUrl(url)}
-                            // />
+                            <ImageUpload label="รูปบริการ" value={imageFile} onChange={setImageFile} />
                         )}
                     </div>
 
                     <hr className="my-2 border-[var(--gray-200)]" />
 
-                    <InputField
+                    {/* <InputField
                         label="ราคาเริ่มต้น (ถ้ามี)"
                         placeholder="ระบุเป็นตัวเลข..."
                         value={basePrice == null ? "" : String(basePrice)}
@@ -209,56 +210,91 @@ export default function ServiceEditor({ mode, id }: Props) {
                         rightIcon={<span className="text-[var(--gray-500)]">฿</span>}
                     />
 
-                    {/* รายละเอียด */}
                     <InputField
                         label="รายละเอียด"
                         placeholder="เช่น บริการทำความสะอาดเครื่องปรับอากาศ..."
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         textarea
-                    />
+                    /> */}
 
-                    {/* รายการบริการย่อย (ยังไม่ผูก DB ในตัวอย่างนี้) */}
+                    {/* รายการย่อยจาก DB: แสดง + ปุ่มลบ (ย้ายมาหน้านี้) */}
                     <div className="grid gap-3">
-                        <div className="text-sm font-medium text-[var(--gray-800)]">รายการบริการย่อย</div>
+                        <div className="text-base font-medium text-[var(--gray-800)]">รายการบริการย่อย</div>
+
+                        {loadingOptions && <div className="text-sm text-[var(--gray-500)]">กำลังโหลดรายการย่อย…</div>}
+
+                        {!loadingOptions && options.length === 0 && (
+                            <div className="rounded-lg border border-dashed border-[var(--gray-300)] p-4 text-sm text-[var(--gray-500)]">
+                                ยังไม่มีรายการย่อย
+                            </div>
+                        )}
+
+                        <div className="grid gap-2">
+                            {options.map((o) => (
+                                <div key={o.service_option_id} className="grid grid-cols-12  gap-3 rounded-xl  bg-white p-3 text-sm">
+                                    <div className="col-span-6">
+                                        <div className="py-1 text-[var(--gray-500)]">ชื่อรายการ</div>
+                                        <div className="text-base font-medium">{o.name}</div>
+                                    </div>
+                                    <div className="col-span-3">
+                                        <div className="py-1 text-[var(--gray-500)]">หน่วย</div>
+                                        <div className="text-base font-medium">{o.unit}</div>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <div className="py-1 text-[var(--gray-500)]">ราคา/หน่วย</div>
+                                        <div className="text-base font-medium">{fmtMoney(o.unit_price)}</div>
+                                    </div>
+                                    <div className="col-span-1 flex items-center justify-end">
+                                        <button type="button"
+                                            onClick={() => removeOption(o.service_option_id)}
+                                            disabled={deletingId === o.service_option_id}
+                                            className="w-[112px] rounded-md p-2 text-base font-semibold underline text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] disabled:opacity-60 cursor-pointer">
+                                            {deletingId === o.service_option_id ? "กำลังลบ..." : "ลบรายการ"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* subItems (draft ในฟอร์ม) */}
+                    <hr className="my-2 border-[var(--gray-200)]" />
+                    <div className="grid gap-3">
+                        <div className="text-sm font-medium text-[var(--gray-800)]">รายการบริการย่อย (แบบร่างในฟอร์ม)</div>
                         <div className="grid gap-2">
                             {subItems.map((it) => (
-                                <div
-                                    key={it.id}
+                                <div key={it.id}
                                     draggable
                                     onDragStart={(e) => onDragStart(e, it.id)}
                                     onDragOver={onDragOver}
                                     onDrop={(e) => onDrop(e, it.id)}
-                                    className="grid grid-cols-12 items-center gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-3 cursor-pointer"
-                                >
+                                    className="grid grid-cols-12 items-center gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-3 cursor-pointer">
                                     <div className="col-span-1 flex justify-center text-[var(--gray-400)]">
                                         <GripVertical className="h-4 w-4" />
                                     </div>
-
                                     <div className="col-span-5">
                                         <InputField
                                             placeholder="ชื่อรายการ (เช่น 9,000 - 18,000 BTU, แบบติดผนัง)"
-                                            value={it.name === undefined || it.name === null ? "" : String(it.name)}
+                                            value={it.name ?? ""}
                                             onChange={(e) => patchRow(it.id, { name: e.target.value })}
                                             validate={(v) => v.trim() ? null : "กรอกชื่อรายการ"}
                                             validateOn="blur"
                                         />
                                     </div>
-
                                     <div className="col-span-2">
                                         <InputField
                                             placeholder="หน่วย (เช่น เครื่อง)"
-                                            value={it.unitName === undefined || it.unitName === null ? "" : String(it.unitName)}
+                                            value={it.unitName ?? ""}
                                             onChange={(e) => patchRow(it.id, { unitName: e.target.value })}
                                             validate={(v) => v.trim() ? null : "กรอกหน่วย"}
                                             validateOn="blur"
                                         />
                                     </div>
-
                                     <div className="col-span-3">
                                         <InputField
                                             placeholder="ค่าบริการ / 1 หน่วย"
-                                            value={it.price === undefined || it.price === null ? "" : String(it.price)}
+                                            value={it.price == null ? "" : String(it.price)}
                                             onChange={(e) => patchRow(it.id, { price: Number(e.target.value || 0) })}
                                             inputMode="decimal"
                                             rightIcon={<span className="text-[var(--gray-500)]">฿</span>}
@@ -266,18 +302,21 @@ export default function ServiceEditor({ mode, id }: Props) {
                                             validateOn="blur"
                                         />
                                     </div>
-
                                     <div className="col-span-1 flex justify-end">
-                                        <button type="button" onClick={() => removeRow(it.id)} className="rounded-md p-2 text-[var(--gray-500)] hover:bg-rose-50 hover:text-rose-700 cursor-pointer" title="ลบรายการ">
+                                        <button type="button"
+                                            onClick={() => removeRow(it.id)}
+                                            className="rounded-md p-2 text-[var(--gray-500)] hover:bg-rose-50 hover:text-rose-700"
+                                            title="ลบรายการ">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
                                 </div>
                             ))}
                         </div>
-
-                        <button type="button" onClick={addRow} className="mt-1 inline-flex items-center gap-2 self-start rounded-lg border border-[var(--gray-300)] px-3 py-2 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer">
-                            <Plus className="h-4 w-4" /> เพิ่มรายการ
+                        <button type="button"
+                            onClick={addRow}
+                            className="flex justify-center items-center w-[185px] h-[44px] mt-1 gap-2 rounded-lg border border-[var(--blue-600)] px-3 py-2 text-base font-medium text-[var(--blue-600)] hover:text-[var(--gray-100)] hover:bg-[var(--blue-600)] cursor-pointer">
+                            เพิ่มรายการ <Plus className="h-4 w-4" />
                         </button>
                     </div>
 

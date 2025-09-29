@@ -1,19 +1,24 @@
 import dynamic from "next/dynamic";
 import BackHeader from "@/components/admin/common/BackHeader";
-import { Link } from "lucide-react";
+import { useRouter } from "next/router";
 
 const ServiceEditor = dynamic(() => import("@/components/admin/services/editor"), { ssr: false });
 
 export default function NewServicePage() {
+    const router = useRouter();
     const actions = (
         <div className="flex gap-2">
-            <Link to="/admin/services" className="h-9 inline-flex items-center rounded-lg border border-[var(--gray-200)] bg-white px-3 text-sm text-[var(--gray-800)] hover:bg-[var(--gray-100)] cursor-pointer">
+            <button
+                type="button"
+                onClick={() => router.push("/admin/services")}
+                className="w-[112px] h-[44px] items-center rounded-lg border border-[var(--blue-600)] bg-white text-base font-medium text-[var(--blue-600)] hover:bg-[var(--gray-100)] cursor-pointer"
+            >
                 ยกเลิก
-            </Link>
+            </button>
             <button
                 type="submit"
                 form="service-form"
-                className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
+                className="w-[112px] h-[44px] rounded-lg bg-[var(--blue-600)] text-base font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
             >
                 สร้าง
             </button> {/*ทำแจ้งเตือน popup*/}
