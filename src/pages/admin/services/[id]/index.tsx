@@ -143,7 +143,7 @@ export default function ServiceDetailPage() {
                         {/* หมวดหมู่ */}
                         <div className="grid gap-2">
                             <div className="text-sm text-[var(--gray-600)]">หมวดหมู่</div>
-                            <div><Badge label={item.category} /></div>
+                            <div><Badge label={item.category} colors={item.categoryColor} /></div>
                         </div>
 
                         {/* รูปภาพ */}

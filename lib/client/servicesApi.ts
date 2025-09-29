@@ -1,8 +1,11 @@
 import type {
-    ServiceItem, //subItem
+    ServiceItem, // subItem
     ServiceRowRaw,
-    ListServicesResponse, GetServiceResponse, MutateServiceResponse,
-    CategoryRow, ListCategoriesResponse,
+    ListServicesResponse,
+    GetServiceResponse,
+    MutateServiceResponse,
+    CategoryRow,
+    ListCategoriesResponse,
 } from "@/types/service";
 import { http } from "./http";
 
@@ -10,6 +13,24 @@ const BASE = "/services";
 
 function mapRowToServiceItem(row: Record<string, unknown>, index = 0): ServiceItem {
     const r = row as ServiceRowRaw;
+
+    // รองรับได้ทั้ง alias จาก API (category_bg / category_text / category_ring)
+    // และชื่อคอลัมน์เดิมในตาราง (bg_color_hex / text_color_hex / ring_color_hex)
+    const categoryColor = {
+        bg:
+            (r as any).category_bg ??
+            (r as any).bg_color_hex ??
+            null,
+        text:
+            (r as any).category_text ??
+            (r as any).text_color_hex ??
+            null,
+        ring:
+            (r as any).category_ring ??
+            (r as any).ring_color_hex ??
+            null,
+    } as ServiceItem["categoryColor"];
+
     return {
         id: Number(r.service_id),
         name: String(r.servicename),
@@ -20,6 +41,7 @@ function mapRowToServiceItem(row: Record<string, unknown>, index = 0): ServiceIt
         createdAt: r.create_at,
         updatedAt: r.update_at,
         subItems: r.subItems ?? [],
+        categoryColor, // <-- เพิ่มเข้ามาเพื่อใช้กับ Badge
     };
 }
 
@@ -29,9 +51,7 @@ export async function listServices(): Promise<{ ok: boolean; services: ServiceIt
     if (!data?.ok) throw new Error("load services failed");
     return {
         ok: true,
-        services: (data.services ?? []).map((r, i) =>
-            mapRowToServiceItem(r as Record<string, unknown>, i)
-        ),
+        services: (data.services ?? []).map((r, i) => mapRowToServiceItem(r as Record<string, unknown>, i)),
     };
 }
 
@@ -63,8 +83,6 @@ export async function deleteService(id: string | number): Promise<void> {
 
 /** จัดเรียงลำดับบริการใหม่ (ตอนนี้ทำเป็น no-op ถ้ายังไม่มีคอลัมน์ position ใน DB) */
 export async function reorderServices(_payload: { id: number; index: number }[]): Promise<void> {
-    // ใส่ _ แปลว่าจะมาทำต่อ เช่น _payload นะครับทุกคน
-
     // ถ้าจะบันทึกลำดับจริง:
     // 1) เพิ่มคอลัมน์ position integer not null default 0 ใน services
     // 2) ทำ API PATCH /api/services/reorder รับ [{id, position}]
@@ -74,6 +92,8 @@ export async function reorderServices(_payload: { id: number; index: number }[])
 
 /** ดึงหมวดหมู่ (สำหรับ dropdown) */
 export async function listCategories(): Promise<CategoryRow[]> {
+    // ถ้า http ตั้ง base เป็น /api อยู่แล้ว ให้ใช้ "categories"
+    // ถ้าไม่ใช่ ให้ใช้ "/categories" หรือ "/api/categories" ให้ตรงกับ config
     const { data } = await http.get<ListCategoriesResponse>("categories");
     if (!data?.ok) throw new Error("load categories failed");
     return data.categories ?? [];

@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import BackHeader from "@/components/admin/common/BackHeader";
 import { useRouter } from "next/router";
+// import CategoryForm from "@/components/admin/categories/form";
 
 const ServiceEditor = dynamic(() => import("@/components/admin/services/editor"), { ssr: false });
 
@@ -27,12 +28,16 @@ export default function NewServicePage() {
 
     return (
         <>
+
             <BackHeader
                 subtitle="บริการ"
                 title="เพิ่มบริการ"
                 backHref="/admin/services"
                 actions={actions}
             />
+            {/* <CategoryForm
+                mode="create"
+            /> */}
             <ServiceEditor
                 mode="create"
             />

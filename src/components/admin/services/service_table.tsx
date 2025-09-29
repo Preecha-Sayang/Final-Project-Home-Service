@@ -91,14 +91,14 @@ export default function ServiceTable({ items, loading = false, search = "", onEd
                                     ) : name}
                                 </td>
 
-                                <td className="px-1 py-3"><Badge label={cat} /></td>
+                                <td className="px-1 py-3"><Badge label={row.category} colors={row.categoryColor} /></td>
                                 <td className="px-1 py-3 text-[var(--gray-700)]">{created ? formatDT(created) : "-"}</td>
                                 <td className="px-1 py-3 text-[var(--gray-700)]">{updated ? formatDT(updated) : "-"}</td>
                                 <td className="px-1 py-3 text-center">
                                     <div className="flex items-center justify-center gap-2">
                                         <button className="rounded-md p-2 text-[var(--gray-500)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
                                             title="ลบ" onClick={() => onDelete(row)}>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                                                 <path d="M4 7H20M19 7L18.133 19.142C18.0971 19.6466 17.8713 20.1188 17.5011 20.4636C17.1309 20.8083 16.6439 21 16.138 21H7.862C7.35614 21 6.86907 20.8083 6.49889 20.4636C6.1287 20.1188 5.90292 19.6466 5.867 19.142L5 7H19ZM10 11V17V11ZM14 11V17V11ZM15 7V4C15 3.73478 14.8946 3.48043 14.7071 3.29289C14.5196 3.10536 14.2652 3 14 3H10C9.73478 3 9.48043 3.10536 9.29289 3.29289C9.10536 3.48043 9 3.73478 9 4V7H15Z" stroke="#9AA1B0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                             </svg>
 

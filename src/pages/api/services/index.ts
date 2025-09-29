@@ -12,7 +12,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         try {
             // JOIN เอาชื่อหมวดหมู่มาด้วย
             const rows = await sql/*sql*/`
-                SELECT s.service_id, s.servicename, s.category_id, c.name AS category_name,
+                SELECT s.service_id, s.servicename, s.category_id,
+                    c.name AS category_name,
+                    c.bg_color_hex  AS category_bg,
+                    c.text_color_hex AS category_text,
+                    c.ring_color_hex AS category_ring,
                     s.image_url, s.image_public_id, s.price, s.description,
                     s.create_at, s.update_at, s.admin_id
                 FROM services s
@@ -74,6 +78,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         ${Number.isFinite(Number(price)) ? price : null}, ${description}, ${admin_id}, now())
                 RETURNING *
             `;
+
+            const service = rows[0];
+            const subRaw = Array.isArray(fields.subItems) ? fields.subItems[0] : fields.subItems;
+            if (subRaw) {
+                const parsed = JSON.parse(String(subRaw)) as Array<{ name: string; unitName: string; price: number; index: number }>;
+                for (const it of parsed) {
+                    if (!it?.name?.trim()) continue;
+                    await sql/*sql*/`
+                        INSERT INTO service_option (service_id, name, unit, unit_price)
+                        VALUES (${service.service_id}, ${it.name.trim()}, ${it.unitName?.trim() || null}, ${isFinite(Number(it.price)) ? it.price : null})
+                    `;
+                }
+            }
+
             return res.status(200).json({ ok: true, service: rows[0] });
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : String(e);
