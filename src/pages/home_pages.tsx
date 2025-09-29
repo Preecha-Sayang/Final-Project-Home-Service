@@ -6,7 +6,6 @@ import PopularServices from "@/components/PopularServices";
 
 
 export default function Home() {
-
     return (
         <div className="min-h-screen bg-white">
 
@@ -26,8 +25,8 @@ export default function Home() {
                             ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแซม ทำความสะอาดบ้าน<br />
                             โดยพนักงานแม่บ้าน และช่างมืออาชีพ
                         </p>
-                        <Link href="/services">
-                            <ButtonPrimary>เช็คราคาบริการ</ButtonPrimary> {/*เหลือใส่ href ไปหน้า services list*/}
+                        <Link href="/servicelist">
+                            <ButtonPrimary>เช็คราคาบริการ</ButtonPrimary> 
                         </Link>
                     </div>
                     <div className=" flex justify-end">
@@ -51,8 +50,8 @@ export default function Home() {
                     <PopularServices />
                 </div>
                 <div className="flex justify-center mt-12">
-                    <Link href="/services">
-                        <ButtonPrimary>ดูบริการทั้งหมด</ButtonPrimary> {/*เหลือใส่ href ไปหน้า services list*/}
+                    <Link href="/servicelist">
+                        <ButtonPrimary>ดูบริการทั้งหมด</ButtonPrimary> 
                     </Link>
                 </div>
             </section>

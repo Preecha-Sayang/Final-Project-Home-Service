@@ -37,7 +37,7 @@ export default function Navbar({ imageURL }: NavbarProps) {
       <div className="mx-auto max-w-[1440px] h-[80px] bg-[var(--white)] flex items-center justify-between relative px-4 lg:px-15">
         {/* โลโก้ และ เมนู */}
         <div className="flex items-center gap-4 lg:gap-20">
-          <Link href="/" className="cursor-pointer">  {/*เหลือใส่ href ไปหน้า home_pages*/}
+          <Link href="/home_pages" className="cursor-pointer">  
             <Image 
               src={logo_img} 
               alt="HomeServices" 
@@ -49,7 +49,7 @@ export default function Navbar({ imageURL }: NavbarProps) {
           </Link>
           
           {/* บริการของเรา - แสดงทั้งบนมือถือและเดสก์ท็อป */}
-          <Link href="/services" className="cursor-pointer">
+          <Link href="/servicelist" className="cursor-pointer">
             <p className="flex items-center text-[var(--gray-900)] font-semibold mt-1.5 text-sm lg:text-base">
               บริการของเรา {/*เหลือใส่ href ไปหน้า services list*/}
             </p>
