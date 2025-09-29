@@ -1,10 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import pool from "@../../../lib/db";
+import pool from "../../../../lib/db";
 import { signAdminAccess } from "lib/server/jwtAdmin";
-
-
-
-
+import bcrypt from "bcrypt";
 
 export default async function handler(
   req: NextApiRequest,
@@ -19,17 +16,18 @@ export default async function handler(
       return res.status(400).json({ message: "email/password required" });
 
     const { rows } = await pool.query(
-      "SELECT admin_id, email, password, role FROM admin WHERE email = $1 and password = $2 LIMIT 1",
-      [email, password]
+      "SELECT admin_id, email, password, role FROM admin WHERE email = $1  LIMIT 1",
+      [email]
     );
     const admin = rows[0];
     if (!admin)
-      return res
-        .status(401)
-        .json({ message: "Invalid credentials", error: "Login failed." });
+      return res.status(401).json({
+        message: "Invalid credentials",
+        error: "Login failed.",
+      });
 
-    // const ok = await bcrypt.compare(password, admin.password_hash);
-    // if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+    const ok = await bcrypt.compare(password, admin.password);
+    if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
     const { token } = signAdminAccess({
       adminId: String(admin.admin_id),
