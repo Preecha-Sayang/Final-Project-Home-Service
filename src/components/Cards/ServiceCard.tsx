@@ -8,11 +8,11 @@ interface ServiceCardProps {
   title: string;
   price: string;
   serviceId?: number;
-  description?: string;
+  // description?: string;
   onCategoryClick?: (category: string) => void;
 }
 
-function ServiceCard({ imgSrc, category, title, price, serviceId, description, onCategoryClick }: ServiceCardProps) {
+function ServiceCard({ imgSrc, category, title, price, serviceId, onCategoryClick }: ServiceCardProps) {
   const router = useRouter();
 
   const handleAction = () => {

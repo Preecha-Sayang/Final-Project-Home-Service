@@ -15,7 +15,6 @@ import { FiltersBar } from "@/components/filters";
 import { useServices } from "../hooks/useServices";
 import { usePriceRange } from "../hooks/usePriceRange";
 import { useCategories } from "../hooks/useCategories";
-import { useAuth } from "../context/AuthContext";
 
 // Types & Utils
 import { FiltersState } from "@/components/filters";
@@ -91,7 +90,7 @@ const EmptyState = () => (
   </div>
 );
 
-const ServiceGrid = ({ services, onCategorySelection }: { services: any[], onCategorySelection: (category: string) => void }) => (
+const ServiceGrid = ({ services, onCategorySelection }: { services: ServiceWithCategoryAndPrice[], onCategorySelection: (category: string) => void }) => (
   <div className="flex justify-center">
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {services.map((service) => (
@@ -102,7 +101,7 @@ const ServiceGrid = ({ services, onCategorySelection }: { services: any[], onCat
           title={service.servicename}
           price={service.price}
           serviceId={service.service_id}
-          description={service.description}
+          // description={service.description}
           onCategoryClick={onCategorySelection}
         />
       ))}
