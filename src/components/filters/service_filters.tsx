@@ -93,12 +93,11 @@ export default function FiltersBar({
     const priceLabel = `${price.min.toLocaleString()}–${price.max.toLocaleString()}฿`;
 
     return (
-        <div className={className}>
+        <div className={`sticky top-0 z-50 ${className}`}>
             {/* เดสก์ท็อป = บรรทัดเดียว / มือถือ = wrap ได้เอง */}
-            <div className="flex flex-wrap md:flex-nowrap items-end gap-3 p-4 w-full bg-white shadow-sm">
-
+            <div className="w-full bg-white shadow-sm flex flex-wrap md:flex-nowrap items-end gap-3 md:px-80 py-4">
                 {/* Search (ขยายกินที่) */}
-                <div className="min-w-[220px] grow mr-4">
+                <div className="min-w-[220px] grow">
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -224,21 +224,20 @@ export default function ServiceListPage() {
     <PageLayout isLoading={isLoading} hasError={hasError} errorMessage={errorMessage}>
       <HeroSection />
 
+      <FiltersBar
+        categories={categoryOptions}
+        onApply={applyFilters}
+        defaultFilters={defaultFilters}
+        selectedCategory={selectedCategory}
+      />
+
       <div className="w-full bg-white">
-        <div className="mb-6">
-          <FiltersBar
-            categories={categoryOptions}
-            onApply={applyFilters}
-            defaultFilters={defaultFilters}
-            selectedCategory={selectedCategory}
-          />
-        </div>
 
         {isApplyingFilters ? (
           <FilteringSpinner />
         ) : (
           <>
-            <div className="md:ml-35 mb-6 text-sm text-gray-600">
+            <div className="md:ml-80 mb-6 text-sm text-gray-600">
               <span>แสดงผล {totalServices} รายการ</span>
             </div>
 
