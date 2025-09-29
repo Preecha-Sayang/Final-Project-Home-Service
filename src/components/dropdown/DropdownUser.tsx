@@ -1,3 +1,4 @@
+"use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { User, List, Clock, LogOut } from "lucide-react";
@@ -9,7 +10,10 @@ type DropdownUserProps = {
   fullname?: string;
 };
 
-export default function DropdownUser({ imageURL, fullname }: DropdownUserProps) {
+export default function DropdownUser({
+  imageURL,
+  fullname,
+}: DropdownUserProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
@@ -30,16 +34,13 @@ export default function DropdownUser({ imageURL, fullname }: DropdownUserProps) 
   return (
     <div className="relative inline-block">
       {/* User Image Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="focus:outline-none"
-      >
+      <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none">
         <Image
           src={imageURL || "/images/user_default.png"}
           alt="user"
-          width={40}
-          height={40}
-          className="h-10 w-10 rounded-full cursor-pointer hover:ring-2 hover:ring-blue-200"
+          width={13}
+          height={18}
+          className="h-8 w-8 rounded-full cursor-pointer hover:ring-2 hover:ring-blue-200"
         />
       </button>
 
@@ -51,7 +52,7 @@ export default function DropdownUser({ imageURL, fullname }: DropdownUserProps) 
               key={idx}
               href={item.href}
               className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
-              onClick={()=>setIsOpen(false)}
+              onClick={() => setIsOpen(false)}
             >
               {item.icon}
               <span>{item.label}</span>
@@ -70,4 +71,3 @@ export default function DropdownUser({ imageURL, fullname }: DropdownUserProps) 
     </div>
   );
 }
-
