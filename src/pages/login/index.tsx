@@ -113,7 +113,8 @@ export default function Login() {
 
           <div className="flex flex-col md:flex-row gap-1 mt-4 ">
             <span>ยังไม่มีบัญชีผู้ใช้ HomeService?</span>
-            <ButtonGhost onClick={() => router.push("/loginuser/register")}>
+            
+            <ButtonGhost onClick={() => router.push("/register")}>
               <span>ลงทะเบียน</span>
             </ButtonGhost>
           </div>
