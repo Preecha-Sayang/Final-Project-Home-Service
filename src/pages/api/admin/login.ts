@@ -28,8 +28,8 @@ export default async function handler(
         .status(401)
         .json({ message: "Invalid credentials", error: "Login failed." });
 
-    // const ok = await bcrypt.compare(password, admin.password_hash);
-    // if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+    const ok = await bcrypt.compare(password, admin.password_hash);
+    if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
     const { token } = signAdminAccess({
       adminId: String(admin.admin_id),
