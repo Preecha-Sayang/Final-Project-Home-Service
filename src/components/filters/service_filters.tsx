@@ -172,6 +172,9 @@ export default function FiltersBar({
                                 step={1}
                                 value={tempPrice}
                                 onChange={setTempPrice}
+                                onCommit={setTempPrice}
+                                debounceMs={150}
+                                enableDebugLogs={false}
                             />
                             <div className="mt-3 flex items-center justify-end gap-2">
                                 <button

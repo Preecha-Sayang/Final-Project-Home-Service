@@ -13,25 +13,83 @@ type Props = {
     onChange?: (val: Range) => void;
     onCommit?: (val: Range) => void;
     className?: string;
+    debounceMs?: number; // Optional debounce delay for onChange
+    enableDebugLogs?: boolean; // Optional debug logging (default: false)
 };
 
+// Custom hook for debouncing
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = React.useState<T>(value);
 
+    React.useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
 
 export default function PriceRange({
     label, min, max, step = 1, value, onChange, onCommit, className,
+    debounceMs = 0, enableDebugLogs = false,
 }: Props) {
-    // ---- เพิ่ม handler สำหรับ log แล้วค่อยกระจายต่อไปให้ props ----
-    const handleValueChange = ([a, b]: number[]) => {
-        const v = { min: Math.min(a, b), max: Math.max(a, b) };
-        console.log("[PriceRange] change:", v);
-        onChange?.(v);
-    };
+    // Internal state for immediate UI updates
+    const [internalValue, setInternalValue] = React.useState(value);
+    
+    // Debounced value for onChange callback (only if debounceMs > 0)
+    const debouncedValue = useDebounce(internalValue, debounceMs);
+    
+    // Update internal value when prop value changes
+    React.useEffect(() => {
+        setInternalValue(value);
+    }, [value]);
 
-    const handleValueCommit = ([a, b]: number[]) => {
-        const v = { min: Math.min(a, b), max: Math.max(a, b) };
-        console.log("[PriceRange] commit:", v);
-        onCommit?.(v);
-    };
+    // Handle onChange with optional debouncing
+    const handleValueChange = React.useCallback(([a, b]: number[]) => {
+        const newValue = { min: Math.min(a, b), max: Math.max(a, b) };
+        setInternalValue(newValue);
+        
+        // Only call onChange if debouncing is disabled
+        if (debounceMs === 0) {
+            if (enableDebugLogs) {
+                console.log("[PriceRange] onChange:", newValue);
+            }
+            onChange?.(newValue);
+        }
+    }, [onChange, debounceMs, enableDebugLogs]);
+
+    // Handle onChangeCommitted (when user stops sliding)
+    const handleValueCommit = React.useCallback(([a, b]: number[]) => {
+        const finalValue = { min: Math.min(a, b), max: Math.max(a, b) };
+        setInternalValue(finalValue);
+        
+        if (enableDebugLogs) {
+            console.log("[PriceRange] onCommit:", finalValue);
+        }
+        
+        // Always call onCommit with final value
+        onCommit?.(finalValue);
+        
+        // If debouncing is enabled, also call onChange with final value
+        if (debounceMs > 0) {
+            onChange?.(finalValue);
+        }
+    }, [onCommit, onChange, debounceMs, enableDebugLogs]);
+
+    // Effect to handle debounced onChange calls
+    React.useEffect(() => {
+        if (debounceMs > 0 && onChange) {
+            onChange(debouncedValue);
+            if (enableDebugLogs) {
+                console.log("[PriceRange] debounced onChange:", debouncedValue);
+            }
+        }
+    }, [debouncedValue, onChange, debounceMs, enableDebugLogs]);
 
 
     return (
@@ -47,7 +105,7 @@ export default function PriceRange({
                         min={min}
                         max={max}
                         step={step}
-                        value={[value.min, value.max]}
+                        value={[internalValue.min, internalValue.max]}
                         onValueChange={handleValueChange}
                         onValueCommit={handleValueCommit}
                         className="relative mx-2 flex w-[calc(100%-1rem)] select-none touch-none items-center"
@@ -71,7 +129,7 @@ export default function PriceRange({
                                 className="pointer-events-none absolute left-1/2 top-[18px] -translate-x-1/2 rounded-md
                  bg-[var(--white)] px-2 py-0.5 text-xs text-[var(--gray-800)] shadow-sm ring-1 ring-[var(--gray-200)]"
                             >
-                                {value.min}
+                                {internalValue.min}
                             </span>
                         </Slider.Thumb>
 
@@ -87,7 +145,7 @@ export default function PriceRange({
                                 className="pointer-events-none absolute left-1/2 top-[18px] -translate-x-1/2 rounded-md
                  bg-[var(--white)] px-2 py-0.5 text-xs text-[var(--gray-800)] shadow-sm ring-1 ring-[var(--gray-200)]"
                             >
-                                {value.max}
+                                {internalValue.max}
                             </span>
                         </Slider.Thumb>
                     </Slider.Root>
@@ -107,3 +165,6 @@ export default function PriceRange({
         </div>
     );
 }
+
+
+  
