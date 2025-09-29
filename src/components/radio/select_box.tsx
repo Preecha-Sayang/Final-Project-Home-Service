@@ -123,3 +123,93 @@ export default function SelectBox({
     </button>
   );
 }
+
+/**
+ * วิธีใช้งาน SelectBox Component
+ * 
+ * SelectBox Component เป็นคอมโพเนนต์ที่ใช้สำหรับการเลือกตัวเลือกต่างๆ
+ * มีไอคอนและข้อความที่เปลี่ยนแปลงตามสถานะ (ปกติ, hover, selected)
+ * 
+ * คุณสมบัติหลัก:
+ * - ไอคอนที่เปลี่ยนแปลงตามสถานะ
+ * - ข้อความที่เปลี่ยนแปลงตามสถานะ
+ * - รองรับการปิดใช้งาน (disabled state)
+ * - รองรับ controlled และ uncontrolled mode
+ * - Hover effects และ transitions
+ * - Customizable size และ styling
+ * 
+ * ตัวอย่างการใช้งาน:
+ * 
+ * 1) การใช้งานพื้นฐาน - การเลือกวิธีการชำระเงิน:
+ *    const [selectedPayment, setSelectedPayment] = useState("");
+ *    
+ *    <div className="flex gap-4">
+ *      <SelectBox
+ *        id="qr-payment"
+ *        label="QR Code"
+ *        icon="/images/icon_qr.svg"
+ *        iconHover="/images/qr_code_2_blue_24dp 1 (2).svg"
+ *        selected={selectedPayment === "qr"}
+ *        onClick={(selected) => setSelectedPayment(selected ? "qr" : "")}
+ *      />
+ *    </div>
+ 
+ * 
+ * 2) การใช้งานแบบ Disabled:
+ *    <div className="flex gap-4">
+ *      <SelectBox
+ *        id="enabled-option"
+ *        label="ใช้งานได้"
+ *        icon="/images/icon_qr.svg"
+ *        iconHover="/images/qr_code_2_blue_24dp 1 (2).svg"
+ *        selected={true}
+ *        onClick={(selected) => console.log(selected)}
+ *      />
+ *      <SelectBox
+ *        id="disabled-option"
+ *        label="ปิดใช้งาน"
+ *        icon="/images/icon_qr.svg"
+ *        iconHover="/images/qr_code_2_blue_24dp 1 (2).svg"
+ *        selected={false}
+ *        disabled={true}
+ *      />
+ *    </div>
+ 
+ * การแสดงผล:
+ * - ไอคอนแสดงด้านบน
+ * - ข้อความแสดงด้านล่าง
+ * - สีและสไตล์เปลี่ยนแปลงตามสถานะ
+ * - รองรับ responsive design
+ * - มี hover และ focus states
+ * - รองรับ disabled state
+ * 
+ * สถานะต่างๆ:
+ * - Default: สีเทา, ไอคอนปกติ
+ * - Hover: สีน้ำเงิน, ไอคอน hover
+ * - Selected: พื้นหลังน้ำเงินอ่อน, เส้นขอบน้ำเงิน, ไอคอน hover
+ * - Disabled: สีเทา, opacity ลดลง, cursor not-allowed
+ * 
+ * Best Practices:
+ * 1. ใช้ id ที่ไม่ซ้ำกันสำหรับแต่ละ select box
+ * 2. จัดการ state ให้เหมาะสมกับ use case
+ * 3. ใช้ไอคอนที่เหมาะสมกับฟังก์ชันการทำงาน
+ * 4. ใช้ label ที่ชัดเจนและเข้าใจง่าย
+ * 5. ตรวจสอบ accessibility (alt text สำหรับไอคอน)
+ * 6. ใช้ controlled mode เมื่อต้องการควบคุม state จากภายนอก
+ * 
+ * การใช้งานกับ Form Libraries:
+ * 
+ * React Hook Form:
+ * ```tsx
+ * const { register, watch, setValue } = useForm();
+ * const selectedValue = watch("paymentMethod");
+ * 
+ * <SelectBox
+ *   id="qr"
+ *   label="QR Code"
+ *   icon="/images/icon_qr.svg"
+ *   iconHover="/images/qr_code_2_blue_24dp 1 (2).svg"
+ *   selected={selectedValue === "qr"}
+ *   onClick={(selected) => setValue("paymentMethod", selected ? "qr" : "")}
+ * />
+ */

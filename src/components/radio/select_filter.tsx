@@ -123,32 +123,88 @@ function SelectFilterExample({
     </div>
   );
 }
+export default SelectFilterExample;
 
 /**
- * คอมโพเนนต์ตัวอย่างการใช้งาน Select Filter
- * แสดง select filter เดี่ยวที่มีทุกสถานะรวมกัน: Default, Hover, Hover Option
-
+ * วิธีใช้งาน SelectFilterExample Component
+ * 
+ * SelectFilterExample Component เป็นคอมโพเนนต์ dropdown select filter
+ * เหมาะสำหรับการกรองข้อมูล, การเลือกตัวเลือก, การเรียงลำดับ
+ * 
+ * คุณสมบัติหลัก:
+ * - Dropdown menu ที่แสดงเมื่อคลิก
+ * - ตัวเลือกที่เปลี่ยนแปลงได้
+ * - รองรับการปิดใช้งาน (disabled state)
+ * - Hover effects สำหรับตัวเลือก
+ * - Click outside to close functionality
+ * - สไตล์ที่สอดคล้องกับ design system
+ * 
+ * ตัวอย่างการใช้งาน:
+ * 
+ * 1) การใช้งานพื้นฐาน - การกรองข้อมูล:
+ *    const [selectedValue, setSelectedValue] = useState("Selected");
+ *    
+ *    <SelectFilterExample
+ *      id="category-filter"
+ *      selected={filterValue}
+ *      onChange={setFilterValue}
+ *      options={["All", "Category 1", "Category 2", "Category 3"]}
+ *    />
+ * 
+ * 2) การใช้งานแบบ Disabled:
+ *    <div className="space-y-4">
+ *      <SelectFilterExample
+ *        id="enabled-filter"
+ *        selected="Active"
+ *        onChange={(value) => console.log(value)}
+ *        options={["All", "Active", "Inactive"]}
+ *      />
+ *      <SelectFilterExample
+ *        id="disabled-filter"
+ *        selected="Disabled"
+ *        disabled={true}
+ *        options={["All", "Active", "Inactive"]}
+ *      />
+ *    </div>
+ * 
+ * การแสดงผล:
+ * - ปุ่มแสดงค่าที่เลือกปัจจุบัน
+ * - Dropdown arrow ที่หมุนเมื่อเปิด
+ * - Dropdown menu แสดงตัวเลือกทั้งหมด
+ * - ตัวเลือกที่เลือกจะแสดงสีน้ำเงิน
+ * - Hover effects สำหรับตัวเลือก
+ * - รองรับ responsive design
+ * 
+ * สถานะต่างๆ:
+ * - Default: สีเทา, cursor pointer
+ * - Hover: พื้นหลังเทาอ่อน
+ * - Open: พื้นหลังน้ำเงินอ่อน, arrow หมุน
+ * - Selected Option: สีน้ำเงิน, พื้นหลังน้ำเงินอ่อน
+ * - Hovered Option: พื้นหลังเทาอ่อน
+ * - Disabled: สีเทา, opacity ลดลง, cursor not-allowed
+ * 
+ * Best Practices:
+ * 1. ใช้ id ที่ไม่ซ้ำกันสำหรับแต่ละ select filter
+ * 2. จัดการ state ให้เหมาะสมกับ use case
+ * 3. ใช้ options ที่ชัดเจนและเข้าใจง่าย
+ * 4. ตรวจสอบ accessibility (keyboard navigation)
+ * 5. ใช้ placeholder หรือ default value ที่เหมาะสม
+ * 6. จัดกลุ่มตัวเลือกที่เกี่ยวข้องกัน
+ * 
+ * การใช้งานกับ Form Libraries:
+ * 
+ * React Hook Form:
+ * ```tsx
+ * const { register, watch, setValue } = useForm();
+ * const selectedValue = watch("category");
+ * 
+ * <SelectFilterExample
+ *   id="category"
+ *   selected={selectedValue}
+ *   onChange={(value) => setValue("category", value)}
+ *   options={["All", "Category 1", "Category 2"]}
+ * />
  */
-export function SelectFilter() {
-  const [selectedValue, setSelectedValue] = useState("Selected");
 
-  return (
-    <div className="space-y-6">
-      {/* Select Filter เดียวที่แสดงทุกสถานะ */}
-      <div className="space-y-4 ">
-       
-         {/* Select Filter Interactive */}
-         <div className="flex justify-center">
-           <SelectFilterExample
-             id="select-filter-interactive"
-             selected={selectedValue}
-             onChange={setSelectedValue}
-             options={["Selected", "Unselected", "Hover"]}
-           />
-         </div>
-      </div>
-    </div>
-  );
-}
 
-export default SelectFilterExample;
+
