@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useServices, type Service } from "./useServices";
+import { useServices } from "./useServices";
 
 export interface PriceRange {
   min: number;

@@ -6,32 +6,6 @@ const databasePool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// กำหนด type ของข้อมูล
-interface Service {
-  service_id: number;
-  servicename: string;
-  category_id: number;
-  image_url: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-  admin_id: number;
-}
-
-interface ServiceOption {
-  service_option_id: number;
-  service_id: number;
-  name: string;
-  unit: string;
-  unit_price: number;
-}
-
-interface ServiceCategory {
-  category_id: number;
-  name: string;
-  description: string;
-}
-
 // type ข้อมูลที่จะส่งกลับไปยัง frontend
 interface ServiceWithCategoryAndPrice {
   service_id: number;

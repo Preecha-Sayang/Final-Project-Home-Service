@@ -2,7 +2,6 @@ import * as React from "react";
 import type { FiltersState, Option, Range } from "./types";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import PriceRange from "@/components/input/inputPriceRange/price_range";
-import { cn } from "@/components/input/_style";
 import { usePriceRange } from "@/hooks/usePriceRange";
 
 /** hook เล็ก ๆ สำหรับปิดเมื่อคลิกนอก */
