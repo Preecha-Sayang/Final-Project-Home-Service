@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+* {
+  font-family: var(--font-prompt), 'Prompt', sans-serif;
+}
+
 :root {
   /* Blue */
   --blue-100: #eaf0ff;

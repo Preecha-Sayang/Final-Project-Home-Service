@@ -9,7 +9,7 @@ const fontPrompt = Prompt({
   //Set Font เพื่อใช้ทั้งระบบ ไม่ต้องลบส่วนนี้//
   variable: "--font-prompt",
   subsets: ["latin", "thai"],
-  weight: "600",
+  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
 export default function App({ Component, pageProps }: AppProps) {
