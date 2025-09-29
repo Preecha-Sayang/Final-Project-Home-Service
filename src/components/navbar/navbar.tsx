@@ -31,43 +31,49 @@ export default function Navbar({ imageURL }: NavbarProps) {
 
 
 
+
   return (
     <div className="sticky top-0 z-40 bg-[var(--white)] shadow-md">
-    <div className="mx-auto max-w-[1440px] h-[80px] bg-[var(--white)] flex items-center justify-between relative">
-      {/* โลโก้ และ เมนู */}
-      <div className="flex items-center gap-20 ml-15">
-        <Link href="/" className="cursor-pointer">
-          <Image 
-          src={logo_img} 
-          alt="HomeServices" 
-          className="" 
-          priority
-          width={207}
-          height={36}
-        />
-    
-        </Link>
-        <Link href="/services" className="cursor-pointer">
-        <p className="flex items-center text-[var(--gray-900)] font-semibold mt-1.5">
-            บริการของเรา
-          </p>
-        </Link>
-      </div>
-      
-      {!isLoggedIn ? (
-        <div className="mr-15">
-          <Link href="/loginuser/login" className="px-2 py-2 border border-[var(--blue-600)] text-[var(--blue-600)] rounded-lg cursor-pointer">
-            เข้าสู่ระบบ
+      <div className="mx-auto max-w-[1440px] h-[80px] bg-[var(--white)] flex items-center justify-between relative px-4 lg:px-15">
+        {/* โลโก้ และ เมนู */}
+        <div className="flex items-center gap-4 lg:gap-20">
+          <Link href="/" className="cursor-pointer">  {/*เหลือใส่ href ไปหน้า home_pages*/}
+            <Image 
+              src={logo_img} 
+              alt="HomeServices" 
+              className="w-auto h-8 lg:h-9" 
+              priority
+              width={207}
+              height={36}
+            />
+          </Link>
+          
+          {/* บริการของเรา - แสดงทั้งบนมือถือและเดสก์ท็อป */}
+          <Link href="/services" className="cursor-pointer">
+            <p className="flex items-center text-[var(--gray-900)] font-semibold mt-1.5 text-sm lg:text-base">
+              บริการของเรา {/*เหลือใส่ href ไปหน้า services list*/}
+            </p>
           </Link>
         </div>
-      ) : (
-        <div className="flex items-center gap-4 mr-30">
-          <div className="text-gray-800 font-medium">{fullname}</div>
-          <DropdownUser  imageURL={getImageURL} fullname={fullname} />
-          <IconBell />
+        
+        {/* Auth Section - แสดงทั้งบนมือถือและเดสก์ท็อป */}
+        <div className="flex items-center">
+          {!isLoggedIn ? (
+            <div>
+              <Link href="/loginuser/login" className="px-3 py-2 border border-[var(--blue-600)] text-[var(--blue-600)] rounded-lg cursor-pointer text-sm lg:text-base hover:bg-[var(--blue-50)] transition-colors">
+                เข้าสู่ระบบ
+              </Link>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 lg:gap-4">
+              {/* ซ่อนชื่อผู้ใช้บนมือถือ */}
+              <div className="hidden lg:block text-gray-800 font-medium">{fullname}</div>
+              <DropdownUser imageURL={getImageURL} fullname={fullname} />
+              <IconBell />
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
     </div>
   );
 }
