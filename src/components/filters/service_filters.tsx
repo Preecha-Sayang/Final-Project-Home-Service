@@ -93,15 +93,11 @@ export default function FiltersBar({
     const priceLabel = `${price.min.toLocaleString()}–${price.max.toLocaleString()}฿`;
 
     return (
-        <div className={className}>
+        <div className={`sticky top-20 z-30 ${className}`}>
             {/* เดสก์ท็อป = บรรทัดเดียว / มือถือ = wrap ได้เอง */}
-            <div
-                className={cn( 
-                    "flex flex-wrap md:flex-nowrap items-end gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-4"
-                )}
-            >
+            <div className="w-full bg-white shadow-sm flex flex-wrap md:flex-nowrap items-end gap-3 md:px-80 py-4">
                 {/* Search (ขยายกินที่) */}
-                <div className="min-w-[220px] grow mr-4">
+                <div className="min-w-[220px] grow">
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,6 +168,9 @@ export default function FiltersBar({
                                 step={1}
                                 value={tempPrice}
                                 onChange={setTempPrice}
+                                onCommit={setTempPrice}
+                                debounceMs={150}
+                                enableDebugLogs={false}
                             />
                             <div className="mt-3 flex items-center justify-end gap-2">
                                 <button
