@@ -15,7 +15,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ORDER BY service_option_id ASC
         `;
         return res.status(200).json({ ok: true, options: rows });
-    } catch (e: any) {
-        return res.status(500).json({ ok: false, message: e?.message || "Get options failed" });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        return res.status(500).json({ ok: false, message: message || "Get options failed" });
     }
 }

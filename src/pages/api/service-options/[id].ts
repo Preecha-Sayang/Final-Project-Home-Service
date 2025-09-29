@@ -15,7 +15,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         `;
         if (rows.length === 0) return res.status(404).json({ ok: false, message: "Not found." });
         return res.status(200).json({ ok: true });
-    } catch (e: any) {
-        return res.status(500).json({ ok: false, message: e?.message || "Delete failed." });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        return res.status(500).json({ ok: false, message: message || "Delete failed." });
     }
 }

@@ -4,6 +4,7 @@ import { getService } from "lib/client/servicesApi";
 import type { ServiceItem } from "@/types/service";
 import Badge from "@/components/admin/services/badge";
 import BackHeader from "@/components/admin/common/BackHeader";
+import { Image } from "lucide-react";
 
 type OptionRow = { service_option_id: number; name: string; unit: string; unit_price: number };
 
@@ -28,8 +29,9 @@ export default function ServiceDetailPage() {
             try {
                 const s = await getService(sid);
                 setItem(s);
-            } catch (e: any) {
-                setError(e?.message || "โหลดข้อมูลล้มเหลว");
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : String(e);
+                setError(message || "โหลดข้อมูลล้มเหลว");
                 setItem(null);
             } finally {
                 setLoading(false);
@@ -111,9 +113,9 @@ export default function ServiceDetailPage() {
                         <div className="grid gap-2">
                             <div className="text-sm text-[var(--gray-600)]">รูปภาพ</div>
                             {item.imageUrl ? (
-                                <img
+                                <Image
                                     src={item.imageUrl}
-                                    alt=""
+                                    alt={item.name}
                                     className="h-40 w-full max-w-md rounded-xl object-cover"
                                 />
                             ) : (

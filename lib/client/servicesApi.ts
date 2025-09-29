@@ -1,57 +1,70 @@
-import type { ServiceItem } from "@/types/service";
+import type {
+    ServiceItem, //subItem
+    ServiceRowRaw,
+    ListServicesResponse, GetServiceResponse, MutateServiceResponse,
+    CategoryRow, ListCategoriesResponse,
+} from "@/types/service";
 import { http } from "./http";
 
 const BASE = "/services";
 
-function mapRowToServiceItem(row: any, index = 0): ServiceItem {
+function mapRowToServiceItem(row: Record<string, unknown>, index = 0): ServiceItem {
+    const r = row as ServiceRowRaw;
     return {
-        id: Number(row.service_id),
-        name: String(row.servicename),
-        category: row.category_name ?? String(row.category_id),
+        id: Number(r.service_id),
+        name: String(r.servicename),
+        category: r.category_name ?? String(r.category_id ?? ""),
+        categoryId: Number(r.category_id ?? 0),
         index: index + 1,
-        imageUrl: row.image_url ?? null,
-        createdAt: row.create_at,
-        updatedAt: row.update_at,
+        imageUrl: r.image_url ?? null,
+        createdAt: r.create_at,
+        updatedAt: r.update_at,
+        subItems: r.subItems ?? [],
     };
 }
 
-/** ดึงรายการบริการทั้งหมด (JOIN หมวดหมู่) */
-export async function listServices(): Promise<ServiceItem[]> {
-    const { data } = await http.get<{ ok: boolean; services: any[] }>(BASE);
+/** ดึงรายการบริการทั้งหมด */
+export async function listServices(): Promise<{ ok: boolean; services: ServiceItem[] }> {
+    const { data } = await http.get<ListServicesResponse>(BASE);
     if (!data?.ok) throw new Error("load services failed");
-    return (data.services ?? []).map(mapRowToServiceItem);
+    return {
+        ok: true,
+        services: (data.services ?? []).map((r, i) =>
+            mapRowToServiceItem(r as Record<string, unknown>, i)
+        ),
+    };
 }
 
-/** ดึงรายละเอียดบริการตาม id */
+/** ดึงบริการเดี่ยว */
 export async function getService(id: string | number): Promise<ServiceItem> {
-    const { data } = await http.get<{ ok: boolean; service: any }>(`${BASE}/${id}`);
-    if (!data?.ok) throw new Error("get service failed");
-    return mapRowToServiceItem(data.service, 0);
+    const { data } = await http.get<GetServiceResponse>(`${BASE}/${id}`);
+    if (!data?.ok || !data.service) throw new Error("not found");
+    return mapRowToServiceItem(data.service as Record<string, unknown>, 0);
 }
 
-/** เพิ่มบริการใหม่ (ต้องส่ง FormData เพื่อแนบไฟล์รูป) */
+/** สร้างบริการใหม่ */
 export async function createService(fd: FormData): Promise<ServiceItem> {
-    // อย่าใส่ 'Content-Type: application/json' เวลาใช้ FormData
-    const { data } = await http.post<{ ok: boolean; service: any }>(BASE, fd);
-    if (!data?.ok) throw new Error("create failed");
-    return mapRowToServiceItem(data.service, 0);
+    const { data } = await http.post<MutateServiceResponse>(BASE, fd);
+    if (!data?.ok || !data.service) throw new Error("create failed");
+    return mapRowToServiceItem(data.service as Record<string, unknown>, 0);
 }
 
-/** อัปเดตบริการตาม id (รองรับแนบไฟล์ใหม่ได้) */
+/** อัปเดตบริการ */
 export async function updateService(id: string | number, fd: FormData): Promise<ServiceItem> {
-    const { data } = await http.patch<{ ok: boolean; service: any }>(`${BASE}/${id}`, fd);
-    if (!data?.ok) throw new Error("update failed");
-    return mapRowToServiceItem(data.service, 0);
+    const { data } = await http.patch<MutateServiceResponse>(`${BASE}/${id}`, fd);
+    if (!data?.ok || !data.service) throw new Error("update failed");
+    return mapRowToServiceItem(data.service as Record<string, unknown>, 0);
 }
 
-/** ลบบริการตาม id (จะลบรูปบน Cloudinary ด้วยที่ฝั่ง API) */
+/** ลบบริการ */
 export async function deleteService(id: string | number): Promise<void> {
-    const { data, status } = await http.delete<{ ok: boolean; message?: string }>(`${BASE}/${id}`);
-    if (!(status >= 200 && status < 300)) throw new Error(data?.message || "delete failed");
+    await http.delete(`${BASE}/${id}`);
 }
 
 /** จัดเรียงลำดับบริการใหม่ (ตอนนี้ทำเป็น no-op ถ้ายังไม่มีคอลัมน์ position ใน DB) */
 export async function reorderServices(_payload: { id: number; index: number }[]): Promise<void> {
+    // ใส่ _ แปลว่าจะมาทำต่อ เช่น _payload นะครับทุกคน
+
     // ถ้าจะบันทึกลำดับจริง:
     // 1) เพิ่มคอลัมน์ position integer not null default 0 ใน services
     // 2) ทำ API PATCH /api/services/reorder รับ [{id, position}]
@@ -60,8 +73,8 @@ export async function reorderServices(_payload: { id: number; index: number }[])
 }
 
 /** ดึงหมวดหมู่ (สำหรับ dropdown) */
-export async function listCategories(): Promise<Array<{ category_id: number; name: string }>> {
-    const { data } = await http.get<{ ok: boolean; categories: Array<{ category_id: number; name: string }> }>("categories");
+export async function listCategories(): Promise<CategoryRow[]> {
+    const { data } = await http.get<ListCategoriesResponse>("categories");
     if (!data?.ok) throw new Error("load categories failed");
     return data.categories ?? [];
 }

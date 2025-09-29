@@ -13,30 +13,28 @@ async function fileToDataURI(file: Blob, mime: string) {
     return `data:${mime};base64,${buf.toString("base64")}`;
 }
 
-export const config = {
-    api: { bodyParser: false },
+export const config = { api: { bodyParser: false } };
+type RequestWithFormData = NextApiRequest & {
+    formData?: () => Promise<FormData>;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== "POST") return res.status(405).json({
-        ok: false, message: "Method not allowed.",
-    });
+    if (req.method !== "POST") {
+        return res.status(405).json({ ok: false, message: "Method not allowed." });
+    }
 
     try {
-
-        const form: FormData = await (req as any).formData?.() ?? null;
-        if (!form) return res.status(400).json({
-            ok: false, message: "No form data",
-        });
-
+        const reqWithFD = req as RequestWithFormData;
+        if (typeof reqWithFD.formData !== "function") {
+            return res.status(400).json({ ok: false, message: "No form data" });
+        }
+        const form = await reqWithFD.formData();
         const file = form.get("file") as File | null;
-        if (!file) return res.status(400).json({
-            ok: false, message: "No file",
-        });
-
+        if (!file) {
+            return res.status(400).json({ ok: false, message: "No file" });
+        }
         const dataURL = await fileToDataURI(file, file.type || "image/jpeg");
         const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || "uploads";
-
         const up = await cloudinary.uploader.upload(dataURL, {
             folder,
             resource_type: "image",
@@ -52,11 +50,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 format: up.format,
             },
         });
-    } catch (err: any) {
-        console.error(err);
-        return res.status(500).json({
-            ok: false, message: err?.message || "Upload failed.",
-        });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        return res.status(500).json({ ok: false, message: message || "Upload failed." });
     }
 }
 

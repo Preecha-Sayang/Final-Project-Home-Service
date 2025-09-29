@@ -1,14 +1,15 @@
 import dynamic from "next/dynamic";
 import BackHeader from "@/components/admin/common/BackHeader";
+import { Link } from "lucide-react";
 
 const ServiceEditor = dynamic(() => import("@/components/admin/services/editor"), { ssr: false });
 
 export default function NewServicePage() {
     const actions = (
         <div className="flex gap-2">
-            <a href="/admin/services" className="h-9 inline-flex items-center rounded-lg border border-[var(--gray-200)] bg-white px-3 text-sm text-[var(--gray-800)] hover:bg-[var(--gray-100)] cursor-pointer">
+            <Link to="/admin/services" className="h-9 inline-flex items-center rounded-lg border border-[var(--gray-200)] bg-white px-3 text-sm text-[var(--gray-800)] hover:bg-[var(--gray-100)] cursor-pointer">
                 ยกเลิก
-            </a>
+            </Link>
             <button
                 type="submit"
                 form="service-form"

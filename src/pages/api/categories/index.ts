@@ -10,7 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ORDER BY category_id ASC
         `;
         return res.status(200).json({ ok: true, categories: rows });
-    } catch (e: any) {
-        return res.status(500).json({ ok: false, message: e?.message || "Get categories failed" });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        return res.status(500).json({ ok: false, message: message || "Get categories failed" });
     }
 }

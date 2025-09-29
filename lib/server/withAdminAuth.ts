@@ -46,7 +46,7 @@ export function withAdminAuth<TReq extends NextApiRequest = NextApiRequest>(
 
             // เรียก handler ด้วยชนิดที่ผู้ใช้ระบุ
             return await handler(req as unknown as TReq, res);
-        } catch (e) {
+        } catch {
             return res.status(401).json({ message: "unauthorized" });
         }
     };

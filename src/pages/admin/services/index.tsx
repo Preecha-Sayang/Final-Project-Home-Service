@@ -18,8 +18,8 @@ export default function AdminServicesPage() {
         (async () => {
             setLoading(true);
             try {
-                const data = await listServices();
-                if (alive) setItems(data);
+                const { services } = await listServices();
+                if (alive) setItems(services);
             } finally { setLoading(false); }
         })();
         return () => { alive = false; };

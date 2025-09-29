@@ -39,14 +39,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // ถ้ามีไฟล์ภาพ
-        const file = (Array.isArray(files.file) ? files.file[0] : (files.file as File | undefined));
+        const file: File | undefined = Array.isArray(files.file)
+            ? (files.file[0] as File | undefined)
+            : (files.file as File | undefined);
+
         let image_url: string | null = null;
         let image_public_id: string | null = null;
 
         if (file) {
-            const filepath = (file as any).filepath || (file as any).path;
+            const f = file as File & { filepath?: string; path?: string; mimetype?: string; type?: string };
+            const filepath = f.filepath ?? f.path;
+            if (!filepath) throw new Error("Uploaded file has no path");
+
             const data = await fs.readFile(filepath);
-            const mime = file.mimetype || "application/octet-stream";
+            const mime = f.mimetype ?? f.type ?? "application/octet-stream";
             const dataURL = `data:${mime};base64,${data.toString("base64")}`;
 
             const up = await cloudinary.uploader.upload(dataURL, {
@@ -61,13 +67,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // INSERT ลง Neon
         const rows = await sql/*sql*/`
             INSERT INTO services (servicename, category_id, image_url, image_public_id, price, description, admin_id, update_at)
-            VALUES (${servicename}, ${category_id}, ${image_url}, ${image_public_id}, ${isFinite(price) ? price : null}, ${description}, ${admin_id}, now())
+            VALUES (${servicename}, ${category_id}, ${image_url}, ${image_public_id}, ${Number.isFinite(price) ? price : null}, ${description}, ${admin_id}, now())
             RETURNING service_id, servicename, category_id, image_url, image_public_id, price, description, create_at, update_at, admin_id
-            `;
+        `;
 
         return res.status(200).json({ ok: true, service: rows[0] });
-    } catch (e: any) {
-        console.error(e);
-        return res.status(500).json({ ok: false, message: e?.message || "Create failed." });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        console.error(message);
+        return res.status(500).json({ ok: false, message });
     }
 }

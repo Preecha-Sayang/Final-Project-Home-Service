@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 
 import InputField from "@/components/input/inputField/input_state";
 import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
@@ -54,15 +55,15 @@ export default function ServiceEditor({ mode, id }: Props) {
         (async () => {
             setLoading(true);
             try {
-                const s: any = await getService(id);
-                setName(s.name ?? s.servicename ?? "");
-                setCategoryId(Number(s.category_id ?? 1));
-                setImageUrl(s.imageUrl ?? s.image_url ?? "");
+                const s: Awaited<ReturnType<typeof getService>> = await getService(id);
+                setName(s.name ?? "");
+                setCategoryId(Number((s as { categoryId?: number }).categoryId ?? 1));
+                setImageUrl(s.imageUrl ?? "");
                 setSubItems(
                     (s.subItems ?? [])
                         .slice()
-                        .sort((a: SubItem, b: SubItem) => a.index - b.index)
-                        .map((x: SubItem, i: number) => ({ ...x, index: i + 1 }))
+                        .sort((a, b) => a.index - b.index)
+                        .map((x, i) => ({ ...x, index: i + 1 }))
                 );
             } finally {
                 setLoading(false);
@@ -127,8 +128,9 @@ export default function ServiceEditor({ mode, id }: Props) {
                 if (!res.ok || !data?.ok) throw new Error(data?.message || "Update failed");
                 router.push(`/admin/services/${data.service.service_id}`);
             }
-        } catch (e: any) {
-            alert(e.message);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
+            alert(message);
         } finally {
             setSaving(false);
         }
@@ -170,7 +172,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                         <span className="text-sm font-medium text-[var(--gray-800)]">รูปภาพ</span>
                         {imageUrl && !imageFile ? (
                             <div className="grid gap-2">
-                                <img src={imageUrl} alt="" className="h-40 w-full max-w-md rounded-xl object-cover" />
+                                <Image src={imageUrl} alt="" className="h-40 w-full max-w-md rounded-xl object-cover" />
                                 {/* ปุ่มนี้แค่เอารูปเดิมออกจาก preview เพื่อเลือกใหม่ การลบของเก่าที่ Cloudinary จะเกิดตอน PATCH หากแนบไฟล์ใหม่ */}
                                 <button type="button" className="w-max text-sm text-[var(--blue-600)] hover:underline" onClick={() => setImageUrl("")}>
                                     เลือกรูปใหม่
