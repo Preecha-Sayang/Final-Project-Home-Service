@@ -1,4 +1,5 @@
 import { Pool } from "pg";
+import { neon } from "@neondatabase/serverless";
 
 declare global {
   var pgPool: Pool | undefined;
@@ -15,3 +16,5 @@ if (process.env.NODE_ENV !== "production") global.pgPool = pool;
 export const query = (text: string, params?: unknown[]) => pool.query(text, params);
 
 export default pool;
+
+export const sql = neon(process.env.DATABASE_URL!); //สร้างใหม่ สำหรับอัปโหลดรูป
