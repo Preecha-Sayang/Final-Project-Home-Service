@@ -95,11 +95,8 @@ export default function FiltersBar({
     return (
         <div className={className}>
             {/* เดสก์ท็อป = บรรทัดเดียว / มือถือ = wrap ได้เอง */}
-            <div
-                className={cn( 
-                    "flex flex-wrap md:flex-nowrap items-end gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-4"
-                )}
-            >
+            <div className="flex flex-wrap md:flex-nowrap items-end gap-3 p-4 w-full bg-white shadow-sm">
+
                 {/* Search (ขยายกินที่) */}
                 <div className="min-w-[220px] grow mr-4">
                     <div className="relative">

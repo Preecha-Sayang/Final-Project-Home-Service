@@ -224,8 +224,8 @@ export default function ServiceListPage() {
     <PageLayout isLoading={isLoading} hasError={hasError} errorMessage={errorMessage}>
       <HeroSection />
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center mb-6">
+      <div className="w-full bg-white">
+        <div className="mb-6">
           <FiltersBar
             categories={categoryOptions}
             onApply={applyFilters}
