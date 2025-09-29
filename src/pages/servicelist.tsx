@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Head from "next/head";
+import Image from 'next/image';
 
 // Components
 import LoadingState from "../components/common/LoadingState";
@@ -35,16 +36,30 @@ const PAGE_CONFIG = {
 };
 
 // ============================================================================
+// TYPES
+// ============================================================================
+interface ServiceWithCategoryAndPrice {
+  service_id: number;
+  servicename: string;
+  category: string;
+  image_url: string;
+  price: string;
+  description: string;
+  min_price: number;
+  max_price: number;
+}
+
+// ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
-const applyServiceFilters = (services: any[], filters: FiltersState) => {
-  const matchesSearch = (service: any) => 
+const applyServiceFilters = (services: ServiceWithCategoryAndPrice[], filters: FiltersState) => {
+  const matchesSearch = (service: ServiceWithCategoryAndPrice) => 
     !filters.q || service.servicename.toLowerCase().includes(filters.q.toLowerCase());
   
-  const matchesCategory = (service: any) => 
+  const matchesCategory = (service: ServiceWithCategoryAndPrice) => 
     !filters.category || service.category === filters.category;
   
-  const matchesPriceRange = (service: any) => 
+  const matchesPriceRange = (service: ServiceWithCategoryAndPrice) => 
     service.min_price <= filters.price.max && service.max_price >= filters.price.min;
   
   const filtered = services.filter(service => 
@@ -101,7 +116,6 @@ const PageLayout = ({ children, isLoading, hasError, errorMessage }: {
   hasError: boolean;
   errorMessage: string;
 }) => {
-  const { isLoggedIn } = useAuth();
 
   if (isLoading) {
     return (
@@ -165,7 +179,7 @@ export default function ServiceListPage() {
   // ============================================================================
   // STATE MANAGEMENT
   // ============================================================================
-  const [filteredServices, setFilteredServices] = useState(allServices);
+  const [filteredServices, setFilteredServices] = useState<ServiceWithCategoryAndPrice[]>(allServices);
   const [isApplyingFilters, setIsApplyingFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
@@ -262,10 +276,12 @@ export default function ServiceListPage() {
       {/* About Section */}
       <section className="py-16 bg-blue-600 relative">
   {/* Image ชิดขอบ section */}
-  <img
+  <Image
   src="/images/house 1.svg"
   alt="House Icon"
   className="absolute bottom-0 right-0 h-[280px] object-contain"
+  width={280}
+  height={280}
 />
 
 

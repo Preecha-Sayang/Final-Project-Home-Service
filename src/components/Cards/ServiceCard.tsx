@@ -21,11 +21,11 @@ function ServiceCard({ imgSrc, category, title, price, serviceId, description, o
     }
   };
 
-  const handleMoreInfo = () => {
-    if (description) {
-      alert(description);
-    }
-  };
+  // const handleMoreInfo = () => {
+  //   if (description) {
+  //     alert(description);
+  //   }
+  // };
 
   const handleCategoryClick = () => {
     if (onCategoryClick) {
