@@ -10,11 +10,15 @@ export type ServiceRow = {
     image_public_id?: string | null;
 };
 
+type SaveServiceResponse =
+    | { ok: true; service: ServiceRow }
+    | { ok: false; message?: string };
+
 type Props = {
     mode: "create" | "edit";
     initial?: ServiceRow;   // edit ส่งข้อมูลเดิมมา
     adminId: number;        // admin ที่แก้ไข/สร้าง
-    onSaved?: (row: any) => void;
+    onSaved?: (row: ServiceRow) => void;
 };
 
 export default function ServiceForm({ mode, initial, adminId, onSaved }: Props) {
@@ -45,14 +49,16 @@ export default function ServiceForm({ mode, initial, adminId, onSaved }: Props) 
             const method = mode === "create" ? "POST" : "PATCH";
 
             const res = await fetch(url, { method, body: fd });
-            const data = await res.json();
-            if (!res.ok || !data?.ok) throw new Error(data?.message || "Save failed.");
-
+            const data = (await res.json()) as SaveServiceResponse;
+            if (!res.ok || !data?.ok) {
+                throw new Error(("message" in data && data.message) || "Save failed.");
+            }
             onSaved?.(data.service);
             alert(mode === "create" ? "สร้างบริการสำเร็จ" : "บันทึกการแก้ไขสำเร็จ");
 
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            setError(message);
         } finally {
             setSaving(false);
         }

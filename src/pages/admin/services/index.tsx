@@ -5,6 +5,7 @@ import { deleteService, listServices, reorderServices } from "lib/client/service
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
+import { Plus } from "lucide-react";
 
 export default function AdminServicesPage() {
     const [items, setItems] = useState<ServiceItem[]>([]);
@@ -18,8 +19,8 @@ export default function AdminServicesPage() {
         (async () => {
             setLoading(true);
             try {
-                const data = await listServices();
-                if (alive) setItems(data);
+                const { services } = await listServices();
+                if (alive) setItems(services);
             } finally { setLoading(false); }
         })();
         return () => { alive = false; };
@@ -50,20 +51,20 @@ export default function AdminServicesPage() {
 
     return (
         <>
-            <div className="w-full bg-white rounded-2xl border border-[var(--gray-100)] px-5 py-4 mb-6 flex items-center justify-between">
+            <div className="w-full bg-white rounded-2xl border border-[var(--gray-100)] px-5 py-4 mb-6 flex items-center justify-between shadow-[0_10px_24px_rgba(0,0,0,.06)]">
                 <div className="text-xl font-medium text-[var(--gray-900)]">รายการ</div>
                 <div className="flex items-center gap-2">
                     <input
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="ค้นหาบริการ..."
-                        className="h-9 w-64 rounded-lg border border-[var(--gray-300)] px-3 text-sm"
+                        className="w-[350px] h-[44px] rounded-lg border border-[var(--gray-300)] px-3 text-sm"
                     />
                     <button
                         onClick={() => router.push("/admin/services/new")}
-                        className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
+                        className="flex justify-center items-center w-[148px] h-[44px] rounded-lg bg-[var(--blue-600)] px-3 gap-2 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
                     >
-                        + เพิ่มบริการ
+                        เพิ่มบริการ <Plus className="h-5 w-5" />
                     </button>
                 </div>
             </div>

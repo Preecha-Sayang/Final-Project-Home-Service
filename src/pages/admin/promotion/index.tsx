@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 
 export default function AdminPromotionPage() {
     const [search, setSearch] = useState("");
