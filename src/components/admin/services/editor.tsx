@@ -10,6 +10,7 @@ import ImageUpload from "@/components/input/inputImageUpload/image_upload";
 import type { SubItem, ServiceItem, CategoryRow } from "@/types/service";
 import { getService, listCategories } from "lib/client/servicesApi";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
+import InputDialog from "@/components/dialog/input_dialog";
 
 type Mode = "create" | "edit";
 type Props = { mode: Mode; id?: string };
@@ -19,7 +20,13 @@ function emptySub(i: number): SubItem {
     return { id: `tmp-${Date.now()}-${i}`, name: "", unitName: "", price: 0, index: i + 1 };
 }
 
-type OptionRow = { service_option_id: number; name: string; unit: string; unit_price: number | string };
+type OptionRow = {
+    service_option_id: number; // ใหม่ยังไม่มี
+    name: string;
+    unit: string;
+    unit_price: string; // เก็บเป็น string เพื่อ bind กับ input ได้เนียน
+    _tmpId?: string;     // local key สำหรับแถวใหม่
+};
 
 ////api/units
 type UnitsResponseOk = { ok: true; units: { name: string }[] };
@@ -58,6 +65,12 @@ export default function ServiceEditor({ mode, id }: Props) {
     const [askRemoveImg, setAskRemoveImg] = useState(false);
     const [markRemoveImg, setMarkRemoveImg] = useState(false);
 
+    // เพิ่มหน่วย
+    const [addUnitOpen, setAddUnitOpen] = useState(false);
+    const [addUnitForRowId, setAddUnitForRowId] = useState<string | null>(null);
+    const [addingUnit, setAddingUnit] = useState(false);
+
+
     // โหลด category list
     useEffect(() => {
         (async () => {
@@ -70,11 +83,9 @@ export default function ServiceEditor({ mode, id }: Props) {
     useEffect(() => {
         (async () => {
             try {
-                const r = await fetch("/api/units");
-                const d: UnitsResponse = await r.json();
-                if (d.ok) {
-                    setUnits(d.units.map((u) => ({ label: u.name, value: u.name })));
-                }
+                const r = await fetch("/api/service-options/units");
+                const d = await r.json();
+                if (d?.ok) setUnits((d.units as string[]).map(u => ({ label: u, value: u })));
             } catch { }
         })();
     }, []);
@@ -226,28 +237,43 @@ export default function ServiceEditor({ mode, id }: Props) {
                 <div className="grid gap-6">
 
                     {/* เหมือนหน้า preview: ชื่อ/หมวดหมู่/รูป */}
-                    <InputField
-                        label="ชื่อบริการ *"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="เช่น ล้างแอร์"
-                        validate={(v) => (v.trim() ? null : "กรุณากรอกชื่อบริการ")}
-                    />
+                    <div className="flex items-center">
+                        <div className="w-[205px]">ชื่อบริการ <span className="text-[var(--red)]">*</span></div>
+                        <div className="w-[433px]">
+                            <InputField
+                                //label="ชื่อบริการ*"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                placeholder="เช่น ล้างแอร์"
+                                validate={(v) => (v.trim() ? null : "กรุณากรอกชื่อบริการ")}
+                                maxLength={30}
+                                className="h-[44px]"
+                            />
+                        </div>
+                    </div>
 
-                    <InputDropdown
-                        label="หมวดหมู่ *"
-                        value={String(categoryId)}
-                        onChange={(v) => setCategoryId(Number(v))}
-                        options={catOptions}
-                        placeholder="เลือกหมวดหมู่"
-                    />
+                    <div className="flex items-center">
+                        <div className="w-[205px]">หมวดหมู่ <span className="text-[var(--red)]">*</span></div>
+                        <div className="w-[433px]">
+                            <InputDropdown
+                                //label="หมวดหมู่*"
+                                value={String(categoryId)}
+                                onChange={(v) => setCategoryId(Number(v))}
+                                options={catOptions}
+                                placeholder="เลือกหมวดหมู่"
+                                className="h-[44px]"
+                            //disabled
+                            />
+                        </div>
+                    </div>
 
-                    <div className="grid gap-2">
-                        <span className="text-sm font-medium text-[var(--gray-800)]">รูปภาพ</span>
+
+                    <div className="flex items-center">
+                        <span className="w-[205px]">รูปภาพ <span className="text-[var(--red)]">*</span></span>
 
                         {imageUrl && !imageFile ? (
                             <div className="grid gap-2">
-                                <div className="relative h-40 w-full max-w-md overflow-hidden rounded-xl border border-[var(--gray-300)]">
+                                <div className="relative h-40 overflow-hidden rounded-xl border border-[var(--gray-300)]">
                                     <Image src={imageUrl} alt="service image" fill sizes="(max-width:768px) 100vw, 400px" className="object-cover" />
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -259,10 +285,14 @@ export default function ServiceEditor({ mode, id }: Props) {
                             </div>
                         ) : (
                             <div className="grid gap-1">
-                                <ImageUpload label="รูปบริการ" value={imageFile} onChange={setImageFile} />
+                                <ImageUpload
+                                    // label="รูปบริการ"
+                                    value={imageFile}
+                                    onChange={setImageFile}
+                                />
                                 {!!imageFile && (
                                     <div className="text-xs text-[var(--gray-600)]">
-                                        ไฟล์: <span className="font-medium">{imageFile.name}</span>
+                                        ชื่อไฟล์: <span className="font-medium">{imageFile.name}</span>
                                     </div>
                                 )}
                                 {markRemoveImg && (
@@ -339,12 +369,46 @@ export default function ServiceEditor({ mode, id }: Props) {
                         onConfirm={confirmRemoveImage}
                     />
 
+                    <InputDialog
+                        open={addUnitOpen}
+                        title="เพิ่มหน่วยใหม่"
+                        description="ตั้งชื่อหน่วยที่ต้องการใช้ เช่น เครื่อง / จุด / ชิ้น"
+                        placeholder="เช่น เครื่อง"
+                        confirmLabel="เพิ่มหน่วย"
+                        cancelLabel="ยกเลิก"
+                        loading={addingUnit}
+                        validate={(v) => {
+                            if (!v.trim()) return "กรุณากรอกชื่อหน่วย";
+                            if (v.length > 8) return "ชื่อหน่วยยาวเกินไป";
+                            // กันซ้ำกับที่มีอยู่แล้ว
+                            if (units.some((u) => u.value.toLowerCase() === v.toLowerCase())) return "มีหน่วยนี้อยู่แล้ว";
+                            return null;
+                        }}
+                        onCancel={() => setAddUnitOpen(false)}
+                        onConfirm={async (newUnit) => {
+                            setAddingUnit(true);
+                            try {
+                                setUnits((u) => [...u, { label: newUnit, value: newUnit }]);
+                                if (addUnitForRowId) {
+                                    patchRow(addUnitForRowId, { unitName: newUnit });
+                                }
+                                setAddUnitOpen(false);
+                            } catch (e) {
+                                alert(e instanceof Error ? e.message : String(e));
+                            } finally {
+                                setAddingUnit(false);
+                                setAddUnitForRowId(null);
+                            }
+                        }}
+                    />
+
+
                     {/* subItems (draft ในฟอร์ม) */}
                     {mode === "create" && (
                         <>
                             <hr className="my-2 border-[var(--gray-200)]" />
                             <div className="grid gap-3">
-                                <div className="text-sm font-medium text-[var(--gray-800)]">รายการบริการย่อย</div>
+                                <div className="text-base font-medium text-[var(--gray-700)]">รายการบริการย่อย</div>
 
                                 <div className="grid gap-2">
                                     {subItems.map((it) => (
@@ -353,44 +417,25 @@ export default function ServiceEditor({ mode, id }: Props) {
                                             onDragStart={(e) => onDragStart(e, it.id)}
                                             onDragOver={onDragOver}
                                             onDrop={(e) => onDrop(e, it.id)}
-                                            className="grid grid-cols-12 items-center gap-3 rounded-xl border border-[var(--gray-200)] bg-white p-3 cursor-pointer">
-                                            <div className="col-span-1 flex justify-center text-[var(--gray-400)]">
-                                                <GripVertical className="h-4 w-4" />
+                                            className="flex items-center gap-3 rounded-xl bg-white py-3 cursor-pointer">
+                                            <div className="w-[20px] text-[var(--gray-400)]">
+                                                <GripVertical className="h-[20px] w-[20px] mt-2" />
                                             </div>
-                                            <div className="col-span-5">
+
+                                            <div className="w-[425px]">
+                                                <div className="px-1 py-1 text-sm text-[var(--gray-700)]">ชื่อรายการ</div>
                                                 <InputField
-                                                    placeholder="ชื่อรายการ (เช่น 9,000 - 18,000 BTU, แบบติดผนัง)"
                                                     value={it.name ?? ""}
                                                     onChange={(e) => patchRow(it.id, { name: e.target.value })}
                                                     validate={(v) => v.trim() ? null : "กรอกชื่อรายการ"}
                                                     validateOn="blur"
+                                                    maxLength={30}
+                                                    className="h-[38px]"
                                                 />
                                             </div>
 
-                                            <InputDropdown
-                                                placeholder="เลือกหน่วย"
-                                                value={it.unitName ?? ""}
-                                                onChange={(v) => patchRow(it.id, { unitName: String(v) })}
-                                                options={units}
-                                            />
-                                            <button
-                                                type="button"
-                                                className="mt-1 text-xs text-[var(--blue-600)] underline"
-                                                onClick={async () => {
-                                                    const name = prompt("เพิ่มหน่วยใหม่:");
-                                                    if (!name) return;
-                                                    const resp = await fetch("/api/units", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
-                                                    const d = await resp.json();
-                                                    if (d?.ok) {
-                                                        setUnits((u) => [...u, { label: name, value: name }]);
-                                                        patchRow(it.id, { unitName: name });
-                                                    }
-                                                }}
-                                            >
-                                                + เพิ่มหน่วย
-                                            </button>
-
-                                            <div className="col-span-3">
+                                            <div className="w-[240px]">
+                                                <div className="px-1 py-1 text-sm text-[var(--gray-700)]">ค่าบริการ / 1 หน่วย</div>
                                                 <InputField
                                                     placeholder="ค่าบริการ / 1 หน่วย"
                                                     value={it.price == null ? "" : String(it.price)}
@@ -399,14 +444,42 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                     rightIcon={<span className="text-[var(--gray-500)]">฿</span>}
                                                     validate={(v) => (v.trim() === "" || isNaN(Number(v)) ? "ตัวเลขเท่านั้น" : null)}
                                                     validateOn="blur"
+                                                    maxLength={6}
+                                                    className="h-[38px]"
                                                 />
                                             </div>
-                                            <div className="col-span-1 flex justify-end">
+
+                                            <div className="w-[240px]">
+                                                <div className="px-1 py-1 text-sm text-[var(--gray-700)]">หน่วยการบริการ</div>
+                                                <div className="flex items-center gap-2">
+                                                    <InputDropdown
+                                                        placeholder="เลือกหน่วย"
+                                                        value={it.unitName ?? ""}
+                                                        onChange={(v) => patchRow(it.id, { unitName: String(v) })}
+                                                        options={units}
+                                                        className="w-[220px] h-[38px]"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="rounded-md w-[20px] text-xs text-[var(--gray-600)] hover:text-[var(--blue-600)] bg-[var(--gray-100)] hover:bg-[var(--gray-300)] cursor-pointer"
+                                                        onClick={() => {
+                                                            setAddUnitForRowId(it.id);
+                                                            setAddUnitOpen(true);
+                                                        }}
+                                                        aria-label="add-unit"
+                                                        title="เพิ่มหน่วยใหม่"
+                                                    >
+                                                        <Plus className="h-5 w-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-center items-center w-[72px] mt-6">
                                                 <button type="button"
                                                     onClick={() => removeRow(it.id)}
                                                     className="rounded-md p-2 text-[var(--gray-500)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
                                                     title="ลบรายการ">
-                                                    <Trash2 className="h-4 w-4" />
+                                                    <Trash2 className="h-5 w-5" />
                                                 </button>
                                             </div>
                                         </div>

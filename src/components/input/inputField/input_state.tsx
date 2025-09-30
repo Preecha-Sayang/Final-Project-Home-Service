@@ -37,7 +37,6 @@ const DefaultErrorIcon = () => (
     </svg>
 );
 
-/** ---------- adapters: แปลง handler กว้าง -> แคบ โดยไม่ใช้ any ---------- */
 const adaptChange =
     <T extends NativeControl>(fn: (e: React.ChangeEvent<NativeControl>) => void)
         : React.ChangeEventHandler<T> =>
@@ -81,13 +80,11 @@ const InputField = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, Inpu
             className
         );
 
-        // ---- handlers ภายใน (ชนิดถูกต้อง) ----
         const propOnChange = onChange as React.ChangeEventHandler<NativeControl> | undefined;
         const propOnBlur = onBlur as React.FocusEventHandler<NativeControl> | undefined;
 
         const handleChangeAny = (e: React.ChangeEvent<NativeControl>) => {
             propOnChange?.(e);
-            // ไม่ต้อง setError — ใช้คำนวณจาก value + touched
         };
 
         const handleBlurAny = (e: React.FocusEvent<NativeControl>) => {
@@ -175,11 +172,14 @@ const InputField = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, Inpu
                     )}
                 </div>
 
-                {isError ? (
-                    <p className={messageCls(true)}>{finalError}</p>
-                ) : hint ? (
-                    <p className={messageCls()}>{hint}</p>
-                ) : null}
+                <div className="absolute pl-2">
+                    {isError ? (
+                        <p className={messageCls(true)}>{finalError}</p>
+                    ) : hint ? (
+                        <p className={messageCls()}>{hint}</p>
+                    ) : null}
+                </div>
+
             </div>
         );
     }

@@ -21,7 +21,9 @@ export default function AdminServicesPage() {
             try {
                 const { services } = await listServices();
                 if (alive) setItems(services);
-            } finally { setLoading(false); }
+            } finally {
+                setLoading(false);
+            }
         })();
         return () => { alive = false; };
     }, []);
@@ -45,8 +47,18 @@ export default function AdminServicesPage() {
     // ลบ
     async function handleDelete(item: ServiceItem) {
         const prev = items;
-        setItems(items.filter(x => x.id !== item.id).map((x, i) => ({ ...x, index: i + 1 })));
-        try { await deleteService(item.id); } catch { setItems(prev); }
+        // optimistic update
+        setItems(
+            items
+                .filter(x => x.id !== item.id)
+                .map((x, i) => ({ ...x, index: i + 1 }))
+        );
+
+        try {
+            await deleteService(item.id);
+        } catch (e) {
+            setItems(prev);
+        }
     }
 
     return (
