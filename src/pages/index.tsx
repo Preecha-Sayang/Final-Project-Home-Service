@@ -7,7 +7,7 @@ import Link from "next/link";
 
 export default function Home() {
     return (
-            <div className="min-h-screen bg-white">
+          <div className="min-h-screen bg-white">
                 <Navbar />
 
             {/* Hero Section */}
@@ -57,46 +57,46 @@ export default function Home() {
             </section>
 
             {/* Contact Section */}
-            <section className="bg-blue-600 relative ">
-  <div className="flex flex-col md:flex-row items-center justify-between text-white w-full">
+              <section className="bg-blue-600 relative ">
+                <div className="flex flex-col md:flex-row items-center justify-between text-white w-full">
     
-    {/* รูปซ้าย (ชิดซ้ายสุด) */}
-    <div className="relative w-full md:w-auto">
-      <img
-        src="/images/มาร่วมเป็นพนักงานซ่อม.svg"
-        alt="Join Our Team"
-        className="w-full h-[280px] md:h-[372px] object-cover"
-      />
-    </div>
-    {/* ข้อความ */}
-    <div className="flex-1 md:ml-40 md:text-left mb-40 md:mb-0 mt-10 md:mt-0">
-      <h2 className="text-2xl md:text-4xl font-bold mb-6 font-prompt ">
-        มาร่วมเป็นพนักงานซ่อม<br />
-        กับ HomeServices
-      </h2>
-      <p className="text-lg md:text-xl mb-6 font-prompt">
-        เข้ารับการฝึกอบรมที่ได้มาตรฐาน ฟรี!<br />
-        และยังได้รับค่าตอบแทนที่มากขึ้นกว่าเดิม
-      </p>
-      <p className="text-xl md:text-3xl font-semibold font-prompt">
-        ติดต่อสมัครได้ที่: <br className="md:hidden" />
-        job@homeservices.co
-      </p>
-    </div>
-  </div>
+                  {/* รูปซ้าย (ชิดซ้ายสุด) */}
+                  <div className="relative w-full md:w-auto">
+                    <img
+                    src="/images/มาร่วมเป็นพนักงานซ่อม.svg"
+                    alt="Join Our Team"
+                    className="w-full h-[280px] md:h-[372px] object-cover"
+                    />
+                  </div>
+                  
+                  {/* ข้อความ */}
+                  <div className="flex-1 md:ml-40 md:text-left mb-40 md:mb-0 mt-10 md:mt-0">
+                    <h2 className="text-2xl md:text-4xl font-bold mb-6 font-prompt ">
+                      มาร่วมเป็นพนักงานซ่อม<br />
+                      กับ HomeServices
+                    </h2>
+                    <p className="text-lg md:text-xl mb-6 font-prompt">
+                      เข้ารับการฝึกอบรมที่ได้มาตรฐาน ฟรี!<br />
+                      และยังได้รับค่าตอบแทนที่มากขึ้นกว่าเดิม
+                    </p>
+                    <p className="text-xl md:text-3xl font-semibold font-prompt">
+                      ติดต่อสมัครได้ที่: <br className="md:hidden" />
+                      job@homeservices.co
+                    </p>
+                  </div>
+                </div>
 
-  {/* ไอคอนบ้าน */}
-  <img
-    src="/images/house 1.svg"
-    alt="House Icon"
-    className="absolute bottom-0 right-0 h-[280px] md:h-[360px] object-contain opacity-40 md:opacity-100"
-  />
-</section>
+                {/* ไอคอนบ้าน */}
+                  <img
+                    src="/images/house 1.svg"
+                    alt="House Icon"
+                    className="absolute bottom-0 right-0 h-[280px] md:h-[360px] object-contain opacity-40 md:opacity-100"
+                  />
+              </section>
 
-
-            {/* Footer */}
-            <Footer />
-        </div>
+                {/* Footer */}
+                  <Footer />
+          </div>
     );
 }
 
