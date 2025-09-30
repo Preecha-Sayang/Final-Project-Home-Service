@@ -253,7 +253,7 @@ export default function ServiceListPage() {
           <FilteringSpinner />
         ) : (
           <>
-            <div className="md:ml-80 mb-6 text-sm text-gray-600">
+            <div className="ml-[18%] py-4 text-sm text-gray-600">
               <span>แสดงผล {totalServices} รายการ</span>
             </div>
 
