@@ -2,13 +2,6 @@ import React, { useMemo, useRef } from "react";
 import { GripVertical, Pencil, Trash2 } from "lucide-react";
 import { ServiceItem } from "@/types/service";
 
-type CategoryItem = {
-  id: string;
-  index: number;
-  name: string;
-  createdAt: string;
-  updatedAt: string;
-};
 
 function formatDT(iso: string) {
   const d = new Date(iso);
@@ -49,16 +42,16 @@ export default function CategoryTable({
   );
 
   // --- Drag & Drop
-  const dragSrc = useRef<string | null>(null);
+  const dragSrc = useRef<string | number>(null);
 
-  function onDragStart(e: React.DragEvent<HTMLTableRowElement>, id: string) {
+  function onDragStart(e: React.DragEvent<HTMLTableRowElement>, id: string|number) {
     dragSrc.current = id;
     e.dataTransfer.effectAllowed = "move";
   }
   function onDragOver(e: React.DragEvent<HTMLTableRowElement>) {
     e.preventDefault();
   }
-  function onDrop(e: React.DragEvent<HTMLTableRowElement>, targetId: string) {
+  function onDrop(e: React.DragEvent<HTMLTableRowElement>, targetId: string|number) {
     e.preventDefault();
     const srcId = dragSrc.current;
     dragSrc.current = null;

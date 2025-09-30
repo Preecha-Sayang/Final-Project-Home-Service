@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { getService } from "lib/client/servicesApi";
 import type { ServiceItem } from "@/types/service";
-
-
-import AdminShell from "@/pages/admin/index";
 import BackHeader from "@/components/admin/common/BackHeader";
 
 export default function ServiceDetailPage() {
@@ -28,7 +25,7 @@ export default function ServiceDetailPage() {
     }, [id]);
 
     return (
-        <AdminShell>
+        <>
             <BackHeader
                 subtitle=""
                 title={item?.name ?? "เพิ่มหมวดหมู่"}
@@ -46,14 +43,7 @@ export default function ServiceDetailPage() {
             {!loading && !item && <div className="rounded-2xl border border-gray-100 bg-white p-6">ไม่พบข้อมูล</div>}
             {!loading && item && (
                 <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
-                    {/* <div className="mb-5 flex items-center justify-end">
-                        <button
-                            onClick={() => router.push(`/admin/services/${id}/edit`)}
-                            className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                        >
-                            แก้ไข
-                        </button>
-                    </div> */}
+                  
 
                     <div className="grid gap-6">
                         <div className="grid gap-2">
@@ -74,6 +64,6 @@ export default function ServiceDetailPage() {
                     </div>
                 </div>
             )}
-        </AdminShell>
+        </>
     );
 }
