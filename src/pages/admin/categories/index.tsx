@@ -1,28 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import CategoryTable from "@/components/admin/categories/catagory_table";
-import { ServiceItem } from "@/types/service";
+import { CategoryItem, CategoryRow, mapRowToCategoryItem } from "@/types/category";
 import {
   deleteService,
-  listServices,
+  listCategories,
   reorderServices,
-} from "lib/client/servicesApi";
+} from "lib/client/categoriesApi";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
 
 export default function CategoryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [items, setItems] = useState<ServiceItem[]>([]);
-  const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: ServiceItem; loading?: boolean }>({ open: false });
+  const [items, setItems] = useState<CategoryRow[]>([]);
+  const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: CategoryItem; loading?: boolean }>({ open: false });
 
   useEffect(() => {
     let alive = true;
     (async () => {
       setLoading(true);
       try {
-        const data = await listServices();
-        if (alive) setItems(data);
+        const {categories} = await listCategories();
+        const item = categories.map(mapRowToCategoryItem)
+        if (alive) setItems(item);
       } finally {
         setLoading(false);
       }
@@ -41,7 +42,7 @@ export default function CategoryPage() {
   {
     /*ต้องมีการยิง api*/
   }
-  async function handleReorder(next: ServiceItem[]) {
+  async function handleReorder(next: CategoryItem[]) {
     setItems(next);
     try {
       await reorderServices(next.map((x) => ({ id: x.id, index: x.index })));
@@ -51,7 +52,7 @@ export default function CategoryPage() {
   }
 
   // ลบ
-  async function handleDelete(item: ServiceItem) {
+  async function handleDelete(item: CategoryItem) {
     const prev = items;
     setItems(
       items

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { getService } from "lib/client/servicesApi";
-import type { ServiceItem } from "@/types/service";
+import type { CategoryItem } from "@/types/category";
 import BackHeader from "@/components/admin/common/BackHeader";
 
 export default function ServiceDetailPage() {
@@ -9,7 +9,7 @@ export default function ServiceDetailPage() {
     const id = typeof router.query.id === "string" ? router.query.id : undefined;
     if (!id) return null;
 
-    const [item, setItem] = useState<ServiceItem | null>(null);
+    const [item, setItem] = useState<CategoryItem | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
