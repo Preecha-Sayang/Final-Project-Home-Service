@@ -117,3 +117,87 @@ export default function OrderSummary({
     </div>
   );
 }
+
+/**
+ * วิธีใช้งาน OrderSummary Component
+ * 
+ * OrderSummary Component เป็นคอมโพเนนต์สรุปรายการสั่งซื้อ/จองบริการ
+ * แสดงรายการสินค้า/บริการ, วันที่, เวลา, ที่อยู่, ส่วนลด และยอดรวม
+ * 
+ * คุณสมบัติหลัก:
+ * - แสดงรายการสินค้า/บริการพร้อมจำนวน
+ * - แสดงวันที่, เวลา, และที่อยู่
+ * - แสดงส่วนลดจาก promotion code
+ * - คำนวณและแสดงยอดรวม
+ * - รองรับการเปิด/ปิดรายละเอียด
+ * - รองรับสกุลเงินและทศนิยมที่กำหนดเอง
+ * - สไตล์ที่สอดคล้องกับ design system
+ * 
+ * ตัวอย่างการใช้งาน:
+ * 
+ * 1) การใช้งานพื้นฐาน - สรุปรายการบริการ:
+ *    const orderItems = [
+ *      { name: "ทำความสะอาดบ้าน", quantity: 1 },
+ *      { name: "ล้างแอร์", quantity: 2 },
+ *      { name: "ซ่อมเครื่องซักผ้า", quantity: 1 }
+ *    ];
+ *    
+ *    <OrderSummary
+ *      items={orderItems}
+ *      date="15 มกราคม 2567"
+ *      time="14:00 - 16:00"
+ *      address="123 ถนนสุขุมวิท กรุงเทพฯ 10110"
+ *      promotion={100}
+ *      total={1500}
+ *    />
+ * 
+ * 3) การใช้งานแบบไม่มี Promotion:
+ *    <OrderSummary
+ *      items={[
+ *        { name: "บริการทำความสะอาด", quantity: 1 }
+ *      ]}
+ *      date="25 มกราคม 2567"
+ *      time="09:00 - 11:00"
+ *      address="789 ถนนลาดพร้าว กรุงเทพฯ"
+ *      total={800}
+ *      showPromotionWhenZero={false}
+ *    />
+ *
+ * การแสดงผล:
+ * - Header พร้อมปุ่มเปิด/ปิดรายละเอียด
+ * - รายการสินค้า/บริการพร้อมจำนวน
+ * - ข้อมูลวันที่, เวลา, และที่อยู่
+ * - ส่วนลดจาก promotion code (ถ้ามี)
+ * - ยอดรวมทั้งหมด
+ * - รองรับ responsive design
+ * 
+ * สถานะต่างๆ:
+ * - Open: แสดงรายละเอียดทั้งหมด
+ * - Closed: แสดงเฉพาะ header และยอดรวม
+ * - With Promotion: แสดงส่วนลดด้วยสีแดง
+ * - Without Promotion: ไม่แสดงส่วนลด
+ * 
+ * Best Practices:
+ * 1. ใช้ items array ที่มีข้อมูลครบถ้วน
+ * 2. ตรวจสอบ total ให้ถูกต้อง
+ * 3. ใช้ fallbackText ที่เหมาะสมเมื่อไม่มีข้อมูล
+ * 4. ตั้งค่า defaultOpen ตาม UX ที่ต้องการ
+ * 5. ใช้ currency และ decimalDigits ที่สอดคล้องกับระบบ
+ * 6. ตรวจสอบ promotion logic ให้ถูกต้อง
+ * 
+ * การใช้งานกับ Form Libraries:
+ * 
+ * React Hook Form:
+ * ```tsx
+ * const { watch } = useForm();
+ * const formData = watch();
+ * 
+ * <OrderSummary
+ *   items={formData.items}
+ *   date={formData.date}
+ *   time={formData.time}
+ *   address={formData.address}
+ *   promotion={formData.promotion}
+ *   total={formData.total}
+ * />
+ */ 

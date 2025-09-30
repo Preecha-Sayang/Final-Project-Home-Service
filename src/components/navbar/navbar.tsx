@@ -46,7 +46,7 @@ export default function Navbar({ imageURL }: NavbarProps) {
           {/* บริการของเรา - แสดงทั้งบนมือถือและเดสก์ท็อป */}
           <Link href="/service" className="cursor-pointer">
             <p className="flex items-center text-[var(--gray-900)] font-semibold mt-1.5 text-sm lg:text-base">
-              บริการของเรา {/*เหลือใส่ href ไปหน้า services list*/}
+              บริการของเรา 
             </p>
           </Link>
         </div>
@@ -77,3 +77,42 @@ export default function Navbar({ imageURL }: NavbarProps) {
     </div>
   );
 }
+
+/**
+ * วิธีใช้งาน Navbar Component
+ *
+ * Navbar คือคอมโพเนนต์แถบนำทางด้านบนของเว็บแอปที่แสดงโลโก้ เมนู "บริการของเรา"
+ * และส่วนผู้ใช้ (เข้าสู่ระบบ/โปรไฟล์ + กระดิ่งแจ้งเตือน) พร้อมรองรับหน้าจอมือถือ/เดสก์ท็อป
+ *
+ * นำเข้า:
+ *   import Navbar from "@/components/navbar/navbar";
+ *
+ * การใช้งานพื้นฐาน:
+ *   export default function Page() {
+ *     return (
+ *       <div>
+ *         <Navbar />
+ *         // เนื้อหาหน้าเพจ
+ *       </div>
+ *     );
+ *   }
+ *
+ * Props:
+ * - imageURL?: string
+ *   URL รูปโปรไฟล์ที่จะส่งให้เมนูผู้ใช้ (`DropdownUser`).
+ *   ถ้าไม่ระบุ จะใช้รูป default จาก `public/images/user_default.png`.
+ *
+ * การทำงานร่วมกับระบบล็อกอิน:
+ * - คอมโพเนนต์นี้ใช้ `useAuth()` จาก `AuthContext` เพื่ออ่าน `isLoggedIn` และ `accessToken`.
+ * - เมื่อมี `accessToken` จะเรียก `/api/protected/protectapi` เพื่อดึง `fullname` มาแสดง.
+ * - ต้องครอบแอปด้วย `AuthProvider` ในระดับสูงของแอป (เช่นใน `_app.tsx`).
+ *
+ * เส้นทางลิงก์เริ่มต้น:
+ * - โลโก้ -> "/"
+ * - เมนู "บริการของเรา" -> "/service"
+ * - ปุ่ม "เข้าสู่ระบบ" -> "/login"
+ *
+ * Responsive:
+ * - ใช้ Tailwind จัดการขนาดและตัวอักษรบนมือถือ/เดสก์ท็อป (`text-sm lg:text-base`, `h-6 lg:h-9`).
+ * - ชื่อผู้ใช้แสดงเฉพาะจอใหญ่ (`hidden lg:block`) เพื่อประหยัดพื้นที่บนมือถือ.
+ */
