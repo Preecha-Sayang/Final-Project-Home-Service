@@ -1,6 +1,6 @@
 import React, { useMemo, useRef } from "react";
 import { GripVertical, Pencil, Trash2 } from "lucide-react";
-import { ServiceItem } from "@/types/service";
+import { CategoryItem } from "@/types/category";
 
 
 function formatDT(iso: string) {
@@ -14,16 +14,28 @@ function formatDT(iso: string) {
     .toLocaleTimeString("en-US", { hour12: true, hour: "2-digit", minute: "2-digit" })
     .toUpperCase();
   return `${date} ${time}`;
-}
 
+  type ServiceRowCompat = CategoryItem & {
+    service_id?: number | string;
+    servicename?: string;
+    category_name?: string;
+    created_at?: string;
+    create_at?: string;
+    updated_at?: string;
+    update_at?: string;
+};
+
+
+}
+{/*ต้องสร้าง categoruItem อิงตามตารางใน db*/}
 type Props = {
-  items: ServiceItem[];
+  items: CategoryItem[];
   loading?: boolean;
   search?: string;
-  onEdit: (item: ServiceItem) => void;
-  onDelete: (item: ServiceItem) => void;
-  onReorder: (next: ServiceItem[]) => void;
-  onView?: (next: ServiceItem[]) => void
+  onEdit: (item: CategoryItem) => void;
+  onDelete: (item: CategoryItem) => void;
+  onReorder: (next: CategoryItem[]) => void;
+  onView?: (next: CategoryItem[]) => void
 };
 
 export default function CategoryTable({
@@ -40,6 +52,9 @@ export default function CategoryTable({
     () => (q ? items.filter((c) => c.name.toLowerCase().includes(q)) : items),
     [items, q]
   );
+
+  const getRowId = (row: ServiceRowCompat): string =>
+    String(row.id ?? row.service_id);
 
   // --- Drag & Drop
   const dragSrc = useRef<string | number>(null);
