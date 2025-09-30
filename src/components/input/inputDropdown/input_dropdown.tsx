@@ -38,7 +38,7 @@ export default function InputDropdown({
 
     return (
         <label className="grid gap-2">
-            {label && <span className="text-sm font-medium text-[var(--gray-800)]">
+            {label && <span className="text-xs font-light text-[var(--gray-500)]">
                 {typeof label === "string" ? (() => {
                     // ถ้ามี * ท้ายข้อความ จะเป็นสีแดง
                     const m = label.match(/^(.*?)(\s*\*)$/);
@@ -57,8 +57,8 @@ export default function InputDropdown({
                 <div className={cn("relative", className)}>
                     <Listbox.Button
                         className={cn(
-                            "w-full rounded-md border px-3 py-2 text-left text-sm",
-                            "border-[var(--gray-300)] text-[var(--gray-900)]",
+                            "w-full  text-left text-base font-medium",
+                            " text-[var(--gray-900)]",
                             "hover:border-[var(--gray-400)]",
                             "focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)]",
                             "pr-9",
