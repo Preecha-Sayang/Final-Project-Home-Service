@@ -30,7 +30,6 @@ export default function ServiceDetailPage() {
 
     const [options, setOptions] = useState<OptionRow[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(false);
-    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     // โหลดข้อมูล service หลัก
     useEffect(() => {
@@ -64,33 +63,13 @@ export default function ServiceDetailPage() {
             setLoadingOptions(true);
             try {
                 const r = await fetch(`/api/services/${sid}/options`);
-                const d = await r.json();
-                if (d?.ok) setOptions(d.options as OptionRow[]);
+                const d: { ok: boolean; options?: OptionRow[] } = await r.json();
+                if (d?.ok && d.options) setOptions(d.options);
             } finally {
                 setLoadingOptions(false);
             }
         })();
     }, [router.isReady, id]);
-
-    // ลบรายการย่อยแบบ optimistic
-    async function removeOption(optId: number) {
-        if (!confirm("ยืนยันลบรายการนี้?")) return;
-
-        const prev = options;
-        setDeletingId(optId);
-        setOptions((p) => p.filter((o) => o.service_option_id !== optId));
-
-        try {
-            const res = await fetch(`/api/service-options/${optId}`, { method: "DELETE" });
-            if (!res.ok) throw new Error("ลบไม่สำเร็จ");
-        } catch (e) {
-            // rollback
-            setOptions(prev);
-            alert((e as Error).message || "ลบไม่สำเร็จ");
-        } finally {
-            setDeletingId(null);
-        }
-    }
 
     const goEdit = () => {
         if (typeof id === "string") router.push(`/admin/services/${id}/edit`);
@@ -198,17 +177,6 @@ export default function ServiceDetailPage() {
                                             <div className="py-1 text-[var(--gray-500)]">ราคา/หน่วย</div>
                                             <div className="text-base font-medium">{fmtMoney(o.unit_price)}</div>
                                         </div>
-                                        {/* <div className="col-span-1 flex items-center justify-end">
-                                            <button
-                                                type="button"
-                                                aria-label="ลบรายการย่อย"
-                                                onClick={() => removeOption(o.service_option_id)}
-                                                disabled={deletingId === o.service_option_id}
-                                                className=" w-[122px] h-[44px] rounded-md p-2 text-base font-semibold underline text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
-                                            >
-                                                {deletingId === o.service_option_id ? "กำลังลบ..." : "ลบรายการ"}
-                                            </button>
-                                        </div> */}
                                     </div>
                                 ))}
                             </div>

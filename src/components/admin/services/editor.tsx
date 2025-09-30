@@ -7,7 +7,7 @@ import InputField from "@/components/input/inputField/input_state";
 import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
 import ImageUpload from "@/components/input/inputImageUpload/image_upload";
 
-import type { SubItem } from "@/types/service";
+import type { SubItem, ServiceItem, CategoryRow } from "@/types/service";
 import { getService, listCategories } from "lib/client/servicesApi";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
 
@@ -20,6 +20,16 @@ function emptySub(i: number): SubItem {
 }
 
 type OptionRow = { service_option_id: number; name: string; unit: string; unit_price: number | string };
+
+////api/units
+type UnitsResponseOk = { ok: true; units: { name: string }[] };
+type UnitsResponseErr = { ok: false; message?: string };
+type UnitsResponse = UnitsResponseOk | UnitsResponseErr;
+
+///api/services/:id/options
+type ServiceOptionsResponseOk = { ok: true; options: OptionRow[] };
+type ServiceOptionsResponseErr = { ok: false; message?: string };
+type ServiceOptionsResponse = ServiceOptionsResponseOk | ServiceOptionsResponseErr;
 
 export default function ServiceEditor({ mode, id }: Props) {
     const router = useRouter();
@@ -51,8 +61,8 @@ export default function ServiceEditor({ mode, id }: Props) {
     // โหลด category list
     useEffect(() => {
         (async () => {
-            const cats = await listCategories();
-            setCatOptions(cats.map(c => ({ label: c.name, value: String(c.category_id) })));
+            const cats: CategoryRow[] = await listCategories();
+            setCatOptions(cats.map((c) => ({ label: c.name, value: String(c.category_id) })));
         })();
     }, []);
 
@@ -61,8 +71,10 @@ export default function ServiceEditor({ mode, id }: Props) {
         (async () => {
             try {
                 const r = await fetch("/api/units");
-                const d = await r.json();
-                if (d?.ok) setUnits((d.units as { name: string }[]).map(u => ({ label: u.name, value: u.name })));
+                const d: UnitsResponse = await r.json();
+                if (d.ok) {
+                    setUnits(d.units.map((u) => ({ label: u.name, value: u.name })));
+                }
             } catch { }
         })();
     }, []);
@@ -73,12 +85,12 @@ export default function ServiceEditor({ mode, id }: Props) {
         (async () => {
             setLoading(true);
             try {
-                const s = await getService(id);
+                const s: ServiceItem = await getService(id);
                 setName(s.name ?? "");
-                setCategoryId(Number((s as any).categoryId ?? (s as any).category_id ?? 1));
-                setImageUrl(s.imageUrl ?? (s as any).image_url ?? "");
-                setBasePrice((s as any).price ?? null);
-                setDescription((s as any).description ?? "");
+                setCategoryId(Number(s.categoryId ?? 1));
+                setImageUrl(s.imageUrl ?? "");
+                setBasePrice((s as Partial<ServiceItem> & { price?: number }).price ?? null); // รองรับกรณีมี price ใน model
+                setDescription((s as Partial<ServiceItem> & { description?: string }).description ?? "");
 
                 setSubItems(
                     (s.subItems ?? [])
@@ -90,8 +102,8 @@ export default function ServiceEditor({ mode, id }: Props) {
                 // ดึงรายการย่อยจาก API
                 setLoadingOptions(true);
                 const r = await fetch(`/api/services/${id}/options`);
-                const d = await r.json();
-                if (d?.ok) setOptions(d.options as OptionRow[]);
+                const d: ServiceOptionsResponse = await r.json();
+                if (d.ok) setOptions(d.options);
             } finally {
                 setLoading(false);
                 setLoadingOptions(false);
@@ -101,15 +113,15 @@ export default function ServiceEditor({ mode, id }: Props) {
 
     // ลบ option (อยู่หน้าแก้ไข)
     const removeOption = async (optId: number) => {
-        if (!confirm("ยืนยันลบรายการย่อยนี้?")) return;
+        if (!window.confirm("ยืนยันลบรายการย่อยนี้?")) return;
         const prev = options;
         setDeletingId(optId);
-        setOptions(o => o.filter(x => x.service_option_id !== optId));
+        setOptions((o) => o.filter((x) => x.service_option_id !== optId));
         try {
             const res = await fetch(`/api/service-options/${optId}`, { method: "DELETE" });
             if (!res.ok) throw new Error("ลบไม่สำเร็จ");
-        } catch (e) {
-            alert((e as Error).message);
+        } catch (e: unknown) {
+            alert(e instanceof Error ? e.message : String(e));
             setOptions(prev);
         } finally {
             setDeletingId(null);
@@ -127,31 +139,43 @@ export default function ServiceEditor({ mode, id }: Props) {
         setMarkRemoveImg(true);
     }
 
-    // --- DnD ของ subItems (ในฟอร์ม)
+    // --- DnD ของ subItems
     const dragSrc = useRef<string | null>(null);
     function onDragStart(e: React.DragEvent<HTMLDivElement>, sid: string) {
-        dragSrc.current = sid; e.dataTransfer.effectAllowed = "move";
+        dragSrc.current = sid;
+        e.dataTransfer.effectAllowed = "move";
     }
-    function onDragOver(e: React.DragEvent<HTMLDivElement>) { e.preventDefault(); }
+    function onDragOver(e: React.DragEvent<HTMLDivElement>) {
+        e.preventDefault();
+    }
     function onDrop(e: React.DragEvent<HTMLDivElement>, targetId: string) {
         e.preventDefault();
-        const src = dragSrc.current; dragSrc.current = null;
+        const src = dragSrc.current;
+        dragSrc.current = null;
         if (!src || src === targetId) return;
         const arr = [...subItems];
-        const from = arr.findIndex(x => x.id === src);
-        const to = arr.findIndex(x => x.id === targetId);
+        const from = arr.findIndex((x) => x.id === src);
+        const to = arr.findIndex((x) => x.id === targetId);
         const [m] = arr.splice(from, 1);
         arr.splice(to, 0, m);
         setSubItems(arr.map((x, i) => ({ ...x, index: i + 1 })));
     }
-    const addRow = () => setSubItems(s => [...s, emptySub(s.length)]);
-    const removeRow = (rowId: string) => setSubItems(s => s.filter(x => x.id !== rowId).map((x, i) => ({ ...x, index: i + 1 })));
-    const patchRow = (rowId: string, p: Partial<SubItem>) => setSubItems(s => s.map(x => x.id === rowId ? { ...x, ...p } : x));
+    const addRow = () => setSubItems((s) => [...s, emptySub(s.length)]);
+    const removeRow = (rowId: string) =>
+        setSubItems((s) => s.filter((x) => x.id !== rowId).map((x, i) => ({ ...x, index: i + 1 })));
+    const patchRow = (rowId: string, p: Partial<SubItem>) =>
+        setSubItems((s) => s.map((x) => (x.id === rowId ? { ...x, ...p } : x)));
 
     // ส่งฟอร์ม (create / edit)
-    async function handleSubmit() {
-        if (!name.trim()) { alert("กรุณากรอกชื่อบริการ"); return; }
-        if (!categoryId) { alert("กรุณาเลือกหมวดหมู่"); return; }
+    async function handleSubmit(): Promise<void> {
+        if (!name.trim()) {
+            alert("กรุณากรอกชื่อบริการ");
+            return;
+        }
+        if (!categoryId) {
+            alert("กรุณาเลือกหมวดหมู่");
+            return;
+        }
 
         const fd = new FormData();
         fd.append("servicename", name.trim());
@@ -168,14 +192,14 @@ export default function ServiceEditor({ mode, id }: Props) {
         try {
             if (mode === "create") {
                 const res = await fetch("/api/services", { method: "POST", body: fd });
-                const data = await res.json();
-                if (!res.ok || !data?.ok) throw new Error(data?.message || "Create failed");
+                const data: { ok: boolean; message?: string; service?: { service_id: number } } = await res.json();
+                if (!res.ok || !data?.ok || !data.service) throw new Error(data?.message || "Create failed");
                 router.push(`/admin/services/${data.service.service_id}`);
             } else {
                 if (!id) return;
                 const res = await fetch(`/api/services/${id}`, { method: "PATCH", body: fd });
-                const data = await res.json();
-                if (!res.ok || !data?.ok) throw new Error(data?.message || "Update failed");
+                const data: { ok: boolean; message?: string; service?: { service_id: number } } = await res.json();
+                if (!res.ok || !data?.ok || !data.service) throw new Error(data?.message || "Update failed");
                 router.push(`/admin/services/${data.service.service_id}`);
             }
         } catch (e: unknown) {
@@ -190,7 +214,7 @@ export default function ServiceEditor({ mode, id }: Props) {
         void handleSubmit();
     }
 
-    const fmtMoney = (n: number | string) =>
+    const fmtMoney = (n: number | string): string =>
         new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(n || 0));
 
     return (
@@ -380,7 +404,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                             <div className="col-span-1 flex justify-end">
                                                 <button type="button"
                                                     onClick={() => removeRow(it.id)}
-                                                    className="rounded-md p-2 text-[var(--gray-500)] hover:bg-rose-50 hover:text-rose-700"
+                                                    className="rounded-md p-2 text-[var(--gray-500)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
                                                     title="ลบรายการ">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
