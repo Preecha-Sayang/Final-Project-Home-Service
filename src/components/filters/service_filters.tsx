@@ -280,13 +280,13 @@ export default function FiltersBar({
 
                 {/* Price = ปุ่ม + popup */}
                 <div className="w-[30%] flex justify-center" ref={priceRef}>
-                <div className="flex flex-col items-start"> 
-                    <label className="grid gap-4 w-full text-xs font-light text-[var(--gray-500)]">ราคา</label>
+                <div className="items-start grid gap-2"> 
+                    <label className="w-full text-xs font-light text-[var(--gray-500)]">ราคา</label>
 
                     <button
                         type="button"
                         onClick={() => setOpenPrice((s) => !s)}
-                        className="inline-flex items-center text-base font-medium
+                        className="items-center text-base font-medium
                        hover:border-[var(--gray-400)]
                        focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)]"
                     >
