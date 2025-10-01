@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { cn } from "../_style";
 
@@ -6,85 +6,73 @@ type Props = {
     label?: string;
     value: File | null;
     onChange: (file: File | null) => void;
-    standaloneUpload?: boolean; //=false / true(เปิดปุ่ม)
-    onUploaded?: (url: string) => void;
-    /** /api/upload || /api/upload-url */
-    serviceId?: number;
-    accept?: string;
+    accept?: string;// default: image/*
     className?: string;
 };
 
-type UploadUrlResponse =
-    | { ok: true; cloudinary: { url: string } }
-    | { ok: false; message?: string };
+const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
 
 export default function ImageUpload({
     label,
     value,
     onChange,
-    standaloneUpload = false,
-    onUploaded,
-    serviceId,
     accept = "image/*",
     className,
 }: Props) {
     const inputRef = useRef<HTMLInputElement | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadedUrl, setUploadedUrl] = useState("");
-    const [dragOver, setDragOver] = useState(false); // <— visual state drag
+    const [dragOver, setDragOver] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string>("");
 
-    const handlePick = () => inputRef.current?.click();
+    const objectUrl = useMemo(() => (value ? URL.createObjectURL(value) : ""), [value]);
+    useEffect(() => {
+        return () => {
+            if (objectUrl) URL.revokeObjectURL(objectUrl);
+        };
+    }, [objectUrl]);
 
-    const handleFileSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-        onChange(e.target.files?.[0] ?? null);
-    };
+    const pick = () => inputRef.current?.click();
+    const clear = () => onChange(null);
 
-    // --- Drag & Drop handlers
-    const onDragOver: React.DragEventHandler<HTMLDivElement> = (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        setDragOver(true);
+    // Drag & Drop
+    const onDragOverBox: React.DragEventHandler<HTMLDivElement> = (ev) => {
+        ev.preventDefault(); ev.stopPropagation(); setDragOver(true);
     };
-    const onDragLeave: React.DragEventHandler<HTMLDivElement> = (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        setDragOver(false);
+    const onDragLeaveBox: React.DragEventHandler<HTMLDivElement> = (ev) => {
+        ev.preventDefault(); ev.stopPropagation(); setDragOver(false);
     };
-    const onDrop: React.DragEventHandler<HTMLDivElement> = (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        setDragOver(false);
+    const onDropBox: React.DragEventHandler<HTMLDivElement> = (ev) => {
+        ev.preventDefault(); ev.stopPropagation(); setDragOver(false);
         const f = ev.dataTransfer?.files?.[0];
-        if (f) onChange(f);
+        if (f && !rejectIfInvalid(f)) onChange(f);
     };
 
-    const handleUpload = async () => {
-        if (!value) return;
-        try {
-            setIsUploading(true);
-            const fd = new FormData();
-            fd.append("file", value);
+    function showError(msg: string) {
+        setErrorMsg(msg);
+        setTimeout(() => setErrorMsg(""), 3000);
+    }
 
-            // โหมดเดิม: ถ้ามี serviceId > ยิง /api/upload (อัปเดต services.image_url)
-            // ถ้าไม่มี > ยิง /api/upload-url แล้วเอาลิงค์กลับมาอีกที
-            const endpoint = serviceId ? "/api/upload" : "/api/upload-url";
-            if (serviceId) fd.append("serviceId", String(serviceId));
-
-            const res = await fetch(endpoint, { method: "POST", body: fd });
-            const data: UploadUrlResponse = await res.json();
-            if (!res.ok || !data?.ok) {
-                const msg = ("message" in data && data.message) || "Upload failed.";
-                throw new Error(msg);
-            }
-
-            const url = data.cloudinary.url;
-            setUploadedUrl(url);
-            onUploaded?.(url);
-        } catch (e) {
-            alert(e instanceof Error ? e.message : String(e));
-        } finally {
-            setIsUploading(false);
+    // ปรับตัวเช็คไฟล์
+    function rejectIfInvalid(f: File) {
+        const okTypes = ["image/jpeg", "image/png"];
+        if (!okTypes.includes(f.type)) {
+            showError("รองรับเฉพาะไฟล์ JPG หรือ PNG");
+            return true;
         }
+        if (f.size > MAX_SIZE) {
+            showError("ไฟล์รูปต้องไม่เกิน 2 MB");
+            return true;
+        }
+        return false;
+    }
+
+    const onFileSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+        const f = e.target.files?.[0];
+        if (!f) return;
+        if (rejectIfInvalid(f)) {
+            e.currentTarget.value = ""; // ให้เลือกไฟล์เดิมได้
+            return;
+        }
+        onChange(f);
     };
 
     return (
@@ -93,7 +81,6 @@ export default function ImageUpload({
                 <span className="text-sm font-medium text-[var(--gray-800)]">
                     {typeof label === "string"
                         ? (() => {
-                            // ถ้าลงท้ายด้วย * ให้แสดงเป็นสีแดง
                             const m = label.match(/^(.*?)(\s*\*)$/);
                             if (m) {
                                 return (
@@ -109,68 +96,95 @@ export default function ImageUpload({
                 </span>
             )}
 
-            {/* กล่องอัปโหลด (ธีมเดิม) + Drag & Drop */}
             <div
-                onClick={handlePick}
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
-                onDrop={onDrop}
+                onDragOver={onDragOverBox}
+                onDragLeave={onDragLeaveBox}
+                onDrop={onDropBox}
                 className={cn(
-                    "flex items-center justify-center w-[433px] min-h-[140px] rounded-lg border-2 border-dashed px-4 py-6 text-center transition cursor-pointer",
-                    "bg-[var(--white)] border-[var(--gray-300)] hover:border-[var(--gray-400)]",
-                    dragOver && "border-[var(--blue-400)] bg-[var(--blue-50)]",
-                    // hover สีพื้นเทาอ่อนเดิม
-                    !dragOver && "hover:bg-[var(--gray-300)]"
+                    "relative w-[433px] h-[200px] rounded-lg border-2 transition-all",
+                    "bg-[var(--white)] border-dashed",
+                    errorMsg ? "border-[var(--red)]" : "border-[var(--gray-300)]",
+                    "hover:border-[var(--gray-400)] hover:shadow-sm",
+                    dragOver && "border-[var(--blue-400)] bg-[var(--blue-50)] shadow",
+                    value ? "overflow-hidden" : "cursor-pointer"
                 )}
+                onClick={!value ? pick : undefined}
             >
-                <div className="space-y-1">
-                    <div className="text-sm">
-                        <span className="font-medium text-[var(--blue-500)] underline hover:text-[var(--blue-700)]">
-                            อัปโหลดรูปภาพ
-                        </span>
-                        <span className="mx-2 text-[var(--gray-600)]">หรือ ลากและวางที่นี่</span>
+
+                {!value && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 py-6 hover:bg-[var(--gray-50)]">
+                        <div className="text-sm">
+                            <span className="font-medium text-[var(--blue-500)] underline hover:text-[var(--blue-700)]">
+                                อัปโหลดรูปภาพ
+                            </span>
+                            <span className="mx-2 text-[var(--gray-600)]">หรือ ลากและวางที่นี่</span>
+                        </div>
+                        <div className="text-xs text-[var(--gray-400)] mt-1">PNG, JPG ขนาดไม่เกิน 2MB</div>
                     </div>
-                    <div className="text-xs text-[var(--gray-400)]">PNG, JPG ขนาดไม่เกิน 10MB</div>
-                </div>
+                )}
+
+                {value && (
+                    <>
+                        <div className="absolute left-0 top-0 w-[300px] h-[200px] overflow-hidden">
+                            <Image
+                                alt="preview"
+                                src={objectUrl}
+                                width={300}
+                                height={200}
+                                className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.01]"
+                            />
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onChange(null);
+                                    if (inputRef.current) inputRef.current.value = "";
+                                }}
+                                aria-label="remove-image"
+                                title="ลบรูป"
+                                className="absolute right-2 top-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-[var(--gray-700)] shadow-md backdrop-blur transition hover:bg-white hover:text-[var(--red)] cursor-pointer"
+                            >
+                                X
+                            </button>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={pick}
+                            className={cn(
+                                "absolute right-0 top-0 h-full w-[130px] border-l-2 border-dashed",
+                                "border-[var(--gray-300)] hover:border-[var(--blue-400)]",
+                                "flex flex-col items-center justify-center gap-1 text-center px-2 transition hover:bg-[var(--gray-50)] active:scale-[0.99]"
+                            )}
+                        >
+                            <span className="text-sm font-medium text-[var(--blue-600)] underline cursor-pointer">เปลี่ยนรูป</span>
+                            <span className="text-[10px] text-[var(--gray-500)] leading-3">ลากมาวางได้</span>
+                        </button>
+                    </>
+                )}
 
                 <input
                     ref={inputRef}
                     type="file"
                     accept={accept}
                     className="hidden"
-                    onChange={handleFileSelected}
+                    onChange={onFileSelected}
                 />
             </div>
-
-            {/* พรีวิว + ปุ่มอัปโหลด (ถ้าเลือกโหมด standaloneUpload) */}
-            {value && (
-                <div className="flex items-center gap-3">
-                    <div className="relative mt-2 h-40 w-40 overflow-hidden rounded-md border border-[var(--gray-300)]">
-                        <Image fill alt="preview" src={URL.createObjectURL(value)} className="object-cover" />
+            {/* แสดงข้อความผิดพลาดใต้กรอบ */}
+            <div className="h-[15px]">
+                {errorMsg && (
+                    <div className="text-xs text-[var(--red)] mt-1" role="alert" aria-live="polite">
+                        {errorMsg}
                     </div>
+                )}
+                {value && (
+                    <div className="text-xs text-[var(--gray-600)] mt-1 animate-fade-in">
+                        ชื่อไฟล์: <span className="font-medium">{value.name}</span>
+                    </div>
+                )}
+            </div>
 
-                    {standaloneUpload && (
-                        <button
-                            type="button"
-                            onClick={handleUpload}
-                            disabled={isUploading}
-                            className="h-10 rounded-md px-4 border bg-[var(--blue-600)] text-white disabled:opacity-60"
-                        >
-                            {isUploading ? "กำลังอัปโหลด..." : "อัปโหลด"}
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* แสดงลิงก์หลังอัปโหลด (เฉพาะโหมด standaloneUpload) */}
-            {standaloneUpload && uploadedUrl && (
-                <div className="text-xs text-[var(--gray-700)] break-all">
-                    ลิงก์รูป:{" "}
-                    <a href={uploadedUrl} target="_blank" className="underline text-[var(--blue-600)]" rel="noreferrer">
-                        {uploadedUrl}
-                    </a>
-                </div>
-            )}
         </div>
     );
 }

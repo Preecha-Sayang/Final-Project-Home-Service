@@ -45,7 +45,7 @@ export default function ServiceEditor({ mode, id }: Props) {
     const [saving, setSaving] = useState(false);
 
     const [name, setName] = useState("");
-    const [categoryId, setCategoryId] = useState<number>(1);
+    const [categoryId, setCategoryId] = useState<number>(0);
     const [catOptions, setCatOptions] = useState<Option[]>([]);
 
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -249,7 +249,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                 placeholder="เช่น ล้างแอร์"
                                 validate={(v) => (v.trim() ? null : "กรุณากรอกชื่อบริการ")}
                                 maxLength={30}
-                                className="h-[44px]"
+                                className="h-[44px] pl-4 font-medium"
                             />
                         </div>
                     </div>
@@ -275,7 +275,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                         {imageUrl && !imageFile ? (
                             <div className="grid gap-2">
                                 <div className="relative h-40 overflow-hidden rounded-xl border border-[var(--gray-300)]">
-                                    <Image src={imageUrl} alt="service image" fill sizes="(max-width:768px) 100vw, 400px" className="object-cover" />
+                                    <Image src={imageUrl} alt="service image" width={300} height={200} className="object-cover" />
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <button type="button" onClick={requestRemoveImage}
@@ -285,17 +285,13 @@ export default function ServiceEditor({ mode, id }: Props) {
                                 </div>
                             </div>
                         ) : (
-                            <div className="grid gap-1">
+                            <div className="grid gap-1 h-[215px]">
                                 <ImageUpload
                                     // label="รูปบริการ"
                                     value={imageFile}
                                     onChange={setImageFile}
+
                                 />
-                                {!!imageFile && (
-                                    <div className="text-xs text-[var(--gray-600)]">
-                                        ชื่อไฟล์: <span className="font-medium">{imageFile.name}</span>
-                                    </div>
-                                )}
                                 {markRemoveImg && (
                                     <div className="text-xs text-[var(--red)]">จะลบรูปเดิมเมื่อกดบันทึก</div>
                                 )}
