@@ -6,7 +6,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === "GET") {
         const rows = await sql/*sql*/`
             SELECT category_id, name, description, bg_color_hex, text_color_hex, ring_color_hex,
-                    created_at, updated_at
+                    create_at, update_at
             FROM service_categories
             ORDER BY category_id ASC
         `;
@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!name?.trim()) return res.status(400).json({ ok: false, message: "name required" });
 
         const rows = await sql/*sql*/`
-            INSERT INTO service_categories (name, description, bg_color_hex, text_color_hex, ring_color_hex, updated_at)
+            INSERT INTO service_categories (name, description, bg_color_hex, text_color_hex, ring_color_hex, update_at)
             VALUES (${name.trim()}, ${description ?? null}, ${bg_color_hex ?? null}, ${text_color_hex ?? null}, ${ring_color_hex ?? null}, now())
             RETURNING *
         `;

@@ -12,9 +12,7 @@ type ServiceRowCompat = ServiceItem & {
     service_id?: number | string;
     servicename?: string;
     category_name?: string;
-    created_at?: string;
     create_at?: string;
-    updated_at?: string;
     update_at?: string;
 };
 
@@ -23,10 +21,10 @@ const getRowId = (row: ServiceRowCompat): string =>
     String(row.id ?? row.service_id);
 
 const getCreated = (row: ServiceRowCompat): string | undefined =>
-    row.createdAt ?? row.create_at ?? row.created_at ?? row.update_at ?? row.updated_at;
+    row.createdAt ?? row.create_at ?? row.update_at;
 
 const getUpdated = (row: ServiceRowCompat): string | undefined =>
-    row.updatedAt ?? row.update_at ?? row.updated_at ?? row.create_at ?? row.created_at;
+    row.updatedAt ?? row.update_at ?? row.create_at;
 
 const getCategoryLabel = (row: ServiceRowCompat): string =>
     (row.category ?? row.category_name ?? "") as string;
