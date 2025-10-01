@@ -76,16 +76,26 @@ export default function FiltersBar({
         if (e.key === "Enter") apply();
     };
 
-    // ---------- Price popover ----------
-    const [openPrice, setOpenPrice] = React.useState(false);
-    // ค่าชั่วคราวใน popup (เลือกแล้วค่อย OK)
-    const [tempPrice, setTempPrice] = React.useState<Range>(price);
-    React.useEffect(() => setTempPrice(price), [price]);
-    const priceRef = useClickOutside<HTMLDivElement>(openPrice, () => setOpenPrice(false));
+    // ---------- Price popover (Desktop) ----------
+    const [openPriceDesktop, setOpenPriceDesktop] = React.useState(false);
+    const [tempPriceDesktop, setTempPriceDesktop] = React.useState<Range>(price);
+    React.useEffect(() => setTempPriceDesktop(price), [price]);
+    const priceRefDesktop = useClickOutside<HTMLDivElement>(openPriceDesktop, () => setOpenPriceDesktop(false));
 
-    const confirmPrice = () => {
-        setPrice(tempPrice);
-        setOpenPrice(false);
+    const confirmPriceDesktop = () => {
+        setPrice(tempPriceDesktop);
+        setOpenPriceDesktop(false);
+    };
+
+    // ---------- Price popover (Mobile) ----------
+    const [openPriceMobile, setOpenPriceMobile] = React.useState(false);
+    const [tempPriceMobile, setTempPriceMobile] = React.useState<Range>(price);
+    React.useEffect(() => setTempPriceMobile(price), [price]);
+    const priceRefMobile = useClickOutside<HTMLDivElement>(openPriceMobile, () => setOpenPriceMobile(false));
+
+    const confirmPriceMobile = () => {
+        setPrice(tempPriceMobile);
+        setOpenPriceMobile(false);
     };
 
     // แสดงช่วงราคาเป็นข้อความ
@@ -138,13 +148,13 @@ export default function FiltersBar({
                 <div className="hidden xl:block w-px h-15 bg-gray-200 self-center"></div>
 
                 {/* Price = ปุ่ม + popup */}
-                <div className="xl:w-[10%] flex justify-center" ref={priceRef}>
+                <div className="xl:w-[10%] flex justify-center" ref={priceRefDesktop}>
                 <div className="flex flex-col items-start"> 
                     <label className="w-full block text-xs font-light text-[var(--gray-500)] pb-2">ราคา</label>
 
                     <button
                         type="button"
-                        onClick={() => setOpenPrice((s) => !s)}
+                        onClick={() => setOpenPriceDesktop((s) => !s)}
                         className="inline-flex items-center text-base font-medium
                        hover:border-[var(--gray-400)]
                        focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)]"
@@ -160,7 +170,7 @@ export default function FiltersBar({
                     </div>
 
                     {/* Panel: จัดให้ออกด้านขวาตามแบบ และซ่อน/แสดงด้วย state */}
-                    {openPrice && (
+                    {openPriceDesktop && (
                         <div
                             className="absolute z-50 mt-17 w-[300px] left-4/7 -translate-x-1/2 lg:right-0 lg-left-auto bg-white p-3 shadow-xl"
                         >
@@ -169,21 +179,21 @@ export default function FiltersBar({
                                 min={priceRange.min}
                                 max={priceRange.max}
                                 step={1}
-                                value={tempPrice}
-                                onChange={setTempPrice}
-                                onCommit={setTempPrice}
+                                value={tempPriceDesktop}
+                                onChange={setTempPriceDesktop}
+                                onCommit={setTempPriceDesktop}
                                 debounceMs={150}
                                 enableDebugLogs={false}
                             />
                             <div className="mt-3 flex items-center justify-end gap-2">
                                 <button
-                                    onClick={() => setOpenPrice(false)}
+                                    onClick={() => setOpenPriceDesktop(false)}
                                     className="rounded-md border border-[var(--gray-300)] px-3 py-1.5 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={confirmPrice}
+                                    onClick={confirmPriceDesktop}
                                     className="rounded-md bg-[var(--blue-600)] px-4 py-1.5 text-sm text-white hover:bg-[var(--blue-700)] cursor-pointer"
                                 >
                                     OK
@@ -279,13 +289,13 @@ export default function FiltersBar({
                <div className="block w-px h-12 bg-gray-200 self-center"></div>
 
                 {/* Price = ปุ่ม + popup */}
-                <div className="w-[30%] flex justify-center" ref={priceRef}>
+                <div className="w-[30%] flex justify-center" ref={priceRefMobile}>
                 <div className="items-start grid gap-2"> 
                     <label className="w-full text-xs font-light text-[var(--gray-500)]">ราคา</label>
 
                     <button
                         type="button"
-                        onClick={() => setOpenPrice((s) => !s)}
+                        onClick={() => setOpenPriceMobile((s) => !s)}
                         className="items-center text-base font-medium
                        hover:border-[var(--gray-400)]
                        focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)]"
@@ -301,7 +311,7 @@ export default function FiltersBar({
                     </div>
 
                     {/* Panel: จัดให้ออกด้านขวาตามแบบ และซ่อน/แสดงด้วย state */}
-                    {openPrice && (
+                    {openPriceMobile && (
                         <div
                             className="absolute z-50 mt-17 w-[300px] left-4/7 -translate-x-1/2 lg:right-0 lg-left-auto bg-white p-3 shadow-xl"
                         >
@@ -310,21 +320,21 @@ export default function FiltersBar({
                                 min={priceRange.min}
                                 max={priceRange.max}
                                 step={1}
-                                value={tempPrice}
-                                onChange={setTempPrice}
-                                onCommit={setTempPrice}
+                                value={tempPriceMobile}
+                                onChange={setTempPriceMobile}
+                                onCommit={setTempPriceMobile}
                                 debounceMs={150}
                                 enableDebugLogs={false}
                             />
                             <div className="mt-3 flex items-center justify-end gap-2">
                                 <button
-                                    onClick={() => setOpenPrice(false)}
+                                    onClick={() => setOpenPriceMobile(false)}
                                     className="rounded-md border border-[var(--gray-300)] px-3 py-1.5 text-sm text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
-                                    onClick={confirmPrice}
+                                    onClick={confirmPriceMobile}
                                     className="rounded-md bg-[var(--blue-600)] px-4 py-1.5 text-sm text-white hover:bg-[var(--blue-700)] cursor-pointer"
                                 >
                                     OK
