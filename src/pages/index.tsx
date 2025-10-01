@@ -3,6 +3,7 @@ import ButtonPrimary from "@/components/button/buttonprimary";
 import Navbar from "@/components/navbar/navbar";
 import PopularServices from "@/components/PopularServices";
 import Link from "next/link";
+import Image from "next/image";
 
 
 export default function Home() {
@@ -19,20 +20,20 @@ export default function Home() {
                             เรื่องบ้าน...ให้เราช่วยดูแลคุณ
                     </div>
                         <p className="text-2xl md:text-4xl font-bold text-gray-950 mb-12 font-prompt">
-                            "สะดวก ราคาคุ้มค่า เชื่อถือได้"
+                            สะดวก ราคาคุ้มค่า เชื่อถือได้
                         </p>
                         <p className="text-2xl md:text-2xl text-gray-500 mb-12 font-prompt">
                             ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน<br />
                             โดยพนักงานแม่บ้าน และช่างมืออาชีพ
                         </p>
-                        <Link href="/service">
+                        <Link href="/services">
                         <ButtonPrimary>เช็คราคาบริการ</ButtonPrimary>
                         </Link>
                     </div>
 
                 {/* รูป */}
                     <div className="flex justify-end items-end w-auto ">
-                        <img
+                        <Image
                         src="/images/technicain.png"
                         alt="Professional Technician"
                         className="w-full max-w-[420px] md:max-w-[520px] h-auto object-contain"
@@ -50,7 +51,7 @@ export default function Home() {
                     <PopularServices />
                 </div>
                 <div className="flex justify-center mt-12">
-                    <Link href="/service">
+                    <Link href="/services">
                         <ButtonPrimary>ดูบริการทั้งหมด</ButtonPrimary>
                     </Link>
                 </div>
@@ -62,7 +63,7 @@ export default function Home() {
     
                   {/* รูปซ้าย (ชิดซ้ายสุด) */}
                   <div className="relative w-full md:w-auto">
-                    <img
+                    <Image
                     src="/images/มาร่วมเป็นพนักงานซ่อม.svg"
                     alt="Join Our Team"
                     className="w-full h-[280px] md:h-[372px] object-cover"
@@ -87,7 +88,7 @@ export default function Home() {
                 </div>
 
                 {/* ไอคอนบ้าน */}
-                  <img
+                  <Image
                     src="/images/house 1.svg"
                     alt="House Icon"
                     className="absolute bottom-0 right-0 h-[280px] md:h-[360px] object-contain opacity-40 md:opacity-100"
