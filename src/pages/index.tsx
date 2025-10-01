@@ -11,39 +11,38 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-50 to-blue-100 h-auto md:h-[540px] pt-8 md:pt-12">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between h-full relative">
-          {/* ข้อความ */}
-          <div className="flex-1 md:text-left mb-8 md:mb-0">
-            <div className="text-4xl md:text-6xl font-bold text-blue-700 mb-8 font-prompt">
-              เรื่องบ้าน...ให้เราช่วยดูแลคุณ
-            </div>
-            <p className="text-2xl md:text-4xl font-bold text-gray-950 mb-12 font-prompt">
-              สะดวก ราคาคุ้มค่า เชื่อถือได้
-            </p>
-            <p className="text-2xl md:text-2xl text-gray-500 mb-12 font-prompt">
-              ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน<br />
-              โดยพนักงานแม่บ้าน และช่างมืออาชีพ
-            </p>
-            <Link href="/services">
-              <ButtonPrimary>เช็คราคาบริการ</ButtonPrimary>
-            </Link>
-          </div>
+            {/* Hero Section */}
+            <section className="bg-gradient-to-r from-blue-50 to-blue-100 h-auto md:h-[520px] pt-8 md:pt-8">
+                <div className="max-w-6xl mx-auto px-4 md:px-0 flex flex-col md:flex-row items-center justify-between h-full relative">
+            {/* ข้อความ */}
+                    <div className="flex-1 text-left mb-8 md:mb-0">
+                    <div className="text-4xl md:text-6xl font-bold text-blue-700 mb-8 font-prompt ">
+                            เรื่องบ้าน...ให้เราช่วยดูแลคุณ
+                    </div>
+                        <p className="text-2xl md:text-4xl font-bold text-gray-950 mb-10 font-prompt">
+                            สะดวก ราคาคุ้มค่า เชื่อถือได้
+                        </p>
+                        <p className="text-2xl md:text-2xl text-gray-500 mb-10 font-prompt">
+                            ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน<br />
+                            โดยพนักงานแม่บ้าน และช่างมืออาชีพ
+                        </p>
+                        <Link href="/services">
+                        <ButtonPrimary>เช็คราคาบริการ</ButtonPrimary>
+                        </Link>
+                    </div>
 
-          {/* รูป */}
-          <div className="flex justify-end items-end w-auto ">
-            <Image
-              src="/images/technicain.png"
-              alt="Professional Technician"
-              // className="w-[100%] max-w-[420px] md:max-w-[520px] h-auto object-contain"
-              className="w-full max-w-[420px] md:max-w-[520px] h-auto object-contain"
-              width={100}
-              height={100}
-            />
-          </div>
-        </div>
-      </section>
+                {/* รูป */}
+                    <div className=" justify-end items-end w-auto relative ">
+                        <Image
+                        src="/images/technicain.png"
+                        alt="Professional Technician"
+                        width={480}
+                        height={480}
+                        className=" max-w-[390px] md:max-w-[480px] relative bottom-0 right-0 md:left-10 md:top-4 h-auto object-contain pl-12 md:pl-0 ml-0 "
+                        />
+                    </div>
+                </div>
+            </section>
 
       {/* Our Services Section */}
       <section className="py-16 bg-gray-50">
