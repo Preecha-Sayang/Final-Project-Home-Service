@@ -37,6 +37,7 @@ export default function Home() {
                         src="/images/technicain.png"
                         alt="Professional Technician"
                         className="w-[100%] max-w-[420px] md:max-w-[520px] h-auto object-contain"
+                        className="w-full max-w-[420px] md:max-w-[520px] h-auto object-contain"
                         />
                     </div>
                 </div>
@@ -66,6 +67,8 @@ export default function Home() {
                     <Image
                     src="/images/มาร่วมเป็นพนักงานซ่อม.svg"
                     alt="Join Our Team"
+                    width={100}
+                    height={100}
                     className="w-full h-[280px] md:h-[372px] object-cover"
                     />
                   </div>
@@ -91,6 +94,8 @@ export default function Home() {
                   <Image
                     src="/images/house 1.svg"
                     alt="House Icon"
+                    width={360}
+                    height={360}
                     className="absolute bottom-0 right-0 h-[280px] md:h-[360px] object-contain opacity-40 md:opacity-100"
                   />
               </section>
