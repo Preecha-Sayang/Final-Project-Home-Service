@@ -1,15 +1,14 @@
 import InputField from "@/components/input/inputField/input_state";
 import ButtonPrimary from "@/components/button/buttonprimary";
-import { useState } from "react";
+// import { useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import logo from "../../../../public/images/logo.png";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-// import { useAuth } from "@/context/AuthContext"; // ✅ import context
 import { useForm, Controller } from "react-hook-form";
 
-interface LoginFormInputs {
+interface LoginAdminType {
   email: string;
   password: string;
 }
@@ -36,7 +35,7 @@ export default function AdminLogin() {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormInputs>({
+  } = useForm<LoginAdminType>({
     resolver: yupResolver(schema),
   });
 
@@ -44,7 +43,7 @@ export default function AdminLogin() {
   //   setForm({ ...form, [name]: value });
   // };
 
-  const onSubmit = async (data: LoginFormInputs) => {
+  const onSubmit = async (data: LoginAdminType) => {
     //setError("");
     // setLoading(true);
 
