@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { FiltersState, Option, Range } from "./types";
-import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
+import InputDropdownForServicePage from "@/components/input/inputDropdown/input_dropdown_for_servicepage";
 import PriceRange from "@/components/input/inputPriceRange/price_range";
 import { usePriceRange } from "@/hooks/usePriceRange";
 
@@ -132,7 +132,7 @@ export default function FiltersBar({
 
                 {/* Category */}
                 <div className="xl:w-[18%] flex justify-center relative">
-                    <InputDropdown
+                    <InputDropdownForServicePage
                         label="หมวดหมู่บริการ"
                         options={[
                             { label: "บริการทั้งหมด", value: "" },
@@ -208,7 +208,7 @@ export default function FiltersBar({
 
                 {/* Sort */}
                 <div className="xl:w-[15%] flex justify-center">
-                    <InputDropdown
+                    <InputDropdownForServicePage
                         label="เรียงตาม"
                         value={sort}
                         onChange={(v) => setSort(v as "asc" | "desc" | "recommended" | "popular")}
@@ -273,7 +273,7 @@ export default function FiltersBar({
                 
                 {/* Category : 1/3 */}
                 <div className="w-[30%] flex justify-center relative">
-                    <InputDropdown
+                    <InputDropdownForServicePage
                         label="หมวดหมู่บริการ"
                         options={[
                             { label: "บริการทั้งหมด", value: "" },
@@ -349,7 +349,7 @@ export default function FiltersBar({
 
                 {/* Sort */}
                 <div className="w-[40%] flex justify-center">
-                    <InputDropdown
+                    <InputDropdownForServicePage
                         label="เรียงตาม"
                         value={sort}
                         onChange={(v) => setSort(v as "asc" | "desc" | "recommended" | "popular")}
