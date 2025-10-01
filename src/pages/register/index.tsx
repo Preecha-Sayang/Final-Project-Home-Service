@@ -202,7 +202,7 @@ function Register() {
             </ButtonPrimary>
           </form>
 
-          <ButtonGhost onClick={() => router.push("/loginuser/login")}>
+          <ButtonGhost onClick={() => router.push("/login")}>
             <span>กลับไปหน้าเข้าสู่ระบบ</span>
           </ButtonGhost>
         </div>

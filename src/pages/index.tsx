@@ -36,8 +36,7 @@ export default function Home() {
                         <Image
                         src="/images/technicain.png"
                         alt="Professional Technician"
-                        width={420}
-                        height={420}
+                        className="w-[100%] max-w-[420px] md:max-w-[520px] h-auto object-contain"
                         className="w-full max-w-[420px] md:max-w-[520px] h-auto object-contain"
                         />
                     </div>

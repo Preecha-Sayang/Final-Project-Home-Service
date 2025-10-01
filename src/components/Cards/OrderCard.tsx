@@ -7,7 +7,7 @@ import Image from 'next/image';
 interface OrderCardProps {
   orderCode: string;
   operationDateTime: string;
-  employee: string;
+  employee?: string;
   items: string[];
   status: string;
   totalPrice: string;
