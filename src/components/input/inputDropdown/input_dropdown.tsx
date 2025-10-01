@@ -57,11 +57,11 @@ export default function InputDropdown({
                 <div className={cn("relative", className)}>
                     <Listbox.Button
                         className={cn(
-                            "w-full  text-left text-base font-medium",
-                            " text-[var(--gray-900)]",
-                            "hover:border-[var(--gray-400)]",
-                            "focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)]",
-                            "pr-9",
+                            "w-full h-full text-left text-base font-medium text-[var(--gray-900)]",
+                            "border border-[var(--gray-300)]",
+                            "hover:border-[var(--gray-300)]",
+                            "focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]",
+                            "px-4 rounded-md",
                             disabled &&
                             "bg-[var(--gray-100)] text-[var(--gray-500)] cursor-not-allowed border-[var(--gray-200)]"
                         )}
@@ -84,7 +84,7 @@ export default function InputDropdown({
                         leaveTo="opacity-0"
                     >
                         <Listbox.Options
-                            className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md
+                            className="absolute z-50 mt-1 h-[160px] w-full overflow-auto rounded-md
                          border border-[var(--gray-200)] bg-white shadow-lg"
                         >
                             {options.map((opt) => (
@@ -92,7 +92,7 @@ export default function InputDropdown({
                                     {({ active, selected, disabled }) => (
                                         <div
                                             className={cn(
-                                                "cursor-pointer select-none rounded px-3 py-2 text-sm text-[var(--gray-500)]",
+                                                "h-[34px] cursor-pointer select-none rounded px-3 py-2 text-sm text-[var(--gray-500)]",
                                                 active && "bg-[var(--gray-100)]",
                                                 selected && "font-medium text-[var(--gray-950)] bg-[var(--gray-100)]",
                                                 disabled && "opacity-50 cursor-not-allowed",
