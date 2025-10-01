@@ -28,6 +28,9 @@ export type ServiceRow = {
     create_at: string;
     update_at: string;
     admin_id: number;
+
+    // เพิ่มการจัดอันดับใหม่ตอนลากเสร็จ
+    position: number | null;
 };
 
 // service_option
@@ -58,6 +61,7 @@ export default async function handler(
 ) {
     if (req.method === "GET") {
         try {
+            // JOIN เอาชื่อหมวดหมู่ + สี + เรียงตาม position
             const rowsU = await sql/*sql*/`
                 SELECT s.service_id, s.servicename, s.category_id,
                     c.name AS category_name,
@@ -65,16 +69,16 @@ export default async function handler(
                     c.text_color_hex AS category_text,
                     c.ring_color_hex AS category_ring,
                     s.image_url, s.image_public_id, s.price, s.description,
-                    s.create_at, s.update_at, s.admin_id
+                    s.create_at, s.update_at, s.admin_id, s.position
                 FROM services s
                 LEFT JOIN service_categories c ON c.category_id = s.category_id
-                ORDER BY s.service_id DESC
+                ORDER BY s.position ASC NULLS LAST, s.service_id ASC
             `;
             const rows = rowsU as unknown as ServiceRow[];
             return res.status(200).json({ ok: true, services: rows });
         } catch (e) {
             const message = e instanceof Error ? e.message : String(e);
-            return res.status(500).json({ ok: false, message: message || "Get services failed" });
+            return res.status(500).json({ ok: false, message: message || "Get services failed." });
         }
     }
 
@@ -136,10 +140,10 @@ export default async function handler(
             // ---------- Transaction ----------
             await sql/*sql*/`BEGIN`;
 
-            // 1) INSERT services
+            // 1) INSERT services + Position ต่อท้าย
             const createdRowsU = await sql/*sql*/`
                 INSERT INTO services (
-                servicename, category_id, image_url, image_public_id, price, description, admin_id, update_at
+                servicename, category_id, image_url, image_public_id, price, description, admin_id, update_at, position
                 ) VALUES (
                     ${servicename},
                     ${category_id},
@@ -148,7 +152,8 @@ export default async function handler(
                     ${Number.isFinite(Number(priceNumOrNull)) ? priceNumOrNull : null},
                     ${description},
                     ${admin_id},
-                    now()
+                    now(),
+                    (SELECT COALESCE(MAX(position), 0) + 1 FROM services)
                 )
                 RETURNING *
             `;

@@ -29,7 +29,7 @@ type OptionRow = {
 };
 
 ////api/units
-type UnitsResponseOk = { ok: true; units: { name: string }[] };
+type UnitsResponseOk = { ok: true; units: string[] };
 type UnitsResponseErr = { ok: false; message?: string };
 type UnitsResponse = UnitsResponseOk | UnitsResponseErr;
 
@@ -70,6 +70,8 @@ export default function ServiceEditor({ mode, id }: Props) {
     const [addUnitForRowId, setAddUnitForRowId] = useState<string | null>(null);
     const [addingUnit, setAddingUnit] = useState(false);
 
+    // ยืนยันลบ option
+    const [askDelOptionId, setAskDelOptionId] = useState<number | null>(null);
 
     // โหลด category list
     useEffect(() => {
@@ -84,9 +86,9 @@ export default function ServiceEditor({ mode, id }: Props) {
         (async () => {
             try {
                 const r = await fetch("/api/service-options/units");
-                const d = await r.json();
-                if (d?.ok) setUnits((d.units as string[]).map(u => ({ label: u, value: u })));
-            } catch { }
+                const d: UnitsResponse = await r.json();
+                if (d?.ok) setUnits(d.units.map(u => ({ label: u, value: u })));
+            } catch { /* ignore */ }
         })();
     }, []);
 
@@ -122,20 +124,20 @@ export default function ServiceEditor({ mode, id }: Props) {
         })();
     }, [mode, id]);
 
-    // ลบ option (อยู่หน้าแก้ไข)
+    // ลบ option (ยืนยันด้วย ConfirmDialog)
     const removeOption = async (optId: number) => {
-        if (!window.confirm("ยืนยันลบรายการย่อยนี้?")) return;
         const prev = options;
         setDeletingId(optId);
         setOptions((o) => o.filter((x) => x.service_option_id !== optId));
         try {
             const res = await fetch(`/api/service-options/${optId}`, { method: "DELETE" });
             if (!res.ok) throw new Error("ลบไม่สำเร็จ");
-        } catch (e: unknown) {
+        } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
             setOptions(prev);
         } finally {
             setDeletingId(null);
+            setAskDelOptionId(null);
         }
     };
 
@@ -213,7 +215,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                 if (!res.ok || !data?.ok || !data.service) throw new Error(data?.message || "Update failed");
                 router.push(`/admin/services/${data.service.service_id}`);
             }
-        } catch (e: unknown) {
+        } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
         } finally {
             setSaving(false);
@@ -267,7 +269,6 @@ export default function ServiceEditor({ mode, id }: Props) {
                         </div>
                     </div>
 
-
                     <div className="flex items-center">
                         <span className="w-[205px]">รูปภาพ <span className="text-[var(--red)]">*</span></span>
 
@@ -304,23 +305,6 @@ export default function ServiceEditor({ mode, id }: Props) {
 
                     <hr className="my-2 border-[var(--gray-200)]" />
 
-                    {/* <InputField
-                        label="ราคาเริ่มต้น (ถ้ามี)"
-                        placeholder="ระบุเป็นตัวเลข..."
-                        value={basePrice == null ? "" : String(basePrice)}
-                        onChange={(e) => setBasePrice(e.target.value ? Number(e.target.value) : null)}
-                        inputMode="decimal"
-                        rightIcon={<span className="text-[var(--gray-500)]">฿</span>}
-                    />
-
-                    <InputField
-                        label="รายละเอียด"
-                        placeholder="เช่น บริการทำความสะอาดเครื่องปรับอากาศ..."
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        textarea
-                    /> */}
-
                     {/* รายการย่อยจาก DB: แสดง + ปุ่มลบ (ย้ายมาหน้านี้) */}
                     <div className="grid gap-3">
                         <div className="text-base font-medium text-[var(--gray-800)]">รายการบริการย่อย</div>
@@ -349,10 +333,12 @@ export default function ServiceEditor({ mode, id }: Props) {
                                         <div className="text-base font-medium">{fmtMoney(o.unit_price)}</div>
                                     </div>
                                     <div className="col-span-1 flex items-center justify-end">
-                                        <button type="button"
-                                            onClick={() => removeOption(o.service_option_id)}
+                                        <button
+                                            type="button"
+                                            onClick={() => setAskDelOptionId(o.service_option_id)}
                                             disabled={deletingId === o.service_option_id}
-                                            className="w-[112px] rounded-md p-2 text-base font-semibold underline text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] disabled:opacity-60 cursor-pointer">
+                                            className="w-[112px] rounded-md p-2 text-base font-semibold underline text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] disabled:opacity-60 cursor-pointer"
+                                        >
                                             {deletingId === o.service_option_id ? "กำลังลบ..." : "ลบรายการ"}
                                         </button>
                                     </div>
@@ -361,6 +347,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                         </div>
                     </div>
 
+                    {/* ลบรูป */}
                     <ConfirmDialog
                         open={askRemoveImg}
                         title="ลบรูปภาพ?"
@@ -369,6 +356,19 @@ export default function ServiceEditor({ mode, id }: Props) {
                         onConfirm={confirmRemoveImage}
                     />
 
+                    {/* ยืนยันลบ option */}
+                    <ConfirmDialog
+                        open={askDelOptionId != null}
+                        title="ยืนยันลบรายการย่อย?"
+                        description="คุณต้องการลบรายการย่อยนี้หรือไม่"
+                        loading={askDelOptionId != null && deletingId === askDelOptionId}
+                        onCancel={() => setAskDelOptionId(null)}
+                        onConfirm={() => {
+                            if (askDelOptionId != null) removeOption(askDelOptionId);
+                        }}
+                    />
+
+                    {/* เพิ่มหน่วย (dialog) */}
                     <InputDialog
                         open={addUnitOpen}
                         title="เพิ่มหน่วยใหม่"
@@ -377,6 +377,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                         confirmLabel="เพิ่มหน่วย"
                         cancelLabel="ยกเลิก"
                         loading={addingUnit}
+                        maxlength={8}
                         validate={(v) => {
                             if (!v.trim()) return "กรุณากรอกชื่อหน่วย";
                             if (v.length > 8) return "ชื่อหน่วยยาวเกินไป";
@@ -402,8 +403,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                         }}
                     />
 
-
-                    {/* subItems (draft ในฟอร์ม) */}
+                    {/* subItems (draft ในฟอร์ม) — โหมด create เท่านั้น */}
                     {mode === "create" && (
                         <>
                             <hr className="my-2 border-[var(--gray-200)]" />
@@ -442,7 +442,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                     onChange={(e) => patchRow(it.id, { price: Number(e.target.value || 0) })}
                                                     inputMode="decimal"
                                                     rightIcon={<span className="text-[var(--gray-500)]">฿</span>}
-                                                    validate={(v) => (v.trim() === "" || isNaN(Number(v)) ? "ตัวเลขเท่านั้น" : null)}
+                                                    validate={(v) => (v.trim() === "" || Number.isNaN(Number(v)) ? "ตัวเลขเท่านั้น" : null)}
                                                     validateOn="blur"
                                                     maxLength={6}
                                                     className="h-[38px]"

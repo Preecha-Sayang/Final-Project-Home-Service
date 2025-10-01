@@ -107,13 +107,10 @@ export async function deleteService(id: string | number): Promise<void> {
     await http.delete(`${BASE}/${id}`);
 }
 
-/** จัดเรียงลำดับ (ยังไม่บันทึกจริง เพื่อไม่ให้กระทบส่วนอื่น) */
-export async function reorderServices(_payload: { id: number; index: number }[]): Promise<void> {
-    // ถ้าจะทำจริง:
-    // 1) เพิ่มคอลัมน์ position ใน services
-    // 2) ทำ API /services/reorder
-    // 3) ส่งข้อมูลที่นี่ไปอัปเดต
-    return;
+/** จัดเรียงลำดับ เมื่อลากเสร็จ ให้ยิงอัปเดตทันที */
+export async function reorderServices(payload: { id: number; index: number }[]): Promise<void> {
+    const items = payload.map(p => ({ id: p.id, position: p.index }));
+    await http.patch("/services/reorder", { items });
 }
 
 /** -----ดึงหมวดหมู่ (dropdown)----- */

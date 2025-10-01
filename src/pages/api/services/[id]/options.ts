@@ -12,6 +12,15 @@ type OptRow = {
 type Ok = { ok: true; options: OptRow[] };
 type Err = { ok: false; message?: string };
 
+type UpsertPayloadRow = {
+    service_option_id?: number;
+    name: string;
+    unit: string;
+    unit_price: number | string;
+};
+
+type UpsertPayload = { options?: UpsertPayloadRow[] };
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<Ok | Err>
@@ -23,28 +32,19 @@ export default async function handler(
 
     // ดึงรายการย่อยตาม service_id
     if (req.method === "GET") {
-        const rowsAny = await sql/*sql*/`
+        const rows = await sql/*sql*/`
             SELECT service_option_id, service_id, name, unit, unit_price
             FROM service_option
             WHERE service_id = ${id}
             ORDER BY service_option_id ASC
-        `;
-        const rows = rowsAny as unknown as OptRow[];
+        ` as OptRow[];
         return res.status(200).json({ ok: true, options: rows });
     }
 
     // (เพิ่ม/แก้ไขเป็นชุด)
     if (req.method === "POST") {
         try {
-            const body = req.body as {
-                options?: Array<{
-                    service_option_id?: number;
-                    name: string;
-                    unit: string;
-                    unit_price: number | string;
-                }>;
-            };
-
+            const body: UpsertPayload = req.body;
             if (!body?.options || !Array.isArray(body.options)) {
                 return res.status(400).json({ ok: false, message: "options required" });
             }
@@ -79,13 +79,12 @@ export default async function handler(
             await sql/*sql*/`COMMIT`;
 
             // ส่งรายการล่าสุดกลับ
-            const rowsAny = await sql/*sql*/`
+            const rows = await sql/*sql*/`
                 SELECT service_option_id, service_id, name, unit, unit_price
                 FROM service_option
                 WHERE service_id = ${id}
                 ORDER BY service_option_id ASC
-            `;
-            const rows = rowsAny as unknown as OptRow[];
+            ` as OptRow[];
 
             return res.status(200).json({ ok: true, options: rows });
         } catch (e) {

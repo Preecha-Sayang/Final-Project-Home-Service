@@ -14,6 +14,10 @@ type Props = {
     className?: string;
 };
 
+type UploadUrlResponse =
+    | { ok: true; cloudinary: { url: string } }
+    | { ok: false; message?: string };
+
 export default function ImageUpload({
     label,
     value,
@@ -27,8 +31,32 @@ export default function ImageUpload({
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadedUrl, setUploadedUrl] = useState("");
+    const [dragOver, setDragOver] = useState(false); // <— visual state drag
 
     const handlePick = () => inputRef.current?.click();
+
+    const handleFileSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+        onChange(e.target.files?.[0] ?? null);
+    };
+
+    // --- Drag & Drop handlers
+    const onDragOver: React.DragEventHandler<HTMLDivElement> = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        setDragOver(true);
+    };
+    const onDragLeave: React.DragEventHandler<HTMLDivElement> = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        setDragOver(false);
+    };
+    const onDrop: React.DragEventHandler<HTMLDivElement> = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        setDragOver(false);
+        const f = ev.dataTransfer?.files?.[0];
+        if (f) onChange(f);
+    };
 
     const handleUpload = async () => {
         if (!value) return;
@@ -38,19 +66,22 @@ export default function ImageUpload({
             fd.append("file", value);
 
             // โหมดเดิม: ถ้ามี serviceId > ยิง /api/upload (อัปเดต services.image_url)
-            // ถ้าไม่มี > ยิง /api/upload-url เอาแต่ลิงก์กลับมา
+            // ถ้าไม่มี > ยิง /api/upload-url แล้วเอาลิงค์กลับมาอีกที
             const endpoint = serviceId ? "/api/upload" : "/api/upload-url";
             if (serviceId) fd.append("serviceId", String(serviceId));
 
             const res = await fetch(endpoint, { method: "POST", body: fd });
-            const data = await res.json();
-            if (!res.ok || !data?.ok) throw new Error(data?.message || "Upload failed.");
+            const data: UploadUrlResponse = await res.json();
+            if (!res.ok || !data?.ok) {
+                const msg = ("message" in data && data.message) || "Upload failed.";
+                throw new Error(msg);
+            }
 
-            const url: string = data.cloudinary?.url;
+            const url = data.cloudinary.url;
             setUploadedUrl(url);
             onUploaded?.(url);
         } catch (e) {
-            alert((e as Error).message);
+            alert(e instanceof Error ? e.message : String(e));
         } finally {
             setIsUploading(false);
         }
@@ -78,14 +109,25 @@ export default function ImageUpload({
                 </span>
             )}
 
-            {/* กล่องอัปโหลด (ธีมเดิม) */}
+            {/* กล่องอัปโหลด (ธีมเดิม) + Drag & Drop */}
             <div
                 onClick={handlePick}
-                className="flex items-center justify-center w-[433px] min-h-[140px] rounded-lg border-2 border-dashed border-[var(--gray-300)] bg-[var(--white)] px-4 py-6 text-center hover:border-[var(--gray-400)] transition cursor-pointer hover:bg-[var(--gray-300)]"
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={cn(
+                    "flex items-center justify-center w-[433px] min-h-[140px] rounded-lg border-2 border-dashed px-4 py-6 text-center transition cursor-pointer",
+                    "bg-[var(--white)] border-[var(--gray-300)] hover:border-[var(--gray-400)]",
+                    dragOver && "border-[var(--blue-400)] bg-[var(--blue-50)]",
+                    // hover สีพื้นเทาอ่อนเดิม
+                    !dragOver && "hover:bg-[var(--gray-300)]"
+                )}
             >
                 <div className="space-y-1">
                     <div className="text-sm">
-                        <span className="font-medium text-[var(--blue-500)] underline hover:text-[var(--blue-700)]">อัปโหลดรูปภาพ</span>
+                        <span className="font-medium text-[var(--blue-500)] underline hover:text-[var(--blue-700)]">
+                            อัปโหลดรูปภาพ
+                        </span>
                         <span className="mx-2 text-[var(--gray-600)]">หรือ ลากและวางที่นี่</span>
                     </div>
                     <div className="text-xs text-[var(--gray-400)]">PNG, JPG ขนาดไม่เกิน 10MB</div>
@@ -96,7 +138,7 @@ export default function ImageUpload({
                     type="file"
                     accept={accept}
                     className="hidden"
-                    onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+                    onChange={handleFileSelected}
                 />
             </div>
 
