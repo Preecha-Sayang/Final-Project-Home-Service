@@ -7,6 +7,7 @@ type OptRow = {
     name: string;
     unit: string;
     unit_price: string;
+    position: number;
 };
 
 type Ok = { ok: true; options: OptRow[] };
@@ -17,6 +18,7 @@ type UpsertPayloadRow = {
     name: string;
     unit: string;
     unit_price: number | string;
+    position: number;
 };
 
 type UpsertPayload = { options?: UpsertPayloadRow[] };
@@ -30,14 +32,15 @@ export default async function handler(
         return res.status(400).json({ ok: false, message: "Invalid id" });
     }
 
-    // ดึงรายการย่อยตาม service_id
+    // ดึงรายการย่อยเรียงตาม position
     if (req.method === "GET") {
-        const rows = await sql/*sql*/`
-            SELECT service_option_id, service_id, name, unit, unit_price
+        const rowsU = await sql/*sql*/`
+            SELECT service_option_id, service_id, name, unit, unit_price, position
             FROM service_option
             WHERE service_id = ${id}
-            ORDER BY service_option_id ASC
-        ` as OptRow[];
+            ORDER BY position ASC, service_option_id ASC
+        `;
+        const rows = rowsU as unknown as OptRow[];
         return res.status(200).json({ ok: true, options: rows });
     }
 
@@ -54,7 +57,10 @@ export default async function handler(
             for (const opt of body.options) {
                 const priceNum = Number(opt.unit_price);
                 if (!opt.name?.trim() || !opt.unit?.trim() || Number.isNaN(priceNum)) {
-                    throw new Error("Invalid option row");
+                    throw new Error("Invalid option row.");
+                }
+                if (!Number.isInteger(opt.position) || opt.position < 1) {
+                    throw new Error("Invalid position.");
                 }
 
                 if (opt.service_option_id) {
@@ -63,30 +69,46 @@ export default async function handler(
                         UPDATE service_option
                         SET name = ${opt.name.trim()},
                             unit = ${opt.unit.trim()},
-                            unit_price = ${priceNum}
+                            unit_price = ${priceNum},
+                            position = ${opt.position}
                         WHERE service_option_id = ${opt.service_option_id}
-                        AND service_id = ${id}
+                            AND service_id = ${id}
                     `;
                 } else {
                     // insert
                     await sql/*sql*/`
-                        INSERT INTO service_option (service_id, name, unit, unit_price)
-                        VALUES (${id}, ${opt.name.trim()}, ${opt.unit.trim()}, ${priceNum})
+                        INSERT INTO service_option (service_id, name, unit, unit_price, position)
+                        VALUES (${id}, ${opt.name.trim()}, ${opt.unit.trim()}, ${priceNum}, ${opt.position})
                     `;
                 }
             }
 
+            // จัดลำดับให้เรียงตาม position
+            await sql/*sql*/`
+                WITH t AS (
+                    SELECT service_option_id,
+                        ROW_NUMBER() OVER (PARTITION BY service_id ORDER BY position, service_option_id) AS rn
+                    FROM service_option
+                    WHERE service_id = ${id}
+                )
+                UPDATE service_option s
+                SET position = t.rn
+                FROM t
+                WHERE s.service_option_id = t.service_option_id
+                    AND s.service_id = ${id}
+            `;
+
             await sql/*sql*/`COMMIT`;
 
             // ส่งรายการล่าสุดกลับ
-            const rows = await sql/*sql*/`
-                SELECT service_option_id, service_id, name, unit, unit_price
+            const rowsU2 = await sql/*sql*/`
+                SELECT service_option_id, service_id, name, unit, unit_price, position
                 FROM service_option
                 WHERE service_id = ${id}
-                ORDER BY service_option_id ASC
-            ` as OptRow[];
-
-            return res.status(200).json({ ok: true, options: rows });
+                ORDER BY position ASC, service_option_id ASC
+            `;
+            const rows2 = rowsU2 as unknown as OptRow[];
+            return res.status(200).json({ ok: true, options: rows2 });
         } catch (e) {
             await sql/*sql*/`ROLLBACK`;
             const message = e instanceof Error ? e.message : String(e);

@@ -1,4 +1,3 @@
-// src/components/admin/services/editor.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { GripVertical, Plus } from "lucide-react";
@@ -283,7 +282,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                 if (!res.ok || !data?.ok || !data.service) throw new Error(data?.message || "Create failed");
                 await router.push(`/admin/services/${data.service.service_id}`);
                 return;
-            } else {
+            } else { // edit.
                 if (!id) return;
 
                 // 1. อัปเดตข้อมูลบริการ
@@ -294,11 +293,12 @@ export default function ServiceEditor({ mode, id }: Props) {
                 // 2. อัปเดต options แบบชุด
                 const optBody = {
                     options: options
-                        .map((o) => ({
+                        .map((o, i) => ({
                             service_option_id: o.service_option_id,
                             name: (o.name ?? "").trim(),
                             unit: (o.unit ?? "").trim(),
                             unit_price: sanitizeMoneyInput(o.unit_price ?? ""),
+                            position: i + 1, // เพิ่ม position
                         }))
                         .filter((o) => !!o.name && !!o.unit && o.unit_price !== ""),
                 };
