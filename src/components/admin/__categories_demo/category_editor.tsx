@@ -93,7 +93,7 @@ export default function CategoryEditor({ mode, id }: Props) {
                                 className="h-10 w-full rounded border px-3"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                maxLength={255}
+                                maxLength={30}
                                 placeholder="เช่น บริการทั่วไป"
                             />
                         </div>
