@@ -398,3 +398,8 @@ select.tw-select option:checked {
     @apply bg-background text-foreground;
   }
 }
+
+html {
+  /* กัน layout shift ตอนแถบเลื่อนปรากฏ */
+  scrollbar-gutter: stable;
+}

@@ -3,7 +3,7 @@ export type InputStatus = "default" | "success" | "error" | "disabled";
 
 // เงาบางๆ ให้ฟีลการ์ดในรูป (ไม่ได้เวอร์)
 export const base =
-  "block w-full rounded-md border bg-[var(--white)] px-3 py-2 text-sm text-[var(--gray-900)] shadow-[0_1px_2px_rgba(0,0,0,.03)] outline-none transition";
+  "block w-full rounded-md border bg-[var(--white)] px-3 py-2 text-base text-[var(--gray-900)] shadow-[0_1px_2px_rgba(0,0,0,.03)] outline-none transition";
 
 export const ring =
   "focus:border-[var(--blue-500)] focus:ring-2 focus:ring-[var(--blue-500)] focus:ring-offset-0";

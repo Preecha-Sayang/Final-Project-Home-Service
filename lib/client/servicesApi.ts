@@ -1,9 +1,10 @@
 import type {
-    ServiceItem, // subItem
+    ServiceItem,
     ServiceRowRaw,
     ListServicesResponse,
     GetServiceResponse,
-    MutateServiceResponse,
+    CreateServiceResponse,
+    UpdateServiceResponse,
     CategoryRow,
     ListCategoriesResponse,
 } from "@/types/service";
@@ -11,6 +12,7 @@ import { http } from "./http";
 
 const BASE = "/services";
 
+/** -----ฟิลด์สีของหมวดหมู่----- */
 type CategoryColorAliases = Partial<{
     category_bg: string | null;
     bg_color_hex: string | null;
@@ -22,25 +24,27 @@ type CategoryColorAliases = Partial<{
 
 type ServiceRowWithAliases = ServiceRowRaw & CategoryColorAliases;
 
+/** -----รวมค่าโทนสีจาก alias(bg/text/ring)----- */
 function extractCategoryColor(row: CategoryColorAliases): ServiceItem["categoryColor"] {
     const bg =
-        ("category_bg" in row ? row.category_bg : undefined) ??
-        ("bg_color_hex" in row ? row.bg_color_hex : undefined) ??
+        (Object.prototype.hasOwnProperty.call(row, "category_bg") ? row.category_bg : undefined) ??
+        (Object.prototype.hasOwnProperty.call(row, "bg_color_hex") ? row.bg_color_hex : undefined) ??
         null;
 
     const text =
-        ("category_text" in row ? row.category_text : undefined) ??
-        ("text_color_hex" in row ? row.text_color_hex : undefined) ??
+        (Object.prototype.hasOwnProperty.call(row, "category_text") ? row.category_text : undefined) ??
+        (Object.prototype.hasOwnProperty.call(row, "text_color_hex") ? row.text_color_hex : undefined) ??
         null;
 
     const ring =
-        ("category_ring" in row ? row.category_ring : undefined) ??
-        ("ring_color_hex" in row ? row.ring_color_hex : undefined) ??
+        (Object.prototype.hasOwnProperty.call(row, "category_ring") ? row.category_ring : undefined) ??
+        (Object.prototype.hasOwnProperty.call(row, "ring_color_hex") ? row.ring_color_hex : undefined) ??
         null;
 
     return { bg, text, ring };
 }
 
+/** -----map ServiceItem (ให้ตรง type ปัจจุบัน)----- */
 function mapRowToServiceItem(row: ServiceRowWithAliases, index = 0): ServiceItem {
     const categoryColor = extractCategoryColor(row);
 
@@ -53,24 +57,25 @@ function mapRowToServiceItem(row: ServiceRowWithAliases, index = 0): ServiceItem
         imageUrl: row.image_url ?? null,
         createdAt: row.create_at,
         updatedAt: row.update_at,
+        // ถ้ามีใครแนบ subItems มา จะคงค่าไว้ และถ้าไม่มีก็ให้เป็น []
         subItems: Array.isArray(row.subItems) ? row.subItems : [],
-        categoryColor, // ใช้กับ Badge
+        categoryColor,
     };
 }
 
-/** ดึงรายการบริการทั้งหมด */
+/** -----ดึงรายการบริการทั้งหมด----- */
 export async function listServices(): Promise<{ ok: boolean; services: ServiceItem[] }> {
     const { data } = await http.get<ListServicesResponse>(BASE);
     if (!data?.ok) throw new Error("load services failed");
 
-    const rows: ServiceRowWithAliases[] = (data.services ?? []) as ServiceRowWithAliases[];
+    const rows = (data.services ?? []) as ServiceRowWithAliases[];
     return {
         ok: true,
         services: rows.map((r, i) => mapRowToServiceItem(r, i)),
     };
 }
 
-/** ดึงบริการเดี่ยว */
+/** -----ดึงบริการเดี่ยว----- */
 export async function getService(id: string | number): Promise<ServiceItem> {
     const { data } = await http.get<GetServiceResponse>(`${BASE}/${id}`);
     if (!data?.ok || !data.service) throw new Error("not found");
@@ -79,42 +84,37 @@ export async function getService(id: string | number): Promise<ServiceItem> {
     return mapRowToServiceItem(row, 0);
 }
 
-/** สร้างบริการใหม่ */
+/** -----สร้างบริการใหม่ (FormData)----- */
 export async function createService(fd: FormData): Promise<ServiceItem> {
-    const { data } = await http.post<MutateServiceResponse>(BASE, fd);
+    const { data } = await http.post<CreateServiceResponse>(BASE, fd);
     if (!data?.ok || !data.service) throw new Error("create failed");
 
     const row = data.service as ServiceRowWithAliases;
     return mapRowToServiceItem(row, 0);
 }
 
-/** อัปเดตบริการ */
+/** -----อัปเดตบริการ (FormData)----- */
 export async function updateService(id: string | number, fd: FormData): Promise<ServiceItem> {
-    const { data } = await http.patch<MutateServiceResponse>(`${BASE}/${id}`, fd);
+    const { data } = await http.patch<UpdateServiceResponse>(`${BASE}/${id}`, fd);
     if (!data?.ok || !data.service) throw new Error("update failed");
 
     const row = data.service as ServiceRowWithAliases;
     return mapRowToServiceItem(row, 0);
 }
 
-/** ลบบริการ */
+/** -----ลบบริการ----- */
 export async function deleteService(id: string | number): Promise<void> {
     await http.delete(`${BASE}/${id}`);
 }
 
-
-/** จัดเรียงลำดับบริการใหม่ (ตอนนี้ทำเป็น no-op ถ้ายังไม่มีคอลัมน์ position ใน DB) */
-export async function reorderServices(_payload: { id: number; index: number }[]): Promise<void> {
-    // ถ้าจะบันทึกลำดับจริง:
-    // 1) เพิ่มคอลัมน์ position integer not null default 0 ใน services
-    // 2) ทำ API PATCH /api/services/reorder รับ [{id, position}]
-    // 3) อัปเดตแถวตามนั้น
-    return;
+/** จัดเรียงลำดับ เมื่อลากเสร็จ ให้ยิงอัปเดตทันที */
+export async function reorderServices(payload: { id: number; index: number }[]): Promise<void> {
+    const items = payload.map(p => ({ id: p.id, position: p.index }));
+    await http.patch("/services/reorder", { items });
 }
 
-/** ดึงหมวดหมู่ (สำหรับ dropdown) */
+/** -----ดึงหมวดหมู่ (dropdown)----- */
 export async function listCategories(): Promise<CategoryRow[]> {
-    // ถ้า http มี base เป็น /api อยู่แล้ว ให้ใช้ "categories"
     const { data } = await http.get<ListCategoriesResponse>("categories");
     if (!data?.ok) throw new Error("load categories failed");
     return data.categories ?? [];

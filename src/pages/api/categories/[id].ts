@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 bg_color_hex = ${bg_color_hex ?? null},
                 text_color_hex = ${text_color_hex ?? null},
                 ring_color_hex = ${ring_color_hex ?? null},
-                updated_at = now()
+                update_at = now()
             WHERE category_id = ${id}
             RETURNING *
         `;

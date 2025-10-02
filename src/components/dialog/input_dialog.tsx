@@ -9,6 +9,7 @@ type Props = {
     cancelLabel?: string;
     initialValue?: string;
     loading?: boolean;
+    maxlength?: number;
     validate?: (v: string) => string | null;
     onConfirm: (value: string) => void | Promise<void>;
     onCancel: () => void;
@@ -23,6 +24,7 @@ export default function InputDialog({
     cancelLabel = "ยกเลิก",
     initialValue = "",
     loading = false,
+    maxlength,
     validate,
     onConfirm,
     onCancel,
@@ -92,6 +94,7 @@ export default function InputDialog({
                         onChange={(e) => setValue(e.target.value)}
                         onKeyDown={onKeyDown}
                         placeholder={placeholder}
+                        maxLength={maxlength}
                         className={`w-full rounded-lg border px-3 py-2 text-sm outline-none
               ${error ? "border-[var(--red)]" : "border-[var(--gray-300)] focus:border-[var(--blue-500)]"}
             `}
