@@ -185,7 +185,7 @@ export default function ServiceDetailPage() {
                         <hr className="border-[var(--gray-300)]" />
 
                         {/* วันที่ */}
-                        <div className="text-base text-[var(--gray-700)]">
+                        <div className="pl-2 text-base text-[var(--gray-700)]">
                             <div className="flex justify-between items-center w-[387px] h-[44px] gap-4">
                                 <div className="text-[var(--gray-500)]">สร้างเมื่อ</div>
                                 <div>{formatThaiDateTimeAMPM(item.createdAt)}</div>

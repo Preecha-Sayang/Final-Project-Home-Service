@@ -4,10 +4,12 @@ import Badge from "./badge";
 import { ServiceItem } from "../../../types/service";
 import { formatThaiDateTimeAMPM } from "lib/formatDate";
 
+/** ยก UI format เวลาไปไว้ที่เดียว */
 function formatDT(v: string) {
     return formatThaiDateTimeAMPM(v);
 }
 
+/** ให้ props รองรับทั้งโครง ServiceItem ใหม่ และแถวเดิมจากบาง API */
 type ServiceRowCompat = ServiceItem & {
     service_id?: number | string;
     servicename?: string;
@@ -16,16 +18,14 @@ type ServiceRowCompat = ServiceItem & {
     update_at?: string;
 };
 
-// รองรับ id ทั้งสองแบบ
-const getRowId = (row: ServiceRowCompat): string =>
-    String(row.id ?? row.service_id);
-
+/** รองรับ id ทั้งสองแบบ */
+const getRowId = (row: ServiceRowCompat): string => String(row.id ?? row.service_id);
+/** เวลา */
 const getCreated = (row: ServiceRowCompat): string | undefined =>
     row.createdAt ?? row.create_at ?? row.update_at;
-
 const getUpdated = (row: ServiceRowCompat): string | undefined =>
     row.updatedAt ?? row.update_at ?? row.create_at;
-
+/** label หมวดหมู่ */
 const getCategoryLabel = (row: ServiceRowCompat): string =>
     (row.category ?? row.category_name ?? "") as string;
 
@@ -85,6 +85,24 @@ export default function ServiceTable({
         onReorder(reIndexed);
     }
 
+    /** คลิกได้ทั้งแถว ยกเว้นปุ่มในคอลัมน์ Action และปุ่มลาก */
+    function onRowClick(e: React.MouseEvent, row: ServiceRowCompat) {
+        if (!onView) return;
+        const target = e.target as HTMLElement | null;
+        if (!target) return;
+        // ถ้าอยู่ในคอลัมน์ action หรือเป็นปุ่ม/ไอคอน หรือปุ่มลาก → ไม่ต้องเปิด preview
+        const actionCell = target.closest("[data-cell='action']");
+        const dragHandle = target.closest("[data-drag='handle']");
+        const isInteractive =
+            actionCell != null ||
+            dragHandle != null ||
+            target.closest("button") != null ||
+            target.closest("a") != null ||
+            target.closest("input") != null;
+        if (isInteractive) return;
+        onView(row);
+    }
+
     return (
         <div className="overflow-hidden rounded-xl border border-[var(--gray-100)]">
             <table className="w-full table-fixed border-collapse">
@@ -99,6 +117,7 @@ export default function ServiceTable({
                         <th className="w-[120px] px-1 py-3 text-center">Action</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     {!loading &&
                         filtered.map((row) => {
@@ -114,36 +133,30 @@ export default function ServiceTable({
                                     onDragStart={(e) => onDragStart(e, id)}
                                     onDragOver={onDragOver}
                                     onDrop={(e) => onDrop(e, id)}
-                                    className="group border-t border-[var(--gray-100)] text-sm hover:bg-[var(--gray-100)]"
+                                    onClick={(e) => onRowClick(e, row)}
+                                    className="group border-t border-[var(--gray-100)] text-sm hover:bg-[var(--gray-100)] cursor-pointer"
                                 >
-                                    <td className="px-5 py-3 text-center text-[var(--gray-400)]">
-                                        <GripVertical className="h-4 w-4 cursor-pointer" />
+                                    <td className="px-5 py-3 text-center text-[var(--gray-400)]" data-drag="handle">
+                                        <GripVertical className="h-4 w-4 cursor-grab" />
                                     </td>
+
                                     <td className="px-1 py-3 text-center text-[var(--gray-600)]">{row.index}</td>
-                                    <td className="px-3 py-3 font-medium text-[var(--gray-900)]">
-                                        {onView ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => onView(row)}
-                                                className="text-left hover:underline decoration-[var(--gray-400)] cursor-pointer"
-                                            >
-                                                {name}
-                                            </button>
-                                        ) : (
-                                            name
-                                        )}
-                                    </td>
+
+                                    <td className="px-3 py-3 font-medium text-[var(--gray-900)]">{name}</td>
 
                                     <td className="px-1 py-3">
                                         <Badge label={row.category} colors={row.categoryColor} />
                                     </td>
+
                                     <td className="px-1 py-3 text-[var(--gray-700)]">
                                         {created ? formatDT(created) : "-"}
                                     </td>
+
                                     <td className="px-1 py-3 text-[var(--gray-700)]">
                                         {updated ? formatDT(updated) : "-"}
                                     </td>
-                                    <td className="px-1 py-3 text-center">
+
+                                    <td className="px-1 py-3 text-center" data-cell="action">
                                         <div className="flex items-center justify-center gap-2">
                                             <button
                                                 className="rounded-md p-2 text-[var(--gray-500)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
@@ -160,6 +173,7 @@ export default function ServiceTable({
                                                     />
                                                 </svg>
                                             </button>
+
                                             <button
                                                 className="rounded-md p-2 text-[var(--gray-500)] hover:bg-[var(--gray-100)] hover:text-[var(--blue-700)] cursor-pointer"
                                                 title="แก้ไข"

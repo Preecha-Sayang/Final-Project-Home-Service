@@ -13,14 +13,14 @@ export default function EditServicePage() {
         <div className="flex gap-2">
             <button
                 onClick={() => router.push("/admin/services")}
-                className="h-9 rounded-lg border border-[var(--gray-200)] bg-white px-3 text-sm text-[var(--gray-800)] hover:bg-[var(--gray-100)] cursor-pointer"
+                className="w-[112px] h-[44px] rounded-lg border border-[var(--gray-200)] bg-white px-3 text-sm text-[var(--gray-800)] hover:bg-[var(--gray-100)] cursor-pointer"
             >
                 ยกเลิก
             </button>
             <button
                 type="submit"
                 form="service-form"
-                className="h-9 rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-[var(--gray-100)] hover:bg-[var(--blue-700)] cursor-pointer"
+                className="w-[112px] h-[44px] rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-[var(--gray-100)] hover:bg-[var(--blue-700)] cursor-pointer"
             >
                 บันทึก
             </button>
