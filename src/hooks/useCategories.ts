@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 
 export interface Category {
-  id: number;
+  category_id: number;
   name: string;
+  description: string;
+  bg_color_hex: string;
+  text_color_hex: string;
+  ring_color_hex: string;
+  create_at: number;
+  update_at: number;
 }
 
-export interface CategoriesResponse {
-  categories: Category[];
-}
-
-export function useCategories() {
+export function useCategories(topOnly?: boolean) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,14 +22,22 @@ export function useCategories() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('/api/categories');
+        // สร้าง query parameters
+        const params = new URLSearchParams();
+        if (topOnly) {
+          params.append('topOnly', 'true');
+        }
+        
+        const url = `/api/services-cards/categories${params.toString() ? `?${params.toString()}` : ''}`;
+        const response = await fetch(url);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data: CategoriesResponse = await response.json();
-        setCategories(data.categories);
+        // API ใหม่ส่งข้อมูลเป็น array โดยตรง ไม่ใช่ object ที่มี categories property
+        const data: Category[] = await response.json();
+        setCategories(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการดึงข้อมูลหมวดหมู่');
         console.error('Error fetching categories:', err);
@@ -37,7 +47,7 @@ export function useCategories() {
     };
 
     fetchCategories();
-  }, []);
+  }, [topOnly]);
 
   return { categories, loading, error };
 }
