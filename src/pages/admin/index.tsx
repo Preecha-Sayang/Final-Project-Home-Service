@@ -6,7 +6,7 @@ import { useEffect, useMemo } from "react";
 const menuitems: NavbarMenuItem[] = [
   { label: "หมวดหมู่", path: "/admin/categories", icon: "/images/icon_category.svg" },
   { label: "บริการ", path: "/admin/services", icon: "/images/icon_service.svg" },
-  { label: "Promotion Code", path: "/admin/promotion", icon: "/images/icon_promotion.svg" },
+  { label: "Promotion Code", path: "/admin/promotions", icon: "/images/icon_promotion.svg" },
 ];
 
 type AdminShellProps = PropsWithChildren<{

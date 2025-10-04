@@ -17,4 +17,4 @@ export const query = (text: string, params?: unknown[]) => pool.query(text, para
 
 export default pool;
 
-export const sql = neon(process.env.DATABASE_URL!); //สร้างใหม่ สำหรับอัปโหลดรูป
+export const sql = neon(process.env.DATABASE_URL!);
