@@ -1,279 +1,318 @@
-import { useState } from "react";
+import { Footer } from "@/components/footer";
 import Navbar from "@/components/navbar/navbar";
-import InputField from "@/components/input/inputField/input_state";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import OrderService from "./afterservice/orderservices";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Camera,
-  FileText,
-  Clock
-} from "lucide-react";
 
-export default function UserProfile() {
-  // สถานะของฟอร์มข้อมูลผู้ใช้ (Form state)
+function UserProfile() {
+  const menuItems = [
+    { label: "ข้อมูลผู้ใช้งาน", icon: "/images/icon_user.svg" },
+    { label: "รายการคำสั่งซ่อม", icon: "/images/icon_tasklist.svg" },
+    { label: "ประวัติการสั่งซ่อม", icon: "/images/icon_history.svg" },
+  ];
+  
+  const [keyword, setkeyword] = useState("ข้อมูลผู้ใช้งาน");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Form states
   const [formData, setFormData] = useState({
-    firstName: "Vahi",
+    firstName: "Vaha",
     lastName: "ok",
     phone: "096 686 1234",
-    email: "22whiskey.smd@gmail.com",
-    address: "กรอกที่อยู่",
+    email: "22melkitty.smtp@gmail.com",
+    address: "กรุงเทพ",
     province: "",
     district: "",
-    subdistrict: ""
+    subdistrict: "",
   });
 
-  // สถานะการนำทางเมนู (Navigation state)
-  const [activeTab, setActiveTab] = useState("user-info");
+  const [profileImage, setProfileImage] = useState<string>("");
 
-  // ตัวเลือกจังหวัด (ข้อมูลตัวอย่าง) - Province options (sample data)
-  const provinceOptions = [
-    { label: "กรุงเทพมหานคร", value: "bangkok" },
-    { label: "เชียงใหม่", value: "chiangmai" },
-    { label: "ขอนแก่น", value: "khonkaen" },
-    { label: "สงขลา", value: "songkhla" },
-  ];
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [keyword]);
 
-  // ตัวเลือกเขต/อำเภอ (ข้อมูลตัวอย่าง) - District options (sample data)
-  const districtOptions = [
-    { label: "เขตจตุจักร", value: "chatuchak" },
-    { label: "เขตบางรัก", value: "bangrak" },
-    { label: "เขตสาทร", value: "sathorn" },
-    { label: "เขตวัฒนา", value: "watthana" },
-  ];
-
-  // ตัวเลือกแขวง/ตำบล (ข้อมูลตัวอย่าง) - Sub-district options (sample data)
-  const subdistrictOptions = [
-    { label: "แขวงลาดยาว", value: "latyao" },
-    { label: "แขวงเสนานิคม", value: "senanikom" },
-    { label: "แขวงจตุจักร", value: "chatuchak" },
-    { label: "แขวงจันทรเกษม", value: "chanthrakasem" },
-  ];
-
-  // ฟังก์ชันจัดการการเปลี่ยนแปลงข้อมูลในฟอร์ม (Handle input change)
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // ฟังก์ชันบันทึกข้อมูลโปรไฟล์ (Save profile function)
-  const handleSave = () => {
-    // จัดการการบันทึกข้อมูลที่นี่ (Handle save logic here)
-    console.log("กำลังบันทึกโปรไฟล์:", formData);
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  // ฟังก์ชันยกเลิกการแก้ไข (Cancel function)
+  const handleSave = async () => {
+    console.log("Saving profile:", formData);
+    // Add your save logic here
+  };
+
   const handleCancel = () => {
-    // จัดการการยกเลิกที่นี่ (Handle cancel logic here)
-    console.log("กำลังยกเลิกการเปลี่ยนแปลง");
+    console.log("Cancelled");
+    // Reset or navigate away
   };
+
+  function UserProfileForm() {
+    return (
+      <div className="w-full h-full bg-[var(--white)] p-8 overflow-y-auto">
+        {/* รูปโปรไฟล์ / Profile Picture Section */}
+        <div className="flex justify-center mb-8">
+          <div className="relative">
+            <div className="w-32 h-32 rounded-full bg-[var(--gray-300)] flex items-center justify-center text-4xl font-medium text-[var(--gray-600)] overflow-hidden">
+              {profileImage ? (
+                <Image src={profileImage} alt="Profile" width={128} height={128} className="object-cover" />
+              ) : (
+                <span>Vo</span>
+              )}
+            </div>
+            <label className="absolute bottom-0 right-0 bg-[var(--white)] rounded-full p-2 cursor-pointer shadow-md hover:bg-[var(--gray-100)]">
+              <Image src="/images/icon_gallery.svg" alt="Upload" width={20} height={20} />
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            </label>
+          </div>
+        </div>
+
+        {/* ช่องกรอกข้อมูล / Form Fields */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+          {/* ชื่อ / First Name */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_user.svg" alt="user" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">ชื่อ</label>
+            </div>
+            <input
+              type="text"
+              placeholder="ชื่อ"
+              value={formData.firstName}
+              onChange={(e) => handleInputChange("firstName", e.target.value)}
+              className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+                hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            />
+          </div>
+
+          {/* นามสกุล / Last Name */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_user.svg" alt="user" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">นามสกุล</label>
+            </div>
+            <input
+              type="text"
+              placeholder="นามสกุล"
+              value={formData.lastName}
+              onChange={(e) => handleInputChange("lastName", e.target.value)}
+              className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+                hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            />
+          </div>
+
+          {/* หมายเลขโทรศัพท์ / Phone Number */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_phone.svg" alt="phone" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">หมายเลขโทรศัพท์</label>
+            </div>
+            <input
+              type="text"
+              placeholder="หมายเลขโทรศัพท์"
+              value={formData.phone}
+              onChange={(e) => handleInputChange("phone", e.target.value)}
+              className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+                hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            />
+          </div>
+
+          {/* อีเมล / Email */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_mail.svg" alt="email" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">อีเมล</label>
+            </div>
+            <input
+              type="email"
+              placeholder="อีเมล"
+              value={formData.email}
+              onChange={(e) => handleInputChange("email", e.target.value)}
+              className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+                hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            />
+          </div>
+
+          {/* ที่อยู่ / Address - Full Width */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_pin.svg" alt="address" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">ที่อยู่</label>
+            </div>
+            <input
+              type="text"
+              placeholder="ที่อยู่"
+              value={formData.address}
+              onChange={(e) => handleInputChange("address", e.target.value)}
+              className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+                hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            />
+          </div>
+
+          {/* เขต/อำเภอ / District */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/อำเภอ</label>
+            </div>
+            <InputDropdown
+              value={formData.district}
+              onChange={(value) => handleInputChange("district", value)}
+              options={[
+                { label: "เขตห้วยขวาง", value: "huaykhwang" },
+                { label: "เขตบางกะปิ", value: "bangkapi" },
+                { label: "เขตดินแดง", value: "dindaeng" },
+              ]}
+              placeholder="เลือกแขวง/อำเภอ"
+              className="h-[44px]"
+            />
+          </div>
+
+          {/* จังหวัด / Province */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">จังหวัด</label>
+            </div>
+            <InputDropdown
+              value={formData.province}
+              onChange={(value) => handleInputChange("province", value)}
+              options={[
+                { label: "กรุงเทพมหานคร", value: "bangkok" },
+                { label: "เชียงใหม่", value: "chiangmai" },
+                { label: "ภูเก็ต", value: "phuket" },
+                { label: "ขอนแก่น", value: "khonkaen" },
+              ]}
+              placeholder="เลือกจังหวัด"
+              className="h-[44px]"
+            />
+          </div>
+
+          {/* แขวง/ตำบล / Subdistrict */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล</label>
+            </div>
+            <InputDropdown
+              value={formData.subdistrict}
+              onChange={(value) => handleInputChange("subdistrict", value)}
+              options={[
+                { label: "ห้วยขวาง", value: "huaykhwang" },
+                { label: "บางกะปิ", value: "bangkapi" },
+                { label: "ดินแดง", value: "dindaeng" },
+              ]}
+              placeholder="เลือกแขวง/ตำบล"
+              className="h-[44px]"
+            />
+          </div>
+        </div>
+
+        {/* ปุ่มบันทึกและยกเลิก / Save and Cancel Buttons */}
+        <div className="flex justify-center gap-4 mt-8">
+          <ButtonPrimary onClick={handleSave} className="w-[200px]">
+            บันทึก
+          </ButtonPrimary>
+          <ButtonSecondary onClick={handleCancel} className="w-[200px]">
+            ยกเลิก
+          </ButtonSecondary>
+        </div>
+      </div>
+    );
+  }
+
+  function RenderContent() {
+    switch (keyword) {
+      case "ข้อมูลผู้ใช้งาน":
+        return <UserProfileForm />;
+
+      case "รายการคำสั่งซ่อม":
+        return <OrderService />;
+
+      case "ประวัติการสั่งซ่อม":
+        return <p className="p-8">กำลังคิดค้นนวัฒกรรม</p>;
+
+      default:
+        return <p className="p-8">กรุณาเลือกนวัฒกรรมใหม่</p>;
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-[var(--gray-100)]">
+    <div className="flex flex-col min-h-screen">
       <Navbar />
-      
-      {/* ส่วนหัวข้อ - Header Section */}
-      <div className="bg-[var(--blue-600)] py-2">
-        <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-lg font-bold text-white text-center">
-            รายละเอียดบัญชี
-          </h1>
-        </div>
+      <div className="h-[100px] w-[100%] bg-[var(--blue-600)] flex justify-center items-center">
+        <p className="text-[32px] font-[500] text-[var(--white)]">{keyword}</p>
       </div>
 
-      {/* เนื้อหาหลัก - Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* แถบนำทางด้านซ้าย - Left Sidebar Navigation */}
-          <div className="w-full lg:w-80 flex-shrink-0">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-[var(--gray-900)] mb-6">
-                บัญชีผู้ใช้
-              </h2>
-              
-              <nav className="space-y-2">
-                <button
-                  onClick={() => setActiveTab("user-info")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === "user-info"
-                      ? "bg-[var(--blue-100)] text-[var(--blue-600)]"
-                      : "text-[var(--gray-600)] hover:bg-[var(--gray-100)]"
-                  }`}
+      <div className="flex-grow bg-[var(--gray-100)]">
+        <div className="flex flex-row justify-center gap-[35px] my-[30px]">
+          <div
+            id="category-select"
+            className="w-[250px] h-fit bg-[var(--white)] flex flex-col gap-[16px]
+                    px-[25px] pt-[25px] border-[1px] border-[var(--gray-300)]"
+          >
+            <p className="text-[var(--gray-700)] text-[20px] font-[400]">
+              บัญชีผู้ใช้
+            </p>
+            <div className="border bg-[var(--gray-100)]"></div>
+            <div>
+              {menuItems.map((item) => (
+                <div
+                  key={item.label}
+                  id={item.label}
+                  className={`flex flex-row items-center h-[50px] gap-[12px] px-[16px] w-full
+                    hover:cursor-pointer hover:bg-[var(--gray-200)] transition-colors
+                    ${keyword === item.label ? "bg-[var(--blue-100)] text-[var(--blue-600)]" : ""}`}
+                  onClick={() => setkeyword(item.label)}
                 >
-                  <User className={`w-5 h-5 ${activeTab === "user-info" ? "text-[var(--blue-600)]" : "text-[var(--gray-500)]"}`} />
-                  <span className="font-medium">ข้อมูลผู้ใช้งาน</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("orders")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === "orders"
-                      ? "bg-[var(--blue-100)] text-[var(--blue-600)]"
-                      : "text-[var(--gray-600)] hover:bg-[var(--gray-100)]"
-                  }`}
-                >
-                  <FileText className={`w-5 h-5 ${activeTab === "orders" ? "text-[var(--blue-600)]" : "text-[var(--gray-500)]"}`} />
-                  <span className="font-medium">รายการค้าสั่งซ่อม</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("history")}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    activeTab === "history"
-                      ? "bg-[var(--blue-100)] text-[var(--blue-600)]"
-                      : "text-[var(--gray-600)] hover:bg-[var(--gray-100)]"
-                  }`}
-                >
-                  <Clock className={`w-5 h-5 ${activeTab === "history" ? "text-[var(--blue-600)]" : "text-[var(--gray-500)]"}`} />
-                  <span className="font-medium">ประวัติการซ่อม</span>
-                </button>
-              </nav>
+                  <Image
+                    src={item.icon}
+                    alt={`${item.label}_icon`}
+                    width={24}
+                    height={24}
+                  />
+                  <p>{item.label}</p>
+                </div>
+              ))}
             </div>
           </div>
-
-          {/* พื้นที่เนื้อหาหลัก - Main Content Area */}
-          <div className="flex-1">
-            <div className="bg-white rounded-lg shadow-sm p-8">
-              {/* รูปโปรไฟล์ผู้ใช้ - User Avatar */}
-              <div className="flex justify-center mb-8">
-                <div className="relative">
-                  <div className="w-32 h-32 bg-[var(--gray-400)] rounded-full flex items-center justify-center">
-                    <span className="text-white text-2xl font-bold">Vo</span>
-                  </div>
-                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-[var(--blue-600)] rounded-full flex items-center justify-center hover:bg-[var(--blue-700)] transition-colors">
-                    <Camera className="w-4 h-4 text-white" />
-                  </button>
-                </div>
+          <div className="w-[800px] min-h-[600px] bg-[var(--white)] shadow-sm">
+            {isLoading ? (
+              <div className="flex flex-col justify-center items-center w-[100%] h-[600px]">
+                <div className="w-8 h-8 border-4 border-[var(--gray-300)] border-t-[var(--blue-500)] rounded-full animate-spin"></div>
               </div>
-
-              {/* ช่องกรอกข้อมูล - Form Fields */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {/* คอลัมน์ซ้าย - Left Column */}
-                <div className="space-y-6">
-                  {/* ชื่อ - First Name */}
-                  <div>
-                    <InputField
-                      label="ชื่อ"
-                      placeholder="กรอกชื่อ"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
-                      leftIcon={<User className="w-4 h-4" />}
-                    />
-                  </div>
-
-                  {/* เบอร์โทรศัพท์ - Phone */}
-                  <div>
-                    <InputField
-                      label="เบอร์โทรศัพท์"
-                      placeholder="กรอกเบอร์โทรศัพท์"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange("phone", e.target.value)}
-                      leftIcon={<Phone className="w-4 h-4" />}
-                    />
-                  </div>
-
-                  {/* ที่อยู่ - Address */}
-                  <div>
-                    <InputField
-                      label="ที่อยู่"
-                      placeholder="กรอกที่อยู่"
-                      value={formData.address}
-                      onChange={(e) => handleInputChange("address", e.target.value)}
-                      leftIcon={<MapPin className="w-4 h-4" />}
-                    />
-                  </div>
-
-                  {/* เขต/อำเภอ - District */}
-                  <div>
-                    <InputDropdown
-                      label="เขต/อำเภอ"
-                      value={formData.district}
-                      onChange={(value) => handleInputChange("district", value)}
-                      options={districtOptions}
-                      placeholder="เลือกเขต/อำเภอ"
-                    />
-                  </div>
-                </div>
-
-                {/* คอลัมน์ขวา - Right Column */}
-                <div className="space-y-6">
-                  {/* นามสกุล - Last Name */}
-                  <div>
-                    <InputField
-                      label="นามสกุล"
-                      placeholder="กรอกนามสกุล"
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
-                      leftIcon={<User className="w-4 h-4" />}
-                    />
-                  </div>
-
-                  {/* อีเมล - Email */}
-                  <div>
-                    <InputField
-                      label="อีเมล"
-                      placeholder="กรอกอีเมล"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      leftIcon={<Mail className="w-4 h-4" />}
-                    />
-                  </div>
-
-                  {/* จังหวัด - Province */}
-                  <div>
-                    <InputDropdown
-                      label="จังหวัด"
-                      value={formData.province}
-                      onChange={(value) => handleInputChange("province", value)}
-                      options={provinceOptions}
-                      placeholder="เลือกจังหวัด"
-                    />
-                  </div>
-
-                  {/* แขวง/ตำบล - Sub-district */}
-                  <div>
-                    <InputDropdown
-                      label="แขวง/ตำบล"
-                      value={formData.subdistrict}
-                      onChange={(value) => handleInputChange("subdistrict", value)}
-                      options={subdistrictOptions}
-                      placeholder="เลือกแขวง/ตำบล"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* ปุ่มดำเนินการ - Action Buttons */}
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <ButtonPrimary onClick={handleSave} className="!w-auto">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
-                    </svg>
-                    บันทึก
-                  </div>
-                </ButtonPrimary>
-                
-                <ButtonSecondary onClick={handleCancel} className="!w-auto">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                    </svg>
-                    ยกเลิก
-                  </div>
-                </ButtonSecondary>
-              </div>
-            </div>
+            ) : (
+              <RenderContent />
+            )}
           </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
+
+export default UserProfile;
