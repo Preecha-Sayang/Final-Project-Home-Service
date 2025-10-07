@@ -57,6 +57,7 @@ function AfterService() {
             <div>
               {menuItems.map((item) => (
                 <div
+                  key={item.label}
                   id={item.label}
                   className="flex flex-row items-center h-[50px] gap-[12px] px-[16px] w-full
                                         hover:cursor-pointer hover:bg-[var(--gray-300)]"
@@ -73,7 +74,7 @@ function AfterService() {
               ))}
             </div>
           </div>
-          <div className="w-[800px] h-[500px] bg-[var(--gray-300)]">
+          <div className="w-[800px]  bg-[var(--gray-300)]">
             {isLoading ? (
               <div className="flex  flex-col justify-center items-center w-[100%] h-[100%]">
                 <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>

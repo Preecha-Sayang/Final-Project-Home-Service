@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import * as yup from "yup";
 import { Agreement, Policy } from "@/components/agreement";
-
+import axios from "axios";
 // สร้าง schema validation
 const schema = yup.object().shape({
   fullname: yup
@@ -78,27 +78,12 @@ function Register() {
       setErrors({});
 
       // เรียก API signup
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
+      const { data } = await axios.post("/api/auth/signup", form, {
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert("สมัครสมาชิกสำเร็จ");
-        router.push("/login/login");
-      } else {
-        // Handle server error messages based on the API response
-        if (data.error === "invalid email") {
-          setErrors({ email: "อีเมลนี้ถูกใช้งานแล้ว" });
-        } else if (data.error === "invalid phonenumber") {
-          setErrors({ phone_number: "เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว" });
-        } else {
-          setErrors({ form: data.error || "ไม่สามารถสมัครสมาชิกได้" });
-        }
-      }
+      alert("สมัครสมาชิกสำเร็จ");
+      router.push("/login/login");
     } catch (err) {
       if (err instanceof yup.ValidationError) {
         const newErrors: { [key: string]: string } = {};
@@ -106,6 +91,17 @@ function Register() {
           newErrors[e.path!] = e.message;
         });
         setErrors(newErrors);
+      } else if (axios.isAxiosError(err)) {
+        // Axios/API errors
+        const errorData = err.response?.data;
+
+        if (errorData?.error === "invalid email") {
+          setErrors({ email: "อีเมลนี้ถูกใช้งานแล้ว" });
+        } else if (errorData?.error === "invalid phonenumber") {
+          setErrors({ phone_number: "เบอร์โทรศัพท์นี้ถูกใช้งานแล้ว" });
+        } else {
+          setErrors({ form: errorData?.error || "ไม่สามารถสมัครสมาชิกได้" });
+        }
       } else {
         setErrors({ form: "เกิดข้อผิดพลาดในการสมัครสมาชิก" });
       }
@@ -117,9 +113,15 @@ function Register() {
       <Navbar />
       <div className="w-full min-h-screen flex justify-center items-start pt-20 bg-gray-50">
         <div className="w-[90%] md:w-[550px] lg:w-[610px] bg-white border border-gray-200 rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
-          <span className="font-bold text-3xl text-blue-900 mb-6">ลงทะเบียน</span>
+          <span className="font-bold text-3xl text-blue-900 mb-6">
+            ลงทะเบียน
+          </span>
 
-          <form onSubmit={handleSubmit} className="w-full sm:w-[440px] md:w-[400px] flex flex-col gap-4 mb-6" noValidate>
+          <form
+            onSubmit={handleSubmit}
+            className="w-full sm:w-[440px] md:w-[400px] flex flex-col gap-4 mb-6"
+            noValidate
+          >
             <InputField
               label="ชื่อ - นามสกุล*"
               placeholder="กรุณากรอกชื่อ นามสกุล"
@@ -183,11 +185,17 @@ function Register() {
               />
               <span className="text-sm text-gray-700 inline">
                 ยอมรับ{" "}
-                <ButtonGhost className="!text-sm inline" onClick={() => setShowAgreementModal(true)}>
+                <ButtonGhost
+                  className="!text-sm inline"
+                  onClick={() => setShowAgreementModal(true)}
+                >
                   ข้อตกลง
                 </ButtonGhost>
                 และ{" "}
-                <ButtonGhost className="!text-sm inline" onClick={() => setShowPolicyModal(true)}>
+                <ButtonGhost
+                  className="!text-sm inline"
+                  onClick={() => setShowPolicyModal(true)}
+                >
                   นโยบายความเป็นส่วนตัว
                 </ButtonGhost>
               </span>

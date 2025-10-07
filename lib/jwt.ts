@@ -20,7 +20,7 @@ export function signAccessToken(payload: Partial<JwtPayloadBase>) {
   const token = jwt.sign(
     { ...payload, jti, iss: ISSUER, aud: AUDIENCE },
     JWT_SECRET,
-    { expiresIn: "15m" }
+    { expiresIn: "1d" }
   );
   return { token, jti };
 }
