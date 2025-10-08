@@ -6,6 +6,15 @@ import OrderService from "./afterservice/orderservices";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
+import { useAuth } from "@/context/AuthContext";
+
+type UserData = {
+  user_id: number;
+  fullname: string;
+  email: string;
+  phone_number: string;
+  create_at: string;
+};
 
 function UserProfile() {
   const menuItems = [
@@ -16,10 +25,25 @@ function UserProfile() {
   
   const [keyword, setkeyword] = useState("ข้อมูลผู้ใช้งาน");
   const [isLoading, setIsLoading] = useState(false);
+
+  const [userData, setUserData] = useState<UserData | undefined>(undefined);
+  const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
+
+
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch("/api/protected/protectapi", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => setUserData(data))
+      .catch(() => {});
+  }, [accessToken]);
+
   
   // Form states
   const [formData, setFormData] = useState({
-    firstName: "Vaha",
+    firstName: userData?.fullname,
     lastName: "ok",
     phone: "096 686 1234",
     email: "22melkitty.smtp@gmail.com",
@@ -100,7 +124,7 @@ function UserProfile() {
             <input
               type="text"
               placeholder="ชื่อ"
-              value={formData.firstName}
+              value={userData?.fullname}
               onChange={(e) => handleInputChange("firstName", e.target.value)}
               className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
                 hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
@@ -116,7 +140,7 @@ function UserProfile() {
             <input
               type="text"
               placeholder="นามสกุล"
-              value={formData.lastName}
+              value="Where to get it?"
               onChange={(e) => handleInputChange("lastName", e.target.value)}
               className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
                 hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
@@ -132,7 +156,7 @@ function UserProfile() {
             <input
               type="text"
               placeholder="หมายเลขโทรศัพท์"
-              value={formData.phone}
+              value={userData?.phone_number}
               onChange={(e) => handleInputChange("phone", e.target.value)}
               className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
                 hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
@@ -148,7 +172,7 @@ function UserProfile() {
             <input
               type="email"
               placeholder="อีเมล"
-              value={formData.email}
+              value={userData?.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
                 hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
@@ -171,30 +195,12 @@ function UserProfile() {
             />
           </div>
 
-          {/* เขต/อำเภอ / District */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-              <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/อำเภอ</label>
-            </div>
-            <InputDropdown
-              value={formData.district}
-              onChange={(value) => handleInputChange("district", value)}
-              options={[
-                { label: "เขตห้วยขวาง", value: "huaykhwang" },
-                { label: "เขตบางกะปิ", value: "bangkapi" },
-                { label: "เขตดินแดง", value: "dindaeng" },
-              ]}
-              placeholder="เลือกแขวง/อำเภอ"
-              className="h-[44px]"
-            />
-          </div>
 
           {/* จังหวัด / Province */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-              <label className="text-sm font-semibold text-[var(--gray-900)]">จังหวัด</label>
+              <label className="text-sm font-semibold text-[var(--gray-900)]">จังหวัด Province</label>
             </div>
             <InputDropdown
               value={formData.province}
@@ -210,11 +216,31 @@ function UserProfile() {
             />
           </div>
 
+        {/* เขต/อำเภอ / District */}
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
+              <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/อำเภอ District</label>
+            </div>
+            <InputDropdown
+              value={formData.district}
+              onChange={(value) => handleInputChange("district", value)}
+              options={[
+                { label: "เขตห้วยขวาง", value: "huaykhwang" },
+                { label: "เขตบางกะปิ", value: "bangkapi" },
+                { label: "เขตดินแดง", value: "dindaeng" },
+              ]}
+              placeholder="เลือกแขวง/อำเภอ"
+              className="h-[44px]"
+            />
+          </div>
+
+
           {/* แขวง/ตำบล / Subdistrict */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-              <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล</label>
+              <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล subdistrict</label>
             </div>
             <InputDropdown
               value={formData.subdistrict}

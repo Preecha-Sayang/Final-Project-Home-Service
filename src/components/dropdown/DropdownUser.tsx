@@ -26,7 +26,7 @@ export default function DropdownUser({
   };
 
   const menuItems = [
-    { label: "ข้อมูลผู้ใช้งาน", icon: <User size={18} />, href: "#" },
+    { label: "ข้อมูลผู้ใช้งาน", icon: <User size={18} />, href: "/userprofile" },
     { label: "รายการคำสั่งซ่อม", icon: <List size={18} />, href: "#" },
     { label: "ประวัติการซ่อม", icon: <Clock size={18} />, href: "#" },
   ];
