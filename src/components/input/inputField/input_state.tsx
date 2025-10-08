@@ -172,7 +172,7 @@ const InputField = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, Inpu
                     )}
                 </div>
 
-                <div className="absolute pl-2">
+                <div className="pl-2 mt-2">
                     {isError ? (
                         <p className={messageCls(true)}>{finalError}</p>
                     ) : hint ? (

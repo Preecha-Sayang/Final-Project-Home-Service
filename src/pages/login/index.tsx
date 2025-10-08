@@ -30,6 +30,7 @@ export default function Login() {
     control,
     handleSubmit,
     setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormInputs>({
     resolver: yupResolver(schema),
@@ -64,6 +65,9 @@ const onSubmit = async (data: LoginFormInputs) => {
   }
 };
 
+
+
+
   return (
     <>
       <Navbar />
@@ -83,6 +87,7 @@ const onSubmit = async (data: LoginFormInputs) => {
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
+                   onFocus={() => clearErrors("email")}
                 />
               )}
             />
@@ -99,6 +104,7 @@ const onSubmit = async (data: LoginFormInputs) => {
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
+                  onFocus={() => clearErrors("password")}
                 />
               )}
             />

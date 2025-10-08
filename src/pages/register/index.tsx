@@ -111,7 +111,7 @@ function Register() {
   return (
     <>
       <Navbar />
-      <div className="w-full min-h-screen flex justify-center items-start pt-20 bg-gray-50">
+      <div className="w-full min-h-screen flex justify-center items-center bg-gray-50">
         <div className="w-[90%] md:w-[550px] lg:w-[610px] bg-white border border-gray-200 rounded-lg flex flex-col justify-center items-center p-8 shadow-md">
           <span className="font-bold text-3xl text-blue-900 mb-6">
             ลงทะเบียน

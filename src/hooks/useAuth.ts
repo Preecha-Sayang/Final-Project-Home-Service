@@ -29,11 +29,12 @@ export function useFetchWithToken(): FetchWithTokenType {
       const res = await doFetch(accessToken);
       return res.data;
     } catch (error: any) {
-      if (error.response?.status !== 401) {
+      const isUnauthorized = error.response?.status === 401;
+
+      if (!isUnauthorized) {
         throw new Error(error.response?.data?.message || "Request failed");
       }
 
-      // ถ้า 401 - พยายาม refresh token
       if (!refreshToken) {
         logout();
         throw new Error("No refresh token, please login again");
@@ -46,13 +47,17 @@ export function useFetchWithToken(): FetchWithTokenType {
 
         const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshRes.data;
 
+        // fallback ถ้าไม่ได้ refreshToken ใหม่
         login(newAccessToken, newRefreshToken ?? refreshToken);
 
+        // ลองยิงใหม่
         const retryRes = await doFetch(newAccessToken);
         return retryRes.data;
-      } catch (refreshError) {
+      } catch (refreshError: any) {
         logout();
-        throw new Error("Refresh token expired, please login again");
+        throw new Error(
+          refreshError.response?.data?.message || "Refresh token expired, please login again"
+        );
       }
     }
   };

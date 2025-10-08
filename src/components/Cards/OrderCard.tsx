@@ -26,7 +26,6 @@ function OrderCard({
   totalPrice,
   onViewDetails,
 }: OrderCardProps) {
-  console.log("Status:", status);
   return (
     <div className="w-full max-w-[831px] bg-white rounded-lg border border-gray-300 p-4 shadow-sm">
       {/* Desktop Layout (md and up) */}

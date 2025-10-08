@@ -29,6 +29,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       LEFT JOIN admin AS a ON b.admin_id = a.admin_id
       INNER JOIN users AS u ON b.user_id = u.user_id
       WHERE u.email = ${email}
+      ORDER BY b.order_code ASC
     `;
 
     if (bookings.length === 0)

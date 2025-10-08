@@ -1,5 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {jwtDecode} from "jwt-decode";
+import axios from "axios";
 
 type AuthContextType = {
   isLoggedIn: boolean;
@@ -35,6 +37,48 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
   };
+
+  useEffect(() => {
+  if (!accessToken || !refreshToken) return;
+
+  try {
+    const decoded: any = jwtDecode(accessToken);
+    const exp = decoded.exp * 1000;
+    const now = Date.now();
+
+    const timeout = exp - now - 10_000;
+
+    if (timeout <= 0) {
+      refreshAccessToken();
+    } else {
+      const timer = setTimeout(() => {
+        refreshAccessToken();
+      }, timeout);
+
+      return () => clearTimeout(timer);
+    }
+  } catch (err) {
+    console.error("Error decoding token:", err);
+  }
+}, [accessToken, refreshToken]);
+
+const refreshAccessToken = async () => {
+  try {
+    const res = await axios.post("/api/auth/refresh", {
+      refreshToken,
+    });
+
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
+
+    login(newAccessToken, newRefreshToken ?? refreshToken);
+    console.log("✅ Access token refreshed");
+  } catch (err) {
+    console.error("❌ Failed to refresh token", err);
+    logout();
+  }
+};
+
+
 
   return (
     <AuthContext.Provider
