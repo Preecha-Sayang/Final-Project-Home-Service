@@ -1,56 +1,65 @@
 import { useAuth } from "@/context/AuthContext"; // ปรับ path ตามจริง
+import axios, { AxiosRequestConfig } from "axios";
 
 type FetchWithTokenType = <T = unknown>(
   url: string,
-  options?: RequestInit
+  options?: AxiosRequestConfig
 ) => Promise<T>;
 
 export function useFetchWithToken(): FetchWithTokenType {
   const { accessToken, refreshToken, login, logout } = useAuth();
 
-  const fetchWithToken: FetchWithTokenType = async (url, options = {}) => {
+  const fetchWithToken: FetchWithTokenType = async <T = unknown>(
+    url: string,
+    options: AxiosRequestConfig = {}
+  ): Promise<T> => {
     if (!accessToken) throw new Error("No access token, please login");
 
-    const doFetch = async (token: string) =>
-      fetch(url, {
+    const doFetch = (token: string) =>
+      axios.request<T>({
+        url,
         ...options,
-        headers: { ...options.headers, Authorization: `Bearer ${token}` },
+        headers: {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-    let res = await doFetch(accessToken);
+    try {
+      const res = await doFetch(accessToken);
+      return res.data;
+    } catch (error: any) {
+      const isUnauthorized = error.response?.status === 401;
 
-    if (res.status === 401) {
+      if (!isUnauthorized) {
+        throw new Error(error.response?.data?.message || "Request failed");
+      }
+
       if (!refreshToken) {
         logout();
         throw new Error("No refresh token, please login again");
       }
 
-      const refreshRes = await fetch("/api/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refreshToken }),
-      });
+      try {
+        const refreshRes = await axios.post("/api/auth/refresh", {
+          refreshToken,
+        });
 
-      if (!refreshRes.ok) {
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshRes.data;
+
+        // fallback ถ้าไม่ได้ refreshToken ใหม่
+        login(newAccessToken, newRefreshToken ?? refreshToken);
+
+        // ลองยิงใหม่
+        const retryRes = await doFetch(newAccessToken);
+        return retryRes.data;
+      } catch (refreshError: any) {
         logout();
-        throw new Error("Refresh token expired, please login again");
+        throw new Error(
+          refreshError.response?.data?.message || "Refresh token expired, please login again"
+        );
       }
-
-      const data = await refreshRes.json();
-      const newAccessToken = data.accessToken;
-      const newRefreshToken = data.refreshToken ?? refreshToken;
-
-      login(newAccessToken, newRefreshToken);
-
-      res = await doFetch(newAccessToken);
     }
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText || "Request failed");
-    }
-
-    return res.json();
   };
 
   return fetchWithToken;

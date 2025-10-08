@@ -2,7 +2,8 @@ import { Footer } from "@/components/footer";
 import Navbar from "@/components/navbar/navbar";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import OrderService from "./orderservices";
+import ServiceListProcess from "./servicelist-process";
+import ServiceListSuccess from "./servicelist-success";
 
 function AfterService() {
   const menuItems = [
@@ -16,7 +17,7 @@ function AfterService() {
     setIsLoading(true);
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 500); // รอ 0.5 วินาที
+    }, 1000); // รอ 1 วินาที
     return () => clearTimeout(timer);
   }, [keyword]);
 
@@ -26,10 +27,10 @@ function AfterService() {
         return <p>กำลังคิดค้นนวัฒกรรม</p>;
 
       case "รายการคำสั่งซ่อม":
-        return <OrderService />;
+        return <ServiceListProcess onLoadDone={() => setIsLoading(false)}/>;
 
       case "ประวัติการสั่งซ่อม":
-        return <p>กำลังคิดค้นนวัฒกรรม</p>;
+        return <ServiceListSuccess onLoadDone={() => setIsLoading(false)}/>
 
       default:
         return <p>กรุณาเลือกนวัฒกรรมใหม่</p>;
@@ -57,6 +58,7 @@ function AfterService() {
             <div>
               {menuItems.map((item) => (
                 <div
+                  key={item.label}
                   id={item.label}
                   className="flex flex-row items-center h-[50px] gap-[12px] px-[16px] w-full
                                         hover:cursor-pointer hover:bg-[var(--gray-300)]"
@@ -73,7 +75,7 @@ function AfterService() {
               ))}
             </div>
           </div>
-          <div className="w-[800px] h-[500px] bg-[var(--gray-300)]">
+          <div className="w-[800px]">
             {isLoading ? (
               <div className="flex  flex-col justify-center items-center w-[100%] h-[100%]">
                 <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>

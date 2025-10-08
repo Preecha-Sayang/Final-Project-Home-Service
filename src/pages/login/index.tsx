@@ -7,6 +7,7 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuth } from "@/context/AuthContext"; // ✅ import context
+import axios from "axios";
 
 interface LoginFormInputs {
   email: string;
@@ -29,43 +30,43 @@ export default function Login() {
     control,
     handleSubmit,
     setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormInputs>({
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: LoginFormInputs) => {
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+const onSubmit = async (data: LoginFormInputs) => {
+  try {
+    const res = await axios.post("/api/auth/login", data, {
+      headers: { "Content-Type": "application/json" },
+    });
 
-      const result = await res.json();
+    const { accessToken, refreshToken } = res.data;
+    login(accessToken, refreshToken); // ✅ login ผ่าน context
+    router.push("/");
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const result = error.response?.data;
 
-      if (res.ok) {
-        const { accessToken, refreshToken } = result;
-        login(accessToken, refreshToken); // ✅ login ผ่าน context
-        router.push("/");
-      } else if (res.status === 401) {
+      if (status === 401) {
         // แสดง error ที่ email และ password พร้อมกัน
-        setError("email", {
-          type: "manual",
-          message: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
-        });
-        setError("password", {
-          type: "manual",
-          message: result.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
-        });
+        const message = result?.error || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+        setError("email", { type: "manual", message });
+        setError("password", { type: "manual", message });
       } else {
-        alert(result.error || "เกิดข้อผิดพลาด");
+        alert(result?.error || "เกิดข้อผิดพลาด");
       }
-    } catch (err) {
-      console.error(err);
+    } else {
+      console.error(error);
       alert("เกิดข้อผิดพลาด");
     }
-  };
+  }
+};
+
+
+
 
   return (
     <>
@@ -86,6 +87,7 @@ export default function Login() {
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
+                   onFocus={() => clearErrors("email")}
                 />
               )}
             />
@@ -102,6 +104,7 @@ export default function Login() {
                   value={field.value || ""}
                   onChange={field.onChange}
                   onBlur={field.onBlur}
+                  onFocus={() => clearErrors("password")}
                 />
               )}
             />
