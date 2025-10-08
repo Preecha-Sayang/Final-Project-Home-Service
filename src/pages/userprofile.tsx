@@ -2,7 +2,7 @@ import { Footer } from "@/components/footer";
 import Navbar from "@/components/navbar/navbar";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import OrderService from "./afterservice/orderservices";
+import OrderService from "@/pages/afterservice/index";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
