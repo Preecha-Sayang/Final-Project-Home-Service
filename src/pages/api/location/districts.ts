@@ -22,10 +22,14 @@ export default async function handler(
     const client = await databasePool.connect();
 
     let query = `
-      SELECT * FROM district WHERE province_id = $1
+      SELECT * FROM district 
     `;
 
-    const { rows } = await client.query(query, [province_id]);
+    if (province_id) {
+      query += ` WHERE province_id = $1`;
+    }
+
+    const { rows } = await client.query(query, province_id ? [province_id] : []);
     client.release();
 
 
