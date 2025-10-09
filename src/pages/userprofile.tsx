@@ -1,7 +1,7 @@
 import { Footer } from "@/components/footer";
 import Navbar from "@/components/navbar/navbar";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import OrderService from "@/pages/afterservice/index";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
@@ -17,19 +17,27 @@ type UserData = {
 };
 
 type Province = {
-  province_id: number;
-  name: string;
+  province_code: number,
+  province_name_th: string,
+  province_name_en: string,
 };
 
 type District = {
-  district_id: number;
-  province_id: number;
-  name: string;
+  district_code: number;
+  district_name_th: string,
+  district_name_en: string,
+};
+
+type Subdistrict = {
+  subdistrict_code: number;
+  subdistrict_name_th: string,
+  subdistrict_name_en: string,
 };
 
 type UserProfileFormProps = {
-  profileImage: string;
-  onImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  profileImage: string; // existing hosted URL (if any)
+  imageFile: File | null; // newly selected file
+  onImageFileChange: (file: File | null) => void;
   formData: {
     fullname: string;
     phone: string;
@@ -42,32 +50,103 @@ type UserProfileFormProps = {
   onChange: (field: string, value: string) => void;
   provinceList: Province[];
   districtList: District[];
+  subdistrictList: Subdistrict[];
   onSave: () => void;
   onCancel: () => void;
 };
 
-function UserProfileForm({ profileImage, onImageUpload, formData, onChange, provinceList, districtList, onSave, onCancel }: UserProfileFormProps) {
+
+function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData, onChange, provinceList, districtList, subdistrictList, onSave, onCancel }: UserProfileFormProps) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [dragOver, setDragOver] = useState(false);
+  const objectUrl = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : ""), [imageFile]);
+  useEffect(() => {
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [objectUrl]);
+
+  const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
+  function showError(msg: string) {
+    setErrorMsg(msg);
+    setTimeout(() => setErrorMsg(""), 3000);
+  }
+  function rejectIfInvalid(f: File) {
+    const okTypes = ["image/jpeg", "image/png"];
+    if (!okTypes.includes(f.type)) {
+      showError("รองรับเฉพาะไฟล์ JPG หรือ PNG");
+      return true;
+    }
+    if (f.size > MAX_SIZE) {
+      showError("ไฟล์รูปต้องไม่เกิน 2 MB");
+      return true;
+    }
+    return false;
+  }
+
+  const pick = () => inputRef.current?.click();
+  const onFileSelected: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (rejectIfInvalid(f)) {
+      e.currentTarget.value = "";
+      return;
+    }
+    onImageFileChange(f);
+  };
+
+  const onDragOverBox: React.DragEventHandler<HTMLDivElement> = (ev) => {
+    ev.preventDefault(); ev.stopPropagation(); setDragOver(true);
+  };
+  const onDragLeaveBox: React.DragEventHandler<HTMLDivElement> = (ev) => {
+    ev.preventDefault(); ev.stopPropagation(); setDragOver(false);
+  };
+  const onDropBox: React.DragEventHandler<HTMLDivElement> = (ev) => {
+    ev.preventDefault(); ev.stopPropagation(); setDragOver(false);
+    const f = ev.dataTransfer?.files?.[0];
+    if (f && !rejectIfInvalid(f)) onImageFileChange(f);
+  };
+
   return (
     <div className="w-full h-full bg-[var(--white)] p-8 overflow-y-auto">
       {/* รูปโปรไฟล์ / Profile Picture Section */}
       <div className="flex justify-center mb-8">
-        <div className="relative">
-          <div className="w-32 h-32 rounded-full bg-[var(--gray-300)] flex items-center justify-center text-4xl font-medium text-[var(--gray-600)] overflow-hidden">
-            {profileImage ? (
-              <Image src={profileImage} alt="Profile" width={128} height={128} className="object-cover" />
+        <div className="flex flex-col items-center gap-3">
+          {/* Clickable circular avatar with preview and drag/drop */}
+          <div
+            className={`w-32 h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
+            onClick={pick}
+            onDragOver={onDragOverBox}
+            onDragLeave={onDragLeaveBox}
+            onDrop={onDropBox}
+            title="คลิกเพื่ออัปโหลดรูป"
+          >
+            {imageFile ? (
+              <Image src={objectUrl} alt="Profile preview" width={512} height={512} className="object-cover w-full h-full" />
+            ) : profileImage ? (
+              <Image src={profileImage} alt="Profile" width={512} height={512} className="object-cover w-full h-full" />
             ) : (
-              <span>Vo</span>
+              <span className="text-4xl font-medium text-[var(--gray-600)]">Vo</span>
             )}
+
+            {/* small overlay hint */}
+            <div className="absolute inset-0 bg-[var(--black)]/0 hover:bg-[var(--black)]/10 transition-colors" />
           </div>
-          <label className="absolute bottom-0 right-0 bg-[var(--white)] rounded-full p-2 cursor-pointer shadow-md hover:bg-[var(--gray-100)]">
-            <Image src="/images/icon_gallery.svg" alt="Upload" width={20} height={20} />
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={onImageUpload}
-            />
-          </label>
+
+          {/* Hidden file input */}
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={onFileSelected}
+          />
+
+          {/* Error message */}
+          {errorMsg && (
+            <div className="text-xs text-[var(--red)] mt-1" role="alert" aria-live="polite">{errorMsg}</div>
+          )}
         </div>
       </div>
 
@@ -147,7 +226,7 @@ function UserProfileForm({ profileImage, onImageUpload, formData, onChange, prov
           <InputDropdown
             value={formData.province}
             onChange={(value) => onChange("province", value)}
-            options={provinceList.map((province) => ({ label: province.name, value: province.province_id.toString() }))}
+            options={provinceList.map((province) => ({ label: province.province_name_en, value: province.province_code.toString() }))}
             placeholder="เลือกจังหวัด"
             className="h-[44px]"
           />
@@ -162,7 +241,7 @@ function UserProfileForm({ profileImage, onImageUpload, formData, onChange, prov
           <InputDropdown
             value={formData.district}
             onChange={(value) => onChange("district", value)}
-            options={districtList.map((district) => ({ label: district.name, value: district.district_id.toString() }))}
+            options={districtList.map((district) => ({ label: district.district_name_en, value: district.district_code.toString() }))}
             placeholder="เลือกแขวง/อำเภอ"
             className="h-[44px]"
           />
@@ -174,14 +253,14 @@ function UserProfileForm({ profileImage, onImageUpload, formData, onChange, prov
             <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
             <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล subdistrict</label>
           </div>
-          <input
-            value={formData.subdistrict}
-            type="text"
-            onChange={(e) => onChange("subdistrict", e.target.value)}
-            placeholder="เลือกแขวง/ตำบล"
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
-              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+          <InputDropdown
+              value={formData.subdistrict}
+              onChange={(value) => onChange("subdistrict", value)}
+              options={subdistrictList.map((subdistrict) => ({ label: subdistrict.subdistrict_name_en, value: subdistrict.subdistrict_code.toString() }))}
+              placeholder="เลือกแขวง/ตำบล"
+              className="h-[44px]"
           />
+
         </div>
       </div>
 
@@ -244,20 +323,40 @@ function UserProfile() {
 
   // Lazy load districts only after a province is selected and reset dependent fields
   useEffect(() => {
-    const provinceId = formData.province;
+    const provinceCode = formData.province;
     // Reset dependent selections when user changes province is handled in handleInputChange
 
-    if (!provinceId) {
+    if (!provinceCode) {
       setDistrictList([]);
       return;
     }
-    fetch(`/api/location/districts?province_id=${encodeURIComponent(provinceId)}`)
+    fetch(`/api/location/districts?province_code=${encodeURIComponent(provinceCode)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => setDistrictList(Array.isArray(data) ? data : []))
       .catch(() => setDistrictList([]));
   }, [formData.province]);
 
-  const [profileImage, setProfileImage] = useState<string>("");
+  const [subdistrictList, setSubdistrictList] = useState<Subdistrict[]>([]);
+
+  // Lazy load subdistricts only after a district is selected and reset dependent fields
+  useEffect(() => {
+    const districtCode = formData.district;
+
+    if ( !districtCode) {
+      setSubdistrictList([]);
+      return;
+    }
+    fetch(`/api/location/subdistricts?district_code=${encodeURIComponent(districtCode)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          setSubdistrictList(Array.isArray(data) ? data : []);
+        })
+        .catch(() => { setSubdistrictList([]);});
+  }, [formData.district]);
+
+
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>("");
 
   useEffect(() => {
     setIsLoading(true);
@@ -277,10 +376,12 @@ function UserProfile() {
       phone: userData.phone_number ?? "",
       email: userData.email ?? "",
       address: firstAddress?.address ?? "",
-      province: firstAddress?.province_id ? String(firstAddress.province_id) : "",
-      district: firstAddress?.district_id ? String(firstAddress.district_id) : "",
-      subdistrict: firstAddress?.subdistrict ?? "",
+      province: firstAddress?.province_code ? String(firstAddress.province_code) : "",
+      district: firstAddress?.district_code ? String(firstAddress.district_code) : "",
+      subdistrict: firstAddress?.subdistrict_code ? String(firstAddress.subdistrict_code) : "",
     }));
+    const avatarUrl = (userData as any)?.avatar || "";
+    setProfileImageUrl(avatarUrl);
   }, [userData]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -295,16 +396,6 @@ function UserProfile() {
     });
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSave = async () => {
     if (!accessToken) {
@@ -316,15 +407,41 @@ function UserProfile() {
       return;
     }
     try {
-      const payload = {
+      // Determine avatar URL to save
+      let avatarUrlToSave = profileImageUrl;
+
+      // If a new image is selected, upload it first
+      if (profileImageFile) {
+        const form = new FormData();
+        form.append("file", profileImageFile);
+        const upRes = await fetch("/api/profile/avatar", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: form,
+        });
+        if (!upRes.ok) {
+          const err = await upRes.json().catch(() => ({}));
+          throw new Error(err?.error || `Upload failed (${upRes.status})`);
+        }
+        const upData = await upRes.json();
+        avatarUrlToSave = upData.url as string;
+        setProfileImageUrl(avatarUrlToSave);
+        setProfileImageFile(null);
+      }
+
+      const payload: any = {
         fullname: formData.fullname || undefined,
         email: formData.email || undefined,
         phone_number: formData.phone || undefined,
         address: formData.address || undefined,
-        province_id: formData.province || undefined,
-        district_id: formData.district || undefined,
-        subdistrict: formData.subdistrict || undefined,
+        province_code: formData.province || undefined,
+        district_code: formData.district || undefined,
+        subdistrict_code: formData.subdistrict || undefined,
       };
+      if (avatarUrlToSave) payload.avatar = avatarUrlToSave;
+
       const res = await fetch("/api/profile/update", {
         method: "POST",
         headers: {
@@ -403,12 +520,14 @@ function UserProfile() {
               <>
                 {keyword === "ข้อมูลผู้ใช้งาน" ? (
                   <UserProfileForm
-                    profileImage={profileImage}
-                    onImageUpload={handleImageUpload}
+                    profileImage={profileImageUrl}
+                    imageFile={profileImageFile}
+                    onImageFileChange={(file) => setProfileImageFile(file)}
                     formData={formData}
                     onChange={handleInputChange}
                     provinceList={provinceList}
                     districtList={districtList}
+                    subdistrictList={subdistrictList}
                     onSave={handleSave}
                     onCancel={handleCancel}
                   />

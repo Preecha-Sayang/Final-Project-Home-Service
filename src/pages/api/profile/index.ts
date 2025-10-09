@@ -24,9 +24,17 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         u.email,
         u.phone_number,
         u.create_at,
-        row_to_json(a) AS address
+        u.avatar,
+        CASE WHEN a.address_id IS NULL THEN NULL ELSE json_build_object(
+          'address_id', a.address_id,
+          'user_id', a.user_id,
+          'address', a.address,
+          'province_code', a.province_code,
+          'district_code', a.district_code,
+          'subdistrict_code', a.subdistrict_code
+        ) END AS address
       FROM users u
-      LEFT JOIN address a ON a.user_id = u.user_id
+      LEFT JOIN addresses a ON a.user_id = u.user_id
       WHERE u.user_id = $1
     `;
 
@@ -47,6 +55,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       email: row.email,
       phone_number: row.phone_number,
       create_at: row.create_at,
+      avatar: row.avatar || null,
       addresses,
     });
   } catch (err) {

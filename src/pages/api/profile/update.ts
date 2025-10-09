@@ -1,6 +1,6 @@
 import type { NextApiResponse } from "next";
-import pool, { query } from "../../../../lib/db";
-import { withAuth, AuthenticatedNextApiRequest } from "../../../middlewere/auth";
+import pool, { query } from "@/../lib/db";
+import { withAuth, AuthenticatedNextApiRequest } from "@/middlewere/auth";
 
 // POST /api/profile/update
 // Updates basic user fields in users table and the primary address in address table.
@@ -11,9 +11,9 @@ import { withAuth, AuthenticatedNextApiRequest } from "../../../middlewere/auth"
 //   email?: string,
 //   phone_number?: string,
 //   address?: string,
-//   province_id?: number|string,
-//   district_id?: number|string,
-//   subdistrict?: string,
+//   province_code?: number|string,
+//   district_code?: number|string,
+//   subdistrict_code?: number|string,
 //   address_id?: number // optional, if provided we update this specific address
 // }
 async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
@@ -32,19 +32,21 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
     email,
     phone_number,
     address,
-    province_id,
-    district_id,
-    subdistrict,
+    province_code,
+    district_code,
+    subdistrict_code,
     address_id,
+    avatar,
   } = (req.body ?? {}) as {
     fullname?: string;
     email?: string;
     phone_number?: string;
     address?: string;
-    province_id?: number | string;
-    district_id?: number | string;
-    subdistrict?: string;
+    province_code?: number | string;
+    district_code?: number | string;
+    subdistrict_code?: number | string;
     address_id?: number;
+    avatar?: string;
   };
 
   const client = await pool.connect();
@@ -66,6 +68,10 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       userParams.push(phone_number);
       userUpdates.push(`phone_number = $${userParams.length}`);
     }
+    if (typeof avatar === "string") {
+      userParams.push(avatar);
+      userUpdates.push(`avatar = $${userParams.length}`);
+    }
     if (userUpdates.length > 0) {
       userParams.push(userId);
       await client.query(
@@ -77,9 +83,9 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
     // Prepare address fields
     const hasAddressPayload =
       typeof address === "string" ||
-      typeof province_id !== "undefined" ||
-      typeof district_id !== "undefined" ||
-      typeof subdistrict === "string";
+      typeof province_code !== "undefined" ||
+      typeof district_code !== "undefined" ||
+      typeof subdistrict_code !== "undefined";
 
     if (hasAddressPayload) {
       // Require address text when updating/creating address
@@ -89,19 +95,23 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
 
       // Coerce to numbers if provided
       const provinceIdVal =
-        typeof province_id !== "undefined" && province_id !== null && `${province_id}`.trim() !== ""
-          ? Number(province_id)
+        typeof province_code !== "undefined" && province_code !== null && `${province_code}`.trim() !== ""
+          ? Number(province_code)
           : undefined;
       const districtIdVal =
-        typeof district_id !== "undefined" && district_id !== null && `${district_id}`.trim() !== ""
-          ? Number(district_id)
+        typeof district_code !== "undefined" && district_code !== null && `${district_code}`.trim() !== ""
+          ? Number(district_code)
+          : undefined;
+      const subdistrictCodeVal =
+        typeof subdistrict_code !== "undefined" && subdistrict_code !== null && `${subdistrict_code}`.trim() !== ""
+          ? Number(subdistrict_code)
           : undefined;
 
       // Detect which address to update or insert and enforce single address per user
       let targetAddressId = address_id;
       if (!targetAddressId) {
         const existingAll = await client.query(
-          `SELECT address_id FROM address WHERE user_id = $1 ORDER BY address_id ASC`,
+          `SELECT address_id FROM addresses WHERE user_id = $1 ORDER BY address_id ASC`,
           [userId]
         );
         if (existingAll.rows.length > 0) {
@@ -109,7 +119,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
           // Delete any additional addresses to enforce single address
           if (existingAll.rows.length > 1) {
             await client.query(
-              `DELETE FROM address WHERE user_id = $1 AND address_id <> $2`,
+              `DELETE FROM addresses WHERE user_id = $1 AND address_id <> $2`,
               [userId, targetAddressId]
             );
           }
@@ -117,7 +127,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       } else {
         // If a specific address_id is provided, still enforce only one address for this user
         await client.query(
-          `DELETE FROM address WHERE user_id = $1 AND address_id <> $2`,
+          `DELETE FROM addresses WHERE user_id = $1 AND address_id <> $2`,
           [userId, targetAddressId]
         );
       }
@@ -131,21 +141,21 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         }
         if (typeof provinceIdVal !== "undefined") {
           addrParams.push(provinceIdVal);
-          addrUpdates.push(`province_id = $${addrParams.length}`);
+          addrUpdates.push(`province_code = $${addrParams.length}`);
         }
         if (typeof districtIdVal !== "undefined") {
           addrParams.push(districtIdVal);
-          addrUpdates.push(`district_id = $${addrParams.length}`);
+          addrUpdates.push(`district_code = $${addrParams.length}`);
         }
-        if (typeof subdistrict === "string") {
-          addrParams.push(subdistrict);
-          addrUpdates.push(`subdistrict = $${addrParams.length}`);
+        if (typeof subdistrictCodeVal !== "undefined") {
+          addrParams.push(subdistrictCodeVal);
+          addrUpdates.push(`subdistrict_code = $${addrParams.length}`);
         }
 
         if (addrUpdates.length > 0) {
           addrParams.push(targetAddressId, userId);
           await client.query(
-            `UPDATE address SET ${addrUpdates.join(", ")} WHERE address_id = $${addrParams.length - 1} AND user_id = $${addrParams.length}`,
+            `UPDATE addresses SET ${addrUpdates.join(", ")} WHERE address_id = $${addrParams.length - 1} AND user_id = $${addrParams.length}`,
             addrParams
           );
         }
@@ -160,23 +170,23 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
           vals.push(`$${params.length}`);
         }
         if (typeof provinceIdVal !== "undefined") {
-          cols.push("province_id");
+          cols.push("province_code");
           params.push(provinceIdVal);
           vals.push(`$${params.length}`);
         }
         if (typeof districtIdVal !== "undefined") {
-          cols.push("district_id");
+          cols.push("district_code");
           params.push(districtIdVal);
           vals.push(`$${params.length}`);
         }
-        if (typeof subdistrict === "string") {
-          cols.push("subdistrict");
-          params.push(subdistrict);
+        if (typeof subdistrictCodeVal !== "undefined") {
+          cols.push("subdistrict_code");
+          params.push(subdistrictCodeVal);
           vals.push(`$${params.length}`);
         }
-        console.log(`INSERT INTO address (${cols.join(",")}) VALUES (${vals.join(",")})`);
+        console.log(`INSERT INTO addresses (${cols.join(",")}) VALUES (${vals.join(",")})`);
         await client.query(
-          `INSERT INTO address (${cols.join(",")}) VALUES (${vals.join(",")})`,
+          `INSERT INTO addresses (${cols.join(",")}) VALUES (${vals.join(",")})`,
           params
         );
       }
@@ -192,14 +202,25 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         u.email,
         u.phone_number,
         u.create_at,
+        u.avatar,
         COALESCE(
-          json_agg(a ORDER BY a.address_id) FILTER (WHERE a.address_id IS NOT NULL),
+          json_agg(
+            json_build_object(
+              'address_id', a.address_id,
+              'user_id', a.user_id,
+              'address', a.address,
+              'province_code', a.province_code,
+              'district_code', a.district_code,
+              'subdistrict_code', a.subdistrict_code
+            )
+            ORDER BY a.address_id
+          ) FILTER (WHERE a.address_id IS NOT NULL),
           '[]'
         ) AS addresses
       FROM users u
-      LEFT JOIN address a ON a.user_id = u.user_id
+      LEFT JOIN addresses a ON a.user_id = u.user_id
       WHERE u.user_id = $1
-      GROUP BY u.user_id, u.fullname, u.email, u.phone_number, u.create_at`,
+      GROUP BY u.user_id, u.fullname, u.email, u.phone_number, u.create_at, u.avatar`,
       [userId]
     );
 
@@ -213,6 +234,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         email: row.email,
         phone_number: row.phone_number,
         create_at: row.create_at,
+        avatar: row.avatar || null,
         addresses: row.addresses ?? [],
       },
     });

@@ -16,20 +16,23 @@ export default async function handler(
     return response.status(405).json({ message: `Method ${request.method} Not Allowed` });
   }
 
-  const { province_id } = request.query;
+  const { province_code } = request.query;
 
   try {
     const client = await databasePool.connect();
 
-    let query = `
-      SELECT * FROM district 
+    const sql = `
+      SELECT DISTINCT
+        district_code,
+        district_name_th,
+        district_name_en
+      FROM geography
+      WHERE province_code = $1
+      ORDER BY district_name_th ASC
     `;
 
-    if (province_id) {
-      query += ` WHERE province_id = $1`;
-    }
 
-    const { rows } = await client.query(query, province_id ? [province_id] : []);
+    const { rows } = await client.query(sql, [province_code]);
     client.release();
 
 

@@ -1,12 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { Pool } from "pg";
+import { query as dbQuery } from "../../../../lib/db";
 
-// สร้างการเชื่อมต่อฐานข้อมูล
-const databasePool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-
+// GET /api/location/provinces
+// Returns unique list of provinces from geography table
+// Shape: [{ provinceCode: number, provinceNameTh: string, provinceNameEn: string }, ...]
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse
@@ -16,22 +13,21 @@ export default async function handler(
     return response.status(405).json({ message: `Method ${request.method} Not Allowed` });
   }
 
-  const { topOnly } = request.query;
-
   try {
-    const client = await databasePool.connect();
-
-    let query = `
-      SELECT * FROM province
+    const sql = `
+      SELECT DISTINCT
+        province_code,
+        province_name_th,
+        province_name_en
+      FROM geography
+      ORDER BY province_name_th ASC
     `;
 
-    const { rows } = await client.query(query);
-    client.release();
-
+    const { rows } = await dbQuery(sql);
 
     return response.status(200).json(rows);
   } catch (error) {
-    console.error("Error fetching services:", error);
+    console.error("Error fetching provinces:", error);
     return response.status(500).json({ message: "Internal server error" });
   }
 }
