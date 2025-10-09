@@ -11,16 +11,16 @@ export default function EditPromotionPage() {
     const actions = (
         <div className="flex gap-2">
             <button
+                type="button"
                 onClick={() => router.push("/admin/promotions")}
-                className="w-[112px] h-[44px] rounded-lg border border-[var(--gray-200)] bg-white px-3 text-sm text-[var(--gray-800)] hover:bg-[var(--gray-100)] cursor-pointer"
+                className="w-[112px] h-[44px] items-center rounded-lg border border-[var(--blue-600)] bg-white text-base font-medium text-[var(--blue-600)] hover:bg-[var(--gray-100)] cursor-pointer"
             >
                 ยกเลิก
             </button>
             <button
                 type="submit"
-                form="service-form"
-                className="w-[112px] h-[44px] rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-[var(--gray-100)] hover:bg-[var(--blue-700)] cursor-pointer"
-            >
+                form="promotion-form"
+                className="w-[112px] h-[44px] rounded-lg bg-[var(--blue-600)] px-3 text-sm font-medium text-[var(--gray-100)] hover:bg-[var(--blue-700)] cursor-pointer">
                 บันทึก
             </button>
         </div>
@@ -32,14 +32,16 @@ export default function EditPromotionPage() {
         <>
             <BackHeader
                 subtitle="Promotion Code"
-                title="แก้ไขบริการ"
+                title="แก้ไข"
                 backHref="/admin/promotions"
                 actions={actions}
             />
-            <PromotionEditor
-                mode="edit"
-                id={id}
-            />;
+            <div className="p-8">
+                <PromotionEditor
+                    mode="edit"
+                    id={id}
+                />
+            </div>
         </>
     );
 

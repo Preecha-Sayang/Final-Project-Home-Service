@@ -56,8 +56,9 @@ export default function PromotionDetailPage() {
                     </button>
                 }
             />
-
-            <PromotionPreview item={item} />
+            <div className="p-8">
+                <PromotionPreview item={item} />
+            </div>
         </>
     );
 }

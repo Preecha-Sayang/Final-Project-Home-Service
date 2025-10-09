@@ -60,7 +60,7 @@ export default function AdminShell({
         <main
           id="admin-main"
           role="main"
-          className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 [padding-bottom:env(safe-area-inset-bottom)]"
+          className="flex-1 overflow-y-auto [padding-bottom:env(safe-area-inset-bottom)]"
         >
           {children}
         </main>

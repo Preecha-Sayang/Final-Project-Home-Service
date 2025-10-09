@@ -38,9 +38,11 @@ export default function NewServicePage() {
             {/* <CategoryForm
                 mode="create"
             /> */}
-            <ServiceEditor
-                mode="create"
-            />
+            <div className="p-8">
+                <ServiceEditor
+                    mode="create"
+                />
+            </div>
         </>
     );
 }

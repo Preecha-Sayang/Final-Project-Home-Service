@@ -19,7 +19,7 @@ export default function BackHeader({ title, subtitle, backHref, actions, classNa
     };
 
     return (
-        <div className={["w-full bg-white rounded-2xl border border-[var(--gray-100)] px-5 py-4 mb-6 flex items-center justify-between shadow-[0_10px_24px_rgba(0,0,0,.06)]", className].join(" ")}>
+        <div className={["w-full h-[80px] bg-white px-10 py-4 flex items-center justify-between shadow-[0_10px_24px_rgba(0,0,0,.06)]", className].join(" ")}>
             <div>
                 <button onClick={goBack} className="flex items-center gap-3 group cursor-pointer" aria-label="ย้อนกลับ">
                     <span className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-full border border-[var(--gray-200)] group-hover:bg-[var(--blue-600)] group-hover:text-[var(--gray-100)]">

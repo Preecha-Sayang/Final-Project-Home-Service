@@ -1,8 +1,7 @@
 import React from "react";
 import { useRouter } from "next/router";
 import dynamic from "next/dynamic";
-import BackHeaderPromotions from "@/components/admin/common/BackHeader_promotions";
-import { Code } from "lucide-react";
+import BackHeader from "@/components/admin/common/BackHeader";
 
 const PromotionEditor = dynamic(() => import("@/components/admin/promotions/promotions_editor"), { ssr: false });
 
@@ -20,9 +19,8 @@ export default function NewPromotionPage() {
             </button>
             <button
                 type="submit"
-                form="service-form"
-                className="w-[112px] h-[44px] rounded-lg bg-[var(--blue-600)] text-base font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
-            >
+                form="promotion-form"
+                className="w-[112px] h-[44px] rounded-lg bg-[var(--blue-600)] text-base font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer">
                 สร้าง
             </button>
         </div>
@@ -30,16 +28,19 @@ export default function NewPromotionPage() {
 
     return (
         <>
-            <BackHeaderPromotions
+            <BackHeader
                 subtitle="Promotion Code"
-                title="แก้ไข"
+                title="เพิ่ม"
                 backHref="/admin/promotions"
                 actions={actions}
 
             />
-            <PromotionEditor
-                mode="create"
-            />;
+            <div className="p-8">
+                <PromotionEditor
+                    mode="create"
+                />
+            </div>
+
         </>
     )
 

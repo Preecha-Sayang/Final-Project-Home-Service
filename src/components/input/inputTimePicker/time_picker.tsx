@@ -18,6 +18,15 @@ function dateToHHMM(d?: Date | null) {
   return `${h}:${m}`;
 }
 
+// ปัดนาทีให้เป็น step ที่ต้องการ (หน่วยเป็น "นาที")
+function roundToStep(d: Date, stepMin: number): Date {
+  const copy = new Date(d);
+  const m = copy.getMinutes();
+  const rounded = Math.round(m / stepMin) * stepMin;
+  copy.setMinutes(rounded, 0, 0);
+  return copy;
+}
+
 // ไอคอนนาฬิกา
 const ClockIcon: React.FC = () => (
   <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -30,7 +39,7 @@ export type TimePickerProps = {
   label?: string;
   value: string;
   onChange: (v: string) => void;
-  step?: number;
+  step?: number;          // step นาที (เช่น 5/10/15)
   name?: string;
   className?: string;
   placeholder?: string;
@@ -40,7 +49,7 @@ export default function TimePicker({
   label,
   value,
   onChange,
-  step = 60,
+  step = 5,               // ดีฟอลต์ 5 นาที
   name,
   className,
   placeholder = "กรุณาเลือกเวลา",
@@ -55,17 +64,17 @@ export default function TimePicker({
       <DatePicker
         format="HH:mm"
         value={dateValue ?? undefined}
-        onChange={(d) => onChange(dateToHHMM(d))}
+        onChange={(d) => {
+          if (!d) return onChange("");
+          const rounded = roundToStep(d, Math.max(1, step));
+          onChange(dateToHHMM(rounded));
+        }}
         oneTap={false}
         className={cn("rsuite-timepicker", className)}
         placeholder={placeholder}
         placement="bottomEnd"
         caretAs={ClockIcon}
         editable={false}
-        // @ts-expect-error rsuite
-        minuteStep={Math.max(1, Math.round(step / 60))}
-        okButtonText="ยืนยัน"
-        cleanButtonText="ยกเลิก"
         {...(name ? { "data-name": name } : {})}
       // cleanable={false}
       />

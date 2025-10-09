@@ -35,10 +35,12 @@ export default function EditServicePage() {
                 backHref="/admin/services"
                 actions={actions}
             />
-            <ServiceEditor
-                mode="edit"
-                id={id}
-            />
+            <div className="p-8">
+                <ServiceEditor
+                    mode="edit"
+                    id={id}
+                />
+            </div>
         </>
     );
 }

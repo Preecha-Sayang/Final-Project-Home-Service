@@ -38,14 +38,22 @@ export default async function handler(
 
         if (req.method === "PATCH") {
             const body = req.body as PromotionUpdatePayload;
-            const code = body.code?.trim();
-            const dtype = body.discount_type;
-            const dval = body.discount_value != null ? Number(body.discount_value) : undefined;
 
-            if (dtype && dtype !== "fixed" && dtype !== "percent") {
+            const code = body.code?.trim();
+            if (code !== undefined) {
+                if (!code || code.length > 64 || !/^[A-Za-z0-9_-]+$/.test(code)) {
+                    return res.status(400).json({ ok: false, message: "Invalid code format." });
+                }
+            }
+
+            const dtype = body.discount_type;
+            if (dtype !== undefined && dtype !== "fixed" && dtype !== "percent") {
                 return res.status(400).json({ ok: false, message: "Invalid discount_type." });
             }
-            if (dval != null && Number.isNaN(dval)) {
+
+            const dval =
+                body.discount_value != null ? Number(body.discount_value) : undefined;
+            if (dval !== undefined && !Number.isFinite(dval)) {
                 return res.status(400).json({ ok: false, message: "Invalid discount_value." });
             }
             if (dtype === "percent" && dval != null && (dval < 0 || dval > 100)) {
@@ -55,11 +63,29 @@ export default async function handler(
                 return res.status(400).json({ ok: false, message: "Amount must be >= 0" });
             }
 
-            // expire_at แปลงเป็น ISO string ก่อนบันทึก
+            if (body.usage_limit !== undefined) {
+                const ul = body.usage_limit;
+                if (ul != null && (!Number.isInteger(ul) || ul < 0)) {
+                    return res
+                        .status(400)
+                        .json({ ok: false, message: "usage_limit must be integer >= 0 or null" });
+                }
+            }
+
             const expireAt =
-                body.expire_at === null ? null :
-                    body.expire_at ? new Date(body.expire_at).toISOString() :
-                        undefined;
+                body.expire_at === null
+                    ? null
+                    : body.expire_at
+                        ? new Date(body.expire_at).toISOString()
+                        : undefined;
+
+            if (expireAt !== undefined && expireAt !== null) {
+                const t = new Date(expireAt).getTime();
+                if (Number.isNaN(t) || t < Date.now())
+                    return res
+                        .status(400)
+                        .json({ ok: false, message: "expire_at must be in the future" });
+            }
 
             const shouldCode = code !== undefined;
             const shouldType = dtype !== undefined;

@@ -2,10 +2,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "node:fs/promises";
 import { sql } from "lib/db";
 import { cloudinary } from "lib/server/upload/cloudinary";
-import { parseForm, formConfig } from "lib/server/upload/parseForm";
+import { parseForm } from "lib/server/upload/parseForm";
 import type { File } from "formidable";
 
-export const config = formConfig;
+export const config = { api: { bodyParser: false as const } };
 
 type ServiceRowDB = {
     servicename: string;

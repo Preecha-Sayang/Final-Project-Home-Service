@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import 'rsuite/dist/rsuite-no-reset.min.css';
 import type { AppProps } from "next/app";
 import { Prompt } from "next/font/google";
 import { AuthProvider } from "@/context/AuthContext";
