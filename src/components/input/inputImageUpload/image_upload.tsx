@@ -8,6 +8,7 @@ type Props = {
     onChange: (file: File | null) => void;
     accept?: string;// default: image/*
     className?: string;
+    onUploaded?: (url: string) => void;
 };
 
 const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
@@ -31,7 +32,6 @@ export default function ImageUpload({
     }, [objectUrl]);
 
     const pick = () => inputRef.current?.click();
-    const clear = () => onChange(null);
 
     // Drag & Drop
     const onDragOverBox: React.DragEventHandler<HTMLDivElement> = (ev) => {

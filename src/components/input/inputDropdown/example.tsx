@@ -1,6 +1,5 @@
 import { useState } from "react";
 import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
-import CodeButton from "../code/codeButton";
 
 const options: Option[] = [
     { label: "บริการทั้งหมด", value: "all" },
@@ -11,30 +10,6 @@ const options: Option[] = [
 
 export default function ExampleInputDropdown() {
     const [service, setService] = useState("");
-
-    const codeDropdown = `
-import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
-
-const options: Option[] = [
-    { label: "บริการทั้งหมด", value: "all" },
-    { label: "บริการทั่วไป", value: "general" },
-    { label: "บริการห้องครัว", value: "kitchen" },
-    { label: "บริการห้องน้ำ", value: "restroom" },
-];
-
-const [service, setService] = useState("");
-
-<div className="w-[360px]">
-    <InputDropdown
-        label="Dropdown"
-        options={options}
-        value={service}
-        onChange={setService}
-        placeholder="เลือกบริการ…"
-        // disabled
-    />
-</div>
-`;
 
     return (
         <>
@@ -49,9 +24,6 @@ const [service, setService] = useState("");
                         placeholder="เลือกบริการ…"
                     // disabled
                     />
-                </div>
-                <div>
-                    <CodeButton title="Input State" code={codeDropdown} />
                 </div>
             </div>
         </>
