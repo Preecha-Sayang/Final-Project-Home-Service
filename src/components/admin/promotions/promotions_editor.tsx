@@ -183,91 +183,134 @@ export default function PromotionEditor({ mode, id }: Props) {
                 {loading ? (
                     <div className="py-16 text-center text-[var(--gray-500)]">Loading…</div>
                 ) : (
-                    <div className="grid gap-6">
+                    <div className="grid gap-8">
                         <div className="flex items-center">
-                            <div className="w-[205px]">Promotion Code <span className="text-[var(--red)]">*</span></div>
+                            <div className="w-[229px]">Promotion Code <span className="text-[var(--red)]">*</span></div>
                             <div className="w-[433px]">
                                 <InputField
                                     value={code}
                                     onChange={(e) => setCode(e.target.value)}
-                                    maxLength={64}
+                                    maxLength={15}
                                     className="h-[44px]"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex items-start gap-8">
-                            <div className="w-[205px] pt-2">ประเภท <span className="text-[var(--red)]">*</span></div>
-                            <div className="flex flex-col gap-4">
+                        <div className="flex items-start">
+                            <div className="w-[229px] pt-2">ประเภท <span className="text-[var(--red)]">*</span></div>
+                            <div className="flex flex-col gap-1">
                                 <label className="flex items-center gap-3">
-                                    <input type="radio" checked={dtype === "fixed"} onChange={() => setDtype("fixed")} />
-                                    <span>Fixed</span>
-                                    <InputField
-                                        value={amount}
-                                        onChange={(e) => setAmount(sanitizeMoney(e.target.value))}
-                                        disabled={dtype !== "fixed"}
-                                        rightIcon={<span>฿</span>}
-                                        className="h-[36px] w-[140px]"
-                                    />
+                                    <div className="flex items-center w-[128px] gap-3">
+                                        <input
+                                            type="radio"
+                                            checked={dtype === "fixed"}
+                                            onChange={() => setDtype("fixed")}
+                                            className="
+                                            relative h-5 w-5 appearance-none rounded-full
+                                            border-2 border-[var(--gray-400)] bg-white
+                                            transition
+                                            checked:bg-[var(--blue-600)] checked:border-[var(--blue-600)]
+                                            focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]
+                                            before:content-[''] before:absolute before:inset-0
+                                            before:m-auto before:h-1.5 before:w-1.5 before:rounded-full
+                                            before:bg-white before:scale-0 before:transition-transform
+                                            checked:before:scale-100
+                                            cursor-pointer"
+                                            aria-label="Fixed"
+                                        />
+                                        <span className="cursor-pointer">Fixed</span>
+                                    </div>
+                                    <div className="w-[140px]">
+                                        <InputField
+                                            value={amount}
+                                            onChange={(e) => setAmount(sanitizeMoney(e.target.value))}
+                                            disabled={dtype !== "fixed"}
+                                            rightIcon={<span>฿</span>}
+                                            className="h-[42px] w-[140px]"
+                                            maxLength={5}
+                                        />
+                                    </div>
+
                                 </label>
 
                                 <label className="flex items-center gap-3">
-                                    <input type="radio" checked={dtype === "percent"} onChange={() => setDtype("percent")} />
-                                    <span>Percent</span>
-                                    <InputField
-                                        value={percent}
-                                        onChange={(e) => setPercent(sanitizeMoney(e.target.value))}
-                                        disabled={dtype !== "percent"}
-                                        rightIcon={<span>%</span>}
-                                        className="h-[36px] w-[140px]"
-                                    />
+                                    <div className="flex items-center w-[128px] gap-3">
+                                        <input
+                                            type="radio"
+                                            checked={dtype === "percent"}
+                                            onChange={() => setDtype("percent")}
+                                            className="
+                                            relative h-5 w-5 appearance-none rounded-full
+                                            border-2 border-[var(--gray-400)] bg-white
+                                            transition
+                                            checked:bg-[var(--blue-600)] checked:border-[var(--blue-600)]
+                                            focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]
+                                            before:content-[''] before:absolute before:inset-0
+                                            before:m-auto before:h-1.5 before:w-1.5 before:rounded-full
+                                            before:bg-white before:scale-0 before:transition-transform
+                                            checked:before:scale-100
+                                            cursor-pointer"
+                                            aria-label="percent"
+                                        />
+                                        <span className="cursor-pointer">Percent</span>
+                                    </div>
+                                    <div className="w-[140px]">
+                                        <InputField
+                                            value={percent}
+                                            onChange={(e) => setPercent(sanitizeMoney(e.target.value))}
+                                            disabled={dtype !== "percent"}
+                                            rightIcon={<span>%</span>}
+                                            className="h-[42px] w-[140px]"
+                                            maxLength={2}
+                                        />
+                                    </div>
+
                                 </label>
                             </div>
                         </div>
 
                         {/* limit */}
                         <div className="flex items-center">
-                            <div className="w-[205px]">โควต้าการใช้</div>
-                            <div className="flex items-center gap-2">
-                                <InputField
-                                    value={usageLimit}
-                                    onChange={(e) => setUsageLimit(sanitizeInt(e.target.value))}
-                                    placeholder="เช่น 100 (เว้นว่าง = ไม่จำกัด)"
-                                    className="h-[44px] w-[240px]"
-                                />
-                                <span>ครั้ง</span>
+                            <div className="w-[229px]">โควต้าการใช้</div>
+                            <div className="relative">
+                                <div className="flex items-center w-[433px]">
+                                    <InputField
+                                        value={usageLimit}
+                                        onChange={(e) => setUsageLimit(sanitizeInt(e.target.value))}
+                                        placeholder=" "
+                                        className="h-[44px] w-[240px]"
+                                        maxLength={3}
+                                    />
+                                    <span className="absolute right-4 -translate-y-1 text-[var(--gray-300)]">ครั้ง</span>
+                                </div>
+
                             </div>
                         </div>
 
                         {/* expire */}
                         <div className="flex items-center">
-                            <div className="w-[205px]">วันหมดอายุ</div>
-                            <div className="flex items-center gap-3">
+                            <div className="w-[229px]">วันหมดอายุ</div>
+                            <div className="flex justify-between items-center w-[433px]">
                                 <DatePicker
                                     value={expireDate}
                                     onChange={setExpireDate}
                                     min={minDateISO} // กันย้อนหลัง
-                                    placeholder="กรุณาเลือกวันที่"
-                                    className="w-[180px]"
+                                    placeholder=" "
+                                    className="w-[205px]"
                                 />
-                                <TimePicker
-                                    value={expireTime}
-                                    onChange={handleTimeChange}
-                                    placeholder="กรุณาเลือกเวลา"
-                                    className="w-[120px]"
-                                />
-                                {pickingToday && (
-                                    <span className="text-sm text-[var(--gray-500)]">
-                                        วันนี้เลือกได้ตั้งแต่ {minTimeHHMM} เป็นต้นไป
-                                    </span>
-                                )}
-                                <button
-                                    type="button"
-                                    className="text-sm underline text-[var(--blue-600)]"
-                                    onClick={() => { setExpireDate(""); setExpireTime(""); }}
-                                >
-                                    ล้างค่า
-                                </button>
+                                <div className="relative">
+                                    <TimePicker
+                                        value={expireTime}
+                                        onChange={handleTimeChange}
+                                        placeholder=" "
+                                        className="w-[205px]"
+                                    />
+                                    {pickingToday && (
+                                        <span className="absolute mt-2 text-xs text-[var(--gray-400)]">
+                                            <span className="text-[var(--red)]">*</span> เลือกได้ตั้งแต่ {minTimeHHMM} เป็นต้นไป
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

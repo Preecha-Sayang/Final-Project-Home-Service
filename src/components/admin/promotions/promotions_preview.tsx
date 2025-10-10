@@ -11,10 +11,21 @@ export default function PromotionPreview({ item, onEdit }: Props) {
             ? `${value.toFixed(0)}%`
             : `-${value.toFixed(2)}฿`;
 
+    const usageText = (r: PromotionRow) => {
+        const used = 0; // API (promotion_usage)
+        if (r.usage_limit == null) return "ไม่จำกัด";
+        return `${used}/${r.usage_limit}`;
+    };
+
     return (
 
-        <div className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
-            <div className="grid gap-5">
+        <div className="rounded-2xl font-medium text-base border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
+            <div className="grid gap-8">
+                <div className="grid grid-cols-12 gap-3">
+                    <div className="col-span-3 text-[var(--gray-500)]">Promotion Code</div>
+                    <div className="col-span-9">{item.code}</div>
+                </div>
+
                 <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-3 text-[var(--gray-500)]">ประเภท</div>
                     <div className="col-span-9">{item.discount_type === "percent" ? "Percent" : "Fixed"}</div>
@@ -27,7 +38,7 @@ export default function PromotionPreview({ item, onEdit }: Props) {
 
                 <div className="grid grid-cols-12 gap-3">
                     <div className="col-span-3 text-[var(--gray-500)]">โควต้าการใช้</div>
-                    <div className="col-span-9">{item.usage_limit} ครั้ง</div>
+                    <div className="col-span-9">{usageText(item)} ครั้ง</div>
                 </div>
 
                 <div className="grid grid-cols-12 gap-3">

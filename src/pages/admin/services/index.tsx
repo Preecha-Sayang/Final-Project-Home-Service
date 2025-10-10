@@ -6,12 +6,16 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
 import { Plus } from "lucide-react";
+import { Pagination } from "rsuite";
+
+const PAGE_SIZE = 10;
 
 export default function AdminServicesPage() {
     const [items, setItems] = useState<ServiceItem[]>([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: ServiceItem; loading?: boolean }>({ open: false });
+    const [page, setPage] = useState(1);
     const router = useRouter();
 
     useEffect(() => {
@@ -34,28 +38,51 @@ export default function AdminServicesPage() {
         return items.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
     }, [items, search]);
 
-    // ลากจัดเรียง → อัปเดต state + ยิง API
-    async function handleReorder(next: ServiceItem[]) {
-        setItems(next);
+    // ตัดหน้า
+    const pagedItems = useMemo(() => {
+        const start = (page - 1) * PAGE_SIZE;
+        return filtered.slice(start, start + PAGE_SIZE);
+    }, [filtered, page]);
+
+    // ลากจัดเรียง > อัปเดต state + ยิง API
+    async function handleReorder(nextPageItems: ServiceItem[]) {
+        const start = (page - 1) * PAGE_SIZE;
+        const merged = [...items];
+        const filteredStart = (page - 1) * PAGE_SIZE;
+        const filteredIdsInPage = filtered.slice(filteredStart, filteredStart + PAGE_SIZE).map(x => x.id);
+
+        let writeIdx = 0;
+        const replaced = merged.map(it => {
+            const pos = filteredIdsInPage.indexOf(it.id);
+            if (pos !== -1) {
+                const np = nextPageItems[writeIdx++];
+                return { ...np };
+            }
+            return it;
+        });
+
+        // re-index ให้ต่อเนื่อง
+        const reindexed = replaced.map((x, i) => ({ ...x, index: i + 1 }));
+        setItems(reindexed);
         try {
-            await reorderServices(next.map(x => ({ id: x.id, index: x.index })));
-        } catch {
-            // ปล่อยว่างก่อน
-        }
+            await reorderServices(reindexed.map(x => ({ id: x.id, index: x.index })));
+        } catch { }
     }
 
     // ลบ
     async function handleDelete(item: ServiceItem) {
         const prev = items;
         // optimistic update
-        setItems(
-            items
-                .filter(x => x.id !== item.id)
-                .map((x, i) => ({ ...x, index: i + 1 }))
-        );
+        const next = items
+            .filter(x => x.id !== item.id)
+            .map((x, i) => ({ ...x, index: i + 1 }));
+        setItems(next);
 
         try {
             await deleteService(item.id);
+            const totalAfter = (filtered.length - 1);
+            const maxPage = Math.max(1, Math.ceil(totalAfter / PAGE_SIZE));
+            if (page > maxPage) setPage(maxPage);
         } catch (e) {
             setItems(prev);
         }
@@ -69,7 +96,7 @@ export default function AdminServicesPage() {
                     <div className="relative">
                         <input
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                             placeholder="ค้นหาบริการ..."
                             className="w-[350px] h-[44px] rounded-lg border border-[var(--gray-300)] px-11 text-sm"
                         />
@@ -88,10 +115,9 @@ export default function AdminServicesPage() {
                 </div>
             </div>
 
-
             <div className="p-8">
                 <ServiceTable
-                    items={filtered}
+                    items={pagedItems}
                     loading={loading}
                     search={search}
                     onEdit={(item) => router.push(`/admin/services/${item.id}/edit`)}
@@ -99,12 +125,36 @@ export default function AdminServicesPage() {
                     onReorder={handleReorder}
                     onView={(item) => router.push(`/admin/services/${item.id}`)}
                 />
+
+                {/* Pagination */}
+                <div className="mt-4 px-4 flex justify-between items-center">
+                    <div className="text-sm text-[var(--gray-500)]">รวม {filtered.length} รายการ</div>
+                    <Pagination
+                        prev
+                        next
+                        ellipsis
+                        boundaryLinks
+                        total={filtered.length}
+                        limit={PAGE_SIZE}
+                        activePage={page}
+                        onChangePage={(p) => setPage(p)}
+                    />
+
+                </div>
             </div>
 
             <ConfirmDialog
                 open={confirmDel.open}
                 title="ยืนยันการลบรายการ?"
-                description={<>คุณต้องการลบรายการ ‘{confirmDel.item?.name}’ ใช่หรือไม่</>}
+                description={
+                    <>
+                        {confirmDel && (
+                            <div className="mt-2 text-base">
+                                คุณต้องการลบบริการ <br /><strong className="font-semibold text-xl text-[var(--red)]">‘{confirmDel.item?.name}’</strong><br /> ใช่หรือไม่
+                            </div>
+                        )}
+                    </>
+                }
                 loading={!!confirmDel.loading}
                 onCancel={() => setConfirmDel({ open: false })}
                 onConfirm={async () => {
