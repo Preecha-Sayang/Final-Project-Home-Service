@@ -3,8 +3,8 @@ import { query } from "../../../../lib/db";
 import { withAuth, AuthenticatedNextApiRequest } from "../../../middlewere/auth";
 
 // GET /api/profile
-// Returns user information along with the address records (only one address per user may exist)
-// for use in the profile edit form.
+// คืนค่าข้อมูลผู้ใช้พร้อมกับที่อยู่ (ผู้ใช้แต่ละคนมีที่อยู่ได้เพียงที่อยู่เดียว)
+// สำหรับใช้ในฟอร์มแก้ไขโปรไฟล์
 async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== "GET") {
@@ -46,7 +46,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
 
     const row = result.rows[0] as any;
 
-    // Keep API compatible: return addresses as an array, though there can be only one
+    // รักษาความเข้ากันได้ของ API: คืนค่าที่อยู่เป็น array แม้ว่าจะมีได้เพียงที่อยู่เดียว
     const addresses = row.address ? [row.address] : [];
 
     return res.status(200).json({

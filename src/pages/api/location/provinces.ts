@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { query as dbQuery } from "../../../../lib/db";
 
 // GET /api/location/provinces
-// Returns unique list of provinces from geography table
-// Shape: [{ provinceCode: number, provinceNameTh: string, provinceNameEn: string }, ...]
+// คืนค่ารายการจังหวัดที่ไม่ซ้ำกันจากตาราง geography
+// รูปแบบ: [{ province_code: number, province_name_th: string, province_name_en: string }, ...]
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse

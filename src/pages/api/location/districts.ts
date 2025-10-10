@@ -6,7 +6,9 @@ const databasePool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-
+// GET /api/location/districts?province_code=XX
+// คืนค่ารายการเขต/อำเภอตามจังหวัดที่เลือกจากตาราง geography
+// รูปแบบ: [{ district_code: number, district_name_th: string, district_name_en: string }, ...]
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse

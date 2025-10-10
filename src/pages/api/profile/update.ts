@@ -3,9 +3,9 @@ import pool, { query } from "@/../lib/db";
 import { withAuth, AuthenticatedNextApiRequest } from "@/middlewere/auth";
 
 // POST /api/profile/update
-// Updates basic user fields in users table and the primary address in address table.
-// Accepts JSON body. Any provided fields will be updated; omitted fields are ignored.
-// Body example:
+// อัพเดตข้อมูลผู้ใช้พื้นฐานในตาราง users และที่อยู่หลักในตาราง addresses
+// รับข้อมูล JSON body ฟิลด์ที่ส่งมาจะถูกอัพเดต ฟิลด์ที่ไม่ส่งจะถูกข้าม
+// ตัวอย่าง Body:
 // {
 //   fullname?: string,
 //   email?: string,
@@ -14,7 +14,7 @@ import { withAuth, AuthenticatedNextApiRequest } from "@/middlewere/auth";
 //   province_code?: number|string,
 //   district_code?: number|string,
 //   subdistrict_code?: number|string,
-//   address_id?: number // optional, if provided we update this specific address
+//   address_id?: number // ไม่บังคับ ถ้ามีจะอัพเดตที่อยู่นี้โดยเฉพาะ
 // }
 async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST" && req.method !== "PUT") {
@@ -53,7 +53,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   try {
     await client.query("BEGIN");
 
-    // Update users table if any user fields provided
+    // อัพเดตตาราง users ถ้ามีข้อมูลผู้ใช้ที่ต้องการเปลี่ยน
     const userUpdates: string[] = [];
     const userParams: any[] = [];
     if (typeof fullname === "string") {
@@ -80,7 +80,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       );
     }
 
-    // Prepare address fields
+    // เตรียมข้อมูลที่อยู่
     const hasAddressPayload =
       typeof address === "string" ||
       typeof province_code !== "undefined" ||
@@ -88,12 +88,12 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       typeof subdistrict_code !== "undefined";
 
     if (hasAddressPayload) {
-      // Require address text when updating/creating address
+      // ต้องมีข้อความที่อยู่เมื่ออัพเดต/สร้างที่อยู่
       if (typeof address !== "string" || address.trim() === "") {
         return res.status(400).json({ error: "Address text is required" });
       }
 
-      // Coerce to numbers if provided
+      // แปลงเป็นตัวเลขถ้ามีข้อมูล
       const provinceIdVal =
         typeof province_code !== "undefined" && province_code !== null && `${province_code}`.trim() !== ""
           ? Number(province_code)
@@ -107,7 +107,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
           ? Number(subdistrict_code)
           : undefined;
 
-      // Detect which address to update or insert and enforce single address per user
+      // ตรวจสอบว่าจะอัพเดตหรือเพิ่มที่อยู่ไหน และบังคับให้มีที่อยู่เดียวต่อผู้ใช้
       let targetAddressId = address_id;
       if (!targetAddressId) {
         const existingAll = await client.query(
@@ -116,7 +116,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         );
         if (existingAll.rows.length > 0) {
           targetAddressId = existingAll.rows[0].address_id as number;
-          // Delete any additional addresses to enforce single address
+          // ลบที่อยู่เพิ่มเติมเพื่อบังคับให้มีที่อยู่เดียว
           if (existingAll.rows.length > 1) {
             await client.query(
               `DELETE FROM addresses WHERE user_id = $1 AND address_id <> $2`,
@@ -125,7 +125,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
           }
         }
       } else {
-        // If a specific address_id is provided, still enforce only one address for this user
+        // ถ้าระบุ address_id มา ยังคงบังคับให้มีที่อยู่เดียวสำหรับผู้ใช้คนนี้
         await client.query(
           `DELETE FROM addresses WHERE user_id = $1 AND address_id <> $2`,
           [userId, targetAddressId]
@@ -160,7 +160,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
           );
         }
       } else {
-        // Insert new address row
+        // เพิ่มที่อยู่ใหม่
         const cols: string[] = ["user_id"];
         const vals: string[] = ["$1"];
         const params: any[] = [userId];
@@ -194,7 +194,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
 
     await client.query("COMMIT");
 
-    // Optionally return the updated profile snapshot
+    // คืนค่าข้อมูลโปรไฟล์ที่อัพเดตแล้ว
     const result = await query(
       `SELECT 
         u.user_id,
