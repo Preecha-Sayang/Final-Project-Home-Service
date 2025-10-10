@@ -19,6 +19,7 @@ export default function AdminPromotionPage() {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true);
     const [askDeleteId, setAskDeleteId] = useState<number | null>(null);
+    const [askDeleteName, setAskDeleteName] = useState<string>("");
     const [doing, setDoing] = useState(false);
 
     const [sort, setSort] = useState<SortState>({ sortBy: "create_at", order: "DESC" });
@@ -42,7 +43,11 @@ export default function AdminPromotionPage() {
         })();
     }, [search, page, sort]);
 
-    const remove = (id: number) => setAskDeleteId(id);
+    const remove = (id: number) => {
+        setAskDeleteId(id);
+        const name = rows.find((r) => r.promotion_id === id)?.code ?? "";
+        setAskDeleteName(name);
+    }
 
     const confirmDelete = async () => {
         if (askDeleteId == null) return;
@@ -115,8 +120,16 @@ export default function AdminPromotionPage() {
 
             <ConfirmDialog
                 open={askDeleteId != null}
-                title="ลบ Promotion นี้?"
-                description="การลบไม่สามารถย้อนกลับได้"
+                title="ยืนยันการลบรายการ?"
+                description={
+                    <>
+                        {askDeleteName && (
+                            <div className="mt-2 text-base">
+                                คุณต้องการลบโค้ด <br/><strong className="font-semibold text-xl text-[var(--red)]">‘{askDeleteName}’</strong><br/> ใช่หรือไม่
+                            </div>
+                        )}
+                    </>
+                }
                 loading={doing}
                 onCancel={() => setAskDeleteId(null)}
                 onConfirm={confirmDelete}

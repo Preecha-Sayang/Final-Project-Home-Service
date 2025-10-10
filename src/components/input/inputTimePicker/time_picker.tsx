@@ -30,8 +30,8 @@ function roundToStep(d: Date, stepMin: number): Date {
 // ไอคอนนาฬิกา
 const ClockIcon: React.FC = () => (
   <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
-    <path d="M10 18.333A8.333 8.333 0 1 0 10 1.667a8.333 8.333 0 0 0 0 16.666Z" stroke="#9AA1B0" strokeWidth="1.4" />
-    <path d="M10 5.833V10l3 1.75" stroke="#9AA1B0" strokeWidth="1.6" strokeLinecap="round" />
+    <path d="M10 18.333A8.333 8.333 0 1 0 10 1.667a8.333 8.333 0 0 0 0 16.666Z" stroke="var(--gray-300)" strokeWidth="2" />
+    <path d="M10 5.833V10l3 1.75" stroke="var(--gray-300)" strokeWidth="2" strokeLinecap="round" />
   </svg>
 );
 
@@ -39,7 +39,7 @@ export type TimePickerProps = {
   label?: string;
   value: string;
   onChange: (v: string) => void;
-  step?: number;          // step นาที (เช่น 5/10/15)
+  step?: number;
   name?: string;
   className?: string;
   placeholder?: string;
@@ -49,13 +49,13 @@ export default function TimePicker({
   label,
   value,
   onChange,
-  step = 5,               // ดีฟอลต์ 5 นาที
+  step = 1, // ปรับเวลาได้ เช่น = 5
   name,
   className,
-  placeholder = "กรุณาเลือกเวลา",
+  placeholder,
 }: TimePickerProps) {
 
-  const dateValue = hhmmToDate(value) ?? hhmmToDate("00:00"); // ค่าเริ่มต้นเวลาในเมนู
+  const dateValue = hhmmToDate(value) ?? hhmmToDate(""); // ค่าเริ่มต้นเวลาในเมนู
 
   return (
     <label className="grid gap-2" {...(name ? { htmlFor: `tp-${name}` } : {})}>
@@ -76,7 +76,8 @@ export default function TimePicker({
         caretAs={ClockIcon}
         editable={false}
         {...(name ? { "data-name": name } : {})}
-      // cleanable={false}
+        cleanable={false}
+        size="lg"
       />
     </label>
   );

@@ -13,6 +13,13 @@ function dateToStr(d?: Date | null): string {
   return formatDate(d, 'dd-MM-yyyy');
 }
 
+// ไอคอนปฏิทิน
+const ClockIcon: React.FC = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M15.8333 3.33335H15V1.66669H13.3333V3.33335H6.66667V1.66669H5V3.33335H4.16667C3.24167 3.33335 2.50833 4.08335 2.50833 5.00002L2.5 16.6667C2.5 17.5834 3.24167 18.3334 4.16667 18.3334H15.8333C16.75 18.3334 17.5 17.5834 17.5 16.6667V5.00002C17.5 4.08335 16.75 3.33335 15.8333 3.33335ZM15.8333 16.6667H4.16667V8.33335H15.8333V16.6667ZM15.8333 6.66669H4.16667V5.00002H15.8333V6.66669ZM10 10.8334H14.1667V15H10V10.8334Z" fill="var(--gray-300)" />
+  </svg>
+);
+
 export type RsuiteDatePickerProps = {
   label?: string;
   value: string;
@@ -29,7 +36,7 @@ export default function DatePicker({
   onChange,
   min,
   max,
-  placeholder = 'กรุณาเลือกวันที่',
+  placeholder,
   className
 }: RsuiteDatePickerProps) {
   const [open, setOpen] = React.useState(false);
@@ -78,7 +85,7 @@ export default function DatePicker({
         // ปุ่มทริกเกอร์ — ใช้คลิกเปิด/ปิด
         // โดยดีฟอลต์ RSuite ทำให้คลิกแล้วเปิด/ปิดได้อยู่แล้ว
         placeholder={placeholder}
-        format="dd-MM-yyy"
+        format="dd/MM/yyy"
 
         // จำกัดวัน
         shouldDisableDate={(d: Date) => {
@@ -89,17 +96,18 @@ export default function DatePicker({
 
         // UI ปลีกย่อยให้คล้ายดีไซน์คุณ
         appearance="default"
-        size="md"
+        size="lg"
         block
         cleanable
         editable={false}  // กันพิมพ์ตรงๆ ให้เลือกจากปฏิทิน
 
         // ปรับข้อความ/OK/TODAY ฯลฯ จะมาจาก CustomProvider (locale ไทย)
-        className="rounded-md border border-[var(--gray-300)] hover:border-[var(--gray-400)] focus-within:border-[var(--blue-500)] focus-within:ring-1 focus-within:ring-[var(--blue-500)]"
+        className="rounded-md hover:border-[var(--gray-400)] focus-within:border-[var(--blue-500)] focus-within:ring-1 focus-within:ring-[var(--blue-500)]"
 
         // ตัวอย่าง: ให้แสดงเดือนปัจจุบัน/เดือนจากค่าเดิม
         calendarDefaultDate={draft ?? undefined}
         placement="bottomEnd" //"bottomStart" | "bottomEnd" | "topStart" | "topEnd" |
+        caretAs={ClockIcon}
       />
     </label>
   );
