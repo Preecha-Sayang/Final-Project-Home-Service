@@ -220,12 +220,12 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-            <label className="text-sm font-semibold text-[var(--gray-900)]">จังหวัด Province</label>
+            <label className="text-sm font-semibold text-[var(--gray-900)]">จังหวัด</label>
           </div>
           <InputDropdown
             value={formData.province}
             onChange={(value) => onChange("province", value)}
-            options={provinceList.map((province) => ({ label: province.province_name_en, value: province.province_code.toString() }))}
+            options={provinceList.map((province) => ({ label: province.province_name_th, value: province.province_code.toString() }))}
             placeholder="เลือกจังหวัด"
             className="h-[44px]"
           />
@@ -235,12 +235,12 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/อำเภอ District</label>
+            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/อำเภอ</label>
           </div>
           <InputDropdown
             value={formData.district}
             onChange={(value) => onChange("district", value)}
-            options={districtList.map((district) => ({ label: district.district_name_en, value: district.district_code.toString() }))}
+            options={districtList.map((district) => ({ label: district.district_name_th, value: district.district_code.toString() }))}
             placeholder="เลือกแขวง/อำเภอ"
             className="h-[44px]"
           />
@@ -250,12 +250,12 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล subdistrict</label>
+            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล</label>
           </div>
           <InputDropdown
               value={formData.subdistrict}
               onChange={(value) => onChange("subdistrict", value)}
-              options={subdistrictList.map((subdistrict) => ({ label: subdistrict.subdistrict_name_en, value: subdistrict.subdistrict_code.toString() }))}
+              options={subdistrictList.map((subdistrict) => ({ label: subdistrict.subdistrict_name_th, value: subdistrict.subdistrict_code.toString() }))}
               placeholder="เลือกแขวง/ตำบล"
               className="h-[44px]"
           />
