@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import BookingStepper from '@/components/BookingStepper'
 import ServiceSelection from '@/components/ServiceSelection'
+import BookingDetailsForm from '@/components/BookingDetailsForm'
 import BookingFooter from '@/components/BookingFooter'
 import OrderSummary from '@/components/ordersummary/order_summary'
 import Breadcrumb from '@/components/breadcrump/bread_crump'
+import { useBookingStore } from '@/stores/bookingStore'
 import axios from 'axios'
 import Navbar from '@/components/navbar/navbar'
 
@@ -26,6 +28,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
   const [currentStep, setCurrentStep] = useState<'items' | 'details' | 'payment'>('items')
   const [selectedItems, setSelectedItems] = useState<CartItem[]>([])
   const [serviceName, setServiceName] = useState<string>('')
+  const { customerInfo } = useBookingStore()
 
   useEffect(() => {
     const fetchServiceName = async () => {
@@ -68,6 +71,41 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
     return selectedItems.reduce((total, item) => total + (item.unit_price * item.quantity), 0)
   }
 
+  // Helper functions for formatting data
+  const formatDate = (date: Date | null) => {
+    if (!date) return "ยังไม่ได้เลือก"
+    
+    // ตรวจสอบว่า date เป็น valid Date object หรือไม่
+    const dateObj = date instanceof Date ? date : new Date(date)
+    
+    // ตรวจสอบว่า date เป็น valid หรือไม่
+    if (isNaN(dateObj.getTime())) {
+      return "ยังไม่ได้เลือก"
+    }
+    
+    return new Intl.DateTimeFormat('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(dateObj)
+  }
+
+  const formatTime = (time: string) => {
+    if (!time) return "ยังไม่ได้เลือก"
+    return time
+  }
+
+  const formatAddress = () => {
+    if (!customerInfo.address) return "ยังไม่ได้เลือก"
+    const parts = [
+      customerInfo.address,
+      customerInfo.subDistrict,
+      customerInfo.district,
+      customerInfo.province
+    ].filter(Boolean)
+    return parts.join(', ')
+  }
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 'items':
@@ -78,12 +116,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
           />
         )
       case 'details':
-        return (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">กรอกข้อมูลบริการ</h2>
-            <p className="text-gray-600">ฟอร์มกรอกข้อมูลจะอยู่ที่นี่</p>
-          </div>
-        )
+        return <BookingDetailsForm />
       case 'payment':
         return (
           <div className="bg-white rounded-lg shadow p-6">
@@ -102,7 +135,14 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
         case 'items':
           return selectedItems.length > 0
         case 'details':
-          return true // ตรวจสอบข้อมูลในฟอร์มเมื่อมี
+          return !!(
+            customerInfo.serviceDate &&
+            customerInfo.serviceTime &&
+            customerInfo.address &&
+            customerInfo.province &&
+            customerInfo.district &&
+            customerInfo.subDistrict
+          )
         case 'payment':
           return true // ตรวจสอบข้อมูลการชำระเงินเมื่อมี
         default:
@@ -159,9 +199,9 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
                 quantity: item.quantity
               }))}
               total={calculateTotal()}
-              date="ยังไม่ได้เลือก"
-              time="ยังไม่ได้เลือก"
-              address="ยังไม่ได้เลือก"
+              date={formatDate(customerInfo.serviceDate)}
+              time={formatTime(customerInfo.serviceTime)}
+              address={formatAddress()}
               fallbackText="ยังไม่ได้เลือก"
             />
           </div>
