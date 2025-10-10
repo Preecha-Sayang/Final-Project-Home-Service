@@ -38,20 +38,21 @@ export default function DropdownUser({
         <Image
           src={imageURL || "/images/user_default.png"}
           alt="user"
-          width={13}
-          height={18}
-          className="h-8 w-8 rounded-full cursor-pointer hover:ring-2 hover:ring-blue-200"
+          width={512}
+          height={512}
+          quality={100}
+          className="h-8 w-8 rounded-full cursor-pointer hover:ring-2 hover:ring-[var(--blue-200)] object-cover"
         />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-md border p-2 z-50">
+        <div className="absolute right-0 mt-2 w-64 bg-[var(--white)] rounded-xl shadow-md border border-[var(--gray-300)] p-2 z-50">
           {menuItems.map((item, idx) => (
             <a
               key={idx}
               href={item.href}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)]"
               onClick={() => setIsOpen(false)}
             >
               {item.icon}
@@ -60,7 +61,7 @@ export default function DropdownUser({
           ))}
           <a
             href="#"
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100"
+            className="flex items-center space-x-2 px-4 py-2 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)]"
             onClick={handleLogout}
           >
             <LogOut size={18} />

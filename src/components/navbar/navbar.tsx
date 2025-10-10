@@ -3,29 +3,61 @@ import Image from "next/image";
 import DropdownUser from "../dropdown/DropdownUser";
 import user_default from "../../../public/images/user_default.png";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import IconBell from "../button/iconbell";
 import { useAuth } from "@/context/AuthContext";
 
-type NavbarProps = {
-  imageURL?: string;
-};
+export default function Navbar() {
+  const { isLoggedIn, accessToken } = useAuth();
+  
+  // State สำหรับเก็บข้อมูลโปรไฟล์และอวาตาร์
+  const [fullname, setFullname] = useState<string>("");
+  const [avatarURL, setAvatarURL] = useState<string | typeof user_default>(user_default);
 
-export default function Navbar({ imageURL }: NavbarProps) {
-  const getImageURL = imageURL === undefined ? user_default : imageURL;
+  // ฟังก์ชันดึงข้อมูลโปรไฟล์
+  const fetchProfile = useCallback(() => {
+    if (!accessToken) {
+      setFullname("");
+      setAvatarURL(user_default);
+      return;
+    }
 
-  const [fullname, setFullname] = useState<string | undefined>(undefined);
-  const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
-
-  useEffect(() => {
-    if (!accessToken) return;
-    fetch("/api/protected/protectapi", {
+    // ดึงข้อมูลจาก API /api/profile
+    fetch("/api/profile", {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then((r) => (r.ok ? r.json() : null))
-      .then((data) => setFullname(data?.fullname))
-      .catch(() => {});
+      .then((data) => {
+        if (data) {
+          setFullname(data.fullname || "");
+          setAvatarURL(data.avatar || user_default);
+        }
+      })
+      .catch(() => {
+        setFullname("");
+        setAvatarURL(user_default);
+      });
   }, [accessToken]);
+
+  // ดึงข้อมูลโปรไฟล์และอวาตาร์เมื่อมี accessToken
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  // ฟังการเปลี่ยนแปลงโปรไฟล์จาก custom event
+  useEffect(() => {
+    const handleProfileUpdate = (event: CustomEvent) => {
+      const { fullname: newFullname, avatar: newAvatar } = event.detail;
+      if (newFullname) setFullname(newFullname);
+      if (newAvatar) setAvatarURL(newAvatar);
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
+    };
+  }, []);
 
   return (
     <div className="sticky top-0 z-40 bg-[var(--white)] shadow-md">
@@ -36,10 +68,12 @@ export default function Navbar({ imageURL }: NavbarProps) {
             <Image
               src={logo_img}
               alt="HomeServices"
-              className="w-auto h-6 lg:h-9 "
+              className="w-auto h-6 lg:h-9 object-contain"
               priority
-              width={207}
-              height={36}
+              width={512}
+              height={512}
+              quality={100}
+              unoptimized={false}
             />
           </Link>
 
@@ -57,7 +91,7 @@ export default function Navbar({ imageURL }: NavbarProps) {
             <div>
               <Link
                 href="/login"
-                className="px-3 py-2 border border-[var(--blue-600)] text-[var(--blue-600)] rounded-lg cursor-pointer text-sm lg:text-base hover:bg-[var(--blue-50)] transition-colors"
+                className="px-3 py-2 border border-[var(--blue-600)] text-[var(--blue-600)] rounded-lg cursor-pointer text-sm lg:text-base hover:bg-[var(--blue-100)] transition-colors"
               >
                 เข้าสู่ระบบ
               </Link>
@@ -65,10 +99,10 @@ export default function Navbar({ imageURL }: NavbarProps) {
           ) : (
             <div className="flex items-center gap-2 lg:gap-4">
               {/* ซ่อนชื่อผู้ใช้บนมือถือ */}
-              <div className="hidden lg:block text-gray-800 font-medium">
+              <div className="hidden lg:block text-[var(--gray-800)] font-medium">
                 {fullname}
               </div>
-              <DropdownUser imageURL={getImageURL} fullname={fullname} />
+              <DropdownUser imageURL={avatarURL} fullname={fullname} />
               <IconBell />
             </div>
           )}
@@ -97,14 +131,10 @@ export default function Navbar({ imageURL }: NavbarProps) {
  *     );
  *   }
  *
- * Props:
- * - imageURL?: string
- *   URL รูปโปรไฟล์ที่จะส่งให้เมนูผู้ใช้ (`DropdownUser`).
- *   ถ้าไม่ระบุ จะใช้รูป default จาก `public/images/user_default.png`.
- *
  * การทำงานร่วมกับระบบล็อกอิน:
  * - คอมโพเนนต์นี้ใช้ `useAuth()` จาก `AuthContext` เพื่ออ่าน `isLoggedIn` และ `accessToken`.
- * - เมื่อมี `accessToken` จะเรียก `/api/protected/protectapi` เพื่อดึง `fullname` มาแสดง.
+ * - เมื่อมี `accessToken` จะเรียก `/api/profile` เพื่อดึงข้อมูล `fullname` และ `avatar` มาแสดง.
+ * - เมื่ออัพเดตโปรไฟล์ ข้อมูลจะ refresh อัตโนมัติเมื่อ component re-render หรือ accessToken เปลี่ยน.
  * - ต้องครอบแอปด้วย `AuthProvider` ในระดับสูงของแอป (เช่นใน `_app.tsx`).
  *
  * เส้นทางลิงก์เริ่มต้น:

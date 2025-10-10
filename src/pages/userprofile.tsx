@@ -109,7 +109,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
   };
 
   return (
-    <div className="w-full h-full bg-[var(--white)] p-8 overflow-y-auto">
+    <div className="w-full h-full bg-[var(--white)] p-8">
       {/* รูปโปรไฟล์ / Profile Picture Section */}
       <div className="flex justify-center mb-8">
         <div className="flex flex-col items-center gap-3">
@@ -459,6 +459,15 @@ function UserProfile() {
       if (data?.profile) {
         setUserData((prev) => ({ ...(prev as any), ...data.profile }));
       }
+      
+      // ส่ง event เพื่อแจ้งให้ navbar อัพเดตข้อมูล
+      window.dispatchEvent(new CustomEvent('profileUpdated', {
+        detail: {
+          fullname: formData.fullname,
+          avatar: avatarUrlToSave
+        }
+      }));
+      
       console.log("Profile saved successfully");
     } catch (e) {
       console.error("Failed to save profile", e);
