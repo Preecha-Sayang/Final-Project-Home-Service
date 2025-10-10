@@ -2,10 +2,10 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import fs from "node:fs/promises";
 import { sql } from "lib/db";
 import { cloudinary } from "lib/server/upload/cloudinary";
-import { parseForm, formConfig } from "lib/server/upload/parseForm";
+import { parseForm } from "lib/server/upload/parseForm";
 import type { File } from "formidable";
 
-export const config = formConfig;
+export const config = { api: { bodyParser: false as const } };
 
 export type ServiceRow = {
     service_id: number;
@@ -110,7 +110,7 @@ export default async function handler(
                 return res.status(400).json({ ok: false, message: "servicename/category_id/admin_id required" });
             }
 
-            // ---------- Upload รูป (ถ้ามี) ----------
+            // Upload รูป
             let image_url: string | null = null;
             let image_public_id: string | null = null;
 
@@ -137,7 +137,7 @@ export default async function handler(
                 uploadedPublicId = up.public_id; // กัน orphan หาก transaction fail
             }
 
-            // ---------- Transaction ----------
+            // Transaction
             await sql/*sql*/`BEGIN`;
 
             // 1) INSERT services + Position ต่อท้าย
@@ -197,7 +197,7 @@ export default async function handler(
             return res.status(200).json({ ok: true, service, options });
 
         } catch (e) {
-            // ถ้าเกิด error หลังอัปโหลดรูปแล้ว → ลบรูปกัน orphan
+            // ถ้าเกิด error หลังอัปโหลดรูปแล้ว ลบรูปกัน orphan
             try { await sql/*sql*/`ROLLBACK`; } catch { /* noop */ }
             if (uploadedPublicId) {
                 try { await cloudinary.uploader.destroy(uploadedPublicId); } catch { /* noop */ }

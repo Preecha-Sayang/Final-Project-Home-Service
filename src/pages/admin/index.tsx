@@ -6,7 +6,7 @@ import { useEffect, useMemo } from "react";
 const menuitems: NavbarMenuItem[] = [
   { label: "หมวดหมู่", path: "/admin/categories", icon: "/images/icon_category.svg" },
   { label: "บริการ", path: "/admin/services", icon: "/images/icon_service.svg" },
-  { label: "Promotion Code", path: "/admin/promotion", icon: "/images/icon_promotion.svg" },
+  { label: "Promotion Code", path: "/admin/promotions", icon: "/images/icon_promotion.svg" },
 ];
 
 type AdminShellProps = PropsWithChildren<{
@@ -60,7 +60,7 @@ export default function AdminShell({
         <main
           id="admin-main"
           role="main"
-          className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 [padding-bottom:env(safe-area-inset-bottom)]"
+          className="flex-1 overflow-y-auto [padding-bottom:env(safe-area-inset-bottom)]"
         >
           {children}
         </main>
