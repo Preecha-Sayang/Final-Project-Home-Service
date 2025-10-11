@@ -1,13 +1,37 @@
 import * as React from 'react';
 import { DatePicker as RsDatePicker } from 'rsuite';
-import { parseISO, isValid as isValidDate, format as formatDate } from 'date-fns';
+import {
+  parseISO,
+  parse as parseByFormat,
+  isValid as isValidDate,
+  format as formatDate,
+} from 'date-fns';
 import 'rsuite/dist/rsuite-no-reset.min.css';
 
+/** แปลงสตริงวันที่ → Date โดยยอมรับได้หลายรูปแบบ */
 function strToDate(v?: string): Date | null {
   if (!v) return null;
-  const d = parseISO(v);
-  return isValidDate(d) ? d : null;
+
+  // 1) พยายามอ่านแบบ ISO ก่อน (เช่น 2025-10-11 หรือ 2025-10-11T08:00:00.000Z)
+  let d = parseISO(v);
+  if (isValidDate(d)) return d;
+
+  // 2) yyyy-MM-dd (เช่น "2025-10-11")
+  d = parseByFormat(v, 'yyyy-MM-dd', new Date());
+  if (isValidDate(d)) return d;
+
+  // 3) dd-MM-yyyy (เช่น "11-10-2025")
+  d = parseByFormat(v, 'dd-MM-yyyy', new Date());
+  if (isValidDate(d)) return d;
+
+  // 4) dd/MM/yyyy (เช่น "11/10/2025")
+  d = parseByFormat(v, 'dd/MM/yyyy', new Date());
+  if (isValidDate(d)) return d;
+
+  return null;
 }
+
+/** แปลง Date → สตริงที่เราเก็บในฟอร์ม (dd-MM-yyyy) */
 function dateToStr(d?: Date | null): string {
   if (!d) return '';
   return formatDate(d, 'dd-MM-yyyy');
@@ -16,7 +40,10 @@ function dateToStr(d?: Date | null): string {
 // ไอคอนปฏิทิน
 const ClockIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M15.8333 3.33335H15V1.66669H13.3333V3.33335H6.66667V1.66669H5V3.33335H4.16667C3.24167 3.33335 2.50833 4.08335 2.50833 5.00002L2.5 16.6667C2.5 17.5834 3.24167 18.3334 4.16667 18.3334H15.8333C16.75 18.3334 17.5 17.5834 17.5 16.6667V5.00002C17.5 4.08335 16.75 3.33335 15.8333 3.33335ZM15.8333 16.6667H4.16667V8.33335H15.8333V16.6667ZM15.8333 6.66669H4.16667V5.00002H15.8333V6.66669ZM10 10.8334H14.1667V15H10V10.8334Z" fill="var(--gray-300)" />
+    <path
+      d="M15.8333 3.33335H15V1.66669H13.3333V3.33335H6.66667V1.66669H5V3.33335H4.16667C3.24167 3.33335 2.50833 4.08335 2.50833 5.00002L2.5 16.6667C2.5 17.5834 3.24167 18.3334 4.16667 18.3334H15.8333C16.75 18.3334 17.5 17.5834 17.5 16.6667V5.00002C17.5 4.08335 16.75 3.33335 15.8333 3.33335ZM15.8333 16.6667H4.16667V8.33335H15.8333V16.6667ZM15.8333 6.66669H4.16667V5.00002H15.8333V6.66669ZM10 10.8334H14.1667V15H10V10.8334Z"
+      fill="var(--gray-300)"
+    />
   </svg>
 );
 
@@ -24,7 +51,7 @@ export type RsuiteDatePickerProps = {
   label?: string;
   value: string;
   onChange: (val: string) => void;
-  min?: string;
+  min?: string; // รับได้ทั้ง ISO, yyyy-MM-dd, dd-MM-yyyy, dd/MM/yyyy
   max?: string;
   placeholder?: string;
   className?: string;
@@ -37,7 +64,7 @@ export default function DatePicker({
   min,
   max,
   placeholder,
-  className
+  className,
 }: RsuiteDatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -59,7 +86,6 @@ export default function DatePicker({
     setOpen(false);
   };
 
-
   return (
     <label className={className ?? ''} style={{ display: 'grid', gap: 8 }}>
       {label && (
@@ -75,17 +101,16 @@ export default function DatePicker({
         // ค่าในอินพุต (คอมมิตแล้ว) ต้องเป็น Date
         value={strToDate(value) ?? undefined}
 
-        // ค่าในปฏิทินเวลาคลิกวัน
-
+        // ให้คอมมิตเฉพาะตอนกด OK
         onOk={handleOk}
+        onChange={() => {
+          /* no-op: กันคอมมิตอัตโนมัติ */
+        }}
 
-        // ไม่ให้มันคอมมิตตอนเลือกวัน (เราจะคอมมิตที่ OK เอง)
-        onChange={() => { /* no-op: ป้องกันคอมมิตอัตโนมัติ */ }}
-
-        // ปุ่มทริกเกอร์ — ใช้คลิกเปิด/ปิด
-        // โดยดีฟอลต์ RSuite ทำให้คลิกแล้วเปิด/ปิดได้อยู่แล้ว
+        // ปุ่มทริกเกอร์
         placeholder={placeholder}
-        format="dd/MM/yyy"
+        // แก้เป็น yyyy 4 ตัว
+        format="dd/MM/yyyy"
 
         // จำกัดวัน
         shouldDisableDate={(d: Date) => {
@@ -94,19 +119,18 @@ export default function DatePicker({
           return false;
         }}
 
-        // UI ปลีกย่อยให้คล้ายดีไซน์คุณ
+        // UI ปลีกย่อย
         appearance="default"
         size="lg"
         block
         cleanable
-        editable={false}  // กันพิมพ์ตรงๆ ให้เลือกจากปฏิทิน
+        editable={false} // กันพิมพ์ตรงๆ
 
-        // ปรับข้อความ/OK/TODAY ฯลฯ จะมาจาก CustomProvider (locale ไทย)
         className="rounded-md hover:border-[var(--gray-400)] focus-within:border-[var(--blue-500)] focus-within:ring-1 focus-within:ring-[var(--blue-500)]"
 
-        // ตัวอย่าง: ให้แสดงเดือนปัจจุบัน/เดือนจากค่าเดิม
+        // ให้ปฏิทินเปิดที่เดือน/ปีของค่าเดิม
         calendarDefaultDate={draft ?? undefined}
-        placement="bottomEnd" //"bottomStart" | "bottomEnd" | "topStart" | "topEnd" |
+        placement="bottomEnd"
         caretAs={ClockIcon}
       />
     </label>
