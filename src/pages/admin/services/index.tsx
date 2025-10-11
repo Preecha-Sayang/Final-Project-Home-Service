@@ -8,7 +8,7 @@ import ConfirmDialog from "@/components/dialog/confirm_dialog";
 import { Plus } from "lucide-react";
 import { Pagination } from "rsuite";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 30;
 
 export default function AdminServicesPage() {
     const [items, setItems] = useState<ServiceItem[]>([]);

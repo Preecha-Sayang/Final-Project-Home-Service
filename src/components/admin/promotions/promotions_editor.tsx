@@ -57,9 +57,6 @@ export default function PromotionEditor({ mode, id }: Props) {
 
     const [askDelete, setAskDelete] = useState(false);
 
-    // min date เป็นวันนี้
-    const minDateISO = useMemo(() => todayISODateOnly(), []);
-
     useEffect(() => {
         if (mode !== "edit" || !id) return;
         (async () => {
@@ -172,6 +169,24 @@ export default function PromotionEditor({ mode, id }: Props) {
         }
         setExpireTime(v);
     };
+
+    function parseDDMMYYYY(s: string): Date | null {
+        const [dd, mm, yyyy] = s.split("/").map(Number);
+        if (!dd || !mm || !yyyy) return null;
+        return new Date(yyyy, (mm ?? 1) - 1, dd ?? 1, 0, 0, 0, 0);
+    }
+
+    // min date เป็นวันนี้
+    const minDateISO = useMemo(() => {
+        const todayISO = todayISODateOnly();
+        if (mode === "edit" && expireDate) {
+            const d = parseDDMMYYYY(expireDate);
+            if (d && d.getTime() < new Date(todayISO).getTime()) {
+                return undefined;
+            }
+        }
+        return todayISO;
+    }, [mode, expireDate]);
 
     return (
         <>
