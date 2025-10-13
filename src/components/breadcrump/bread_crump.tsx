@@ -13,13 +13,13 @@ export default function Breadcrumb({
   rootLink = "/services",
 }: BreadcrumbProps) {
   return (
-    <div className="rounded-lg bg-white pb-1 pt-1 pl-3 pr-3 md:pb-3 md:pt-3 md:pl-6 md:pr-6 shadow-md inline-block">
-      <div className="flex items-center space-x-2 text-gray-500 text-[16px]">
+    <div className="rounded-lg bg-white pb-1 pt-1 pl-3 pr-3 md:pb-3 md:pt-3 md:pl-8 md:pr-6 shadow-md inline-block">
+      <div className="flex items-center space-x-3 text-gray-500 text-[20px]">
         <Link href={rootLink} className="hover:text-blue-600 transition-colors">
           <span className="text-[16px]">{root}</span>
         </Link>
         <span className="text-gray-400">{">"}</span>
-        <span className="font-bold text-blue-600 text-[16px]">{current}</span>
+        <span className="font-bold text-blue-600 text-[23px]">{current}</span>
       </div>
     </div>
   );

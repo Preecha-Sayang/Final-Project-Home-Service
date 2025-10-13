@@ -99,7 +99,7 @@ export default function Navbar() {
           ) : (
             <div className="flex items-center gap-2 lg:gap-4">
               {/* ซ่อนชื่อผู้ใช้บนมือถือ */}
-              <div className="hidden lg:block text-[var(--gray-800)] font-medium">
+              <div className="hidden lg:block text-[var(--gray-700)] font-medium">
                 {fullname}
               </div>
               <DropdownUser imageURL={avatarURL} fullname={fullname} />
