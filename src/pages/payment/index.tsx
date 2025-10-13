@@ -39,7 +39,7 @@ export default function PaymentPage() {
   const [processing, setProcessing] = useState(false);
 
   const submitDiscountCode = () => {
-    setCurrentStep(3);
+    //setCurrentStep(3);
   };
 
   const handleChange = (name: string, value: string) => {
@@ -89,83 +89,102 @@ export default function PaymentPage() {
       const selectedPayment =
         localStorage.getItem("selectedPayment") || "credit_card";
 
-        const amountBaht = totalPrice && totalPrice > 0 ? totalPrice : 500;
-        
-        if (selectedPayment === "credit_card") {
-          
-          const Omise = window.Omise;
-          if (!Omise) {
-            alert("โหลดไม่สำเสร็จ กรุณาลองใหม่");
-            setProcessing(false);
-            return;
-          }
-  
-          // ตรวจวันหมดอายุ
-          const exp = parseExpiry(form.expired_date);
-          if (!exp) {
-            alert("กรุณากรอกวันหมดอายุรูปแบบ MM/YY (เช่น 08/27)");
-            setProcessing(false);
-            return;
-          }
+      const amountBaht = totalPrice && totalPrice > 0 ? totalPrice : 500;
 
+      if (form.credit_card_number === "") {
+        alert("กรุณากรอกหมายเลขบัตรเครดิต");
+        return;
+      }
 
-      // เตรียมข้อมูลสำหรับ API
-      const tokenRes = await new Promise<{ id: string }>((resolve, reject) => {
-        Omise.createToken(
-          "card",
-          {
-            name: form.card_fullname,
-            number: form.credit_card_number.replace(/\s+/g, ""),
-            expiration_month: exp.month,
-            expiration_year: exp.year,
-            security_code: form.ccv,
-          },
-          (status: number, response: any) => {
-            if (status === 200) resolve({ id: response.id });
-            else reject(new Error(response.message || "Create token failed"));
+      if (form.card_fullname === "") {
+        alert("กรุณากรอกชื่อบนบัตรเครดิต");
+        return;
+      }
+
+      // ตรวจวันหมดอายุ
+      const exp = parseExpiry(form.expired_date);
+      if (!exp) {
+        alert("กรุณากรอกวันหมดอายุรูปแบบ MM/YY (เช่น 08/27)");
+        setProcessing(false);
+        return;
+      }
+
+      if (form.card_fullname === "") {
+        alert("กรุณากรอกชื่อบนบัตรเครดิต");
+        return;
+      }
+
+      if (form.ccv === "") {
+        alert("กรุณากรอกรหัส CVC / CCV");
+        return;
+      }
+
+      if (selectedPayment === "credit_card") {
+        const Omise = window.Omise;
+        if (!Omise) {
+          alert("โหลดไม่สำเสร็จ กรุณาลองใหม่");
+          setProcessing(false);
+          return;
+        }
+
+        // เตรียมข้อมูลสำหรับ API
+        const tokenRes = await new Promise<{ id: string }>(
+          (resolve, reject) => {
+            Omise.createToken(
+              "card",
+              {
+                name: form.card_fullname,
+                number: form.credit_card_number.replace(/\s+/g, ""),
+                expiration_month: exp.month,
+                expiration_year: exp.year,
+                security_code: form.ccv,
+              },
+              (status: number, response: any) => {
+                if (status === 200) resolve({ id: response.id });
+                else
+                  reject(new Error(response.message || "Create token failed"));
+              }
+            );
           }
         );
-      });
 
+        // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
+        const res = await fetch("/api/payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: amountBaht,
+            method: "credit_card",
+            tokenId: tokenRes.id,
+          }),
+        });
 
-      // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
-      const res = await fetch("/api/payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: amountBaht,
-          method: "credit_card",
-          tokenId: tokenRes.id,
-        }),
-      });
+        const result = await res.json();
 
-      const result = await res.json();
+        // ตรวจผลลัพธ์
+        if (result.status === "success") {
+          alert("ชำระเงินสำเร็จ!");
+          router.push("/payment/paymentsummary");
+        } else if (result.status === "pending" && result.redirect_url) {
+        } else {
+          alert("การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ"));
+        }
+      } else if (selectedPayment === "qr") {
+        const res = await fetch("/api/payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: amountBaht, method: "qr" }),
+        });
 
-      // ตรวจผลลัพธ์
-      if (result.status === "success") {
-        alert("ชำระเงินสำเร็จ!");
-        router.push("/payment/paymentsummary");
-      } else if (result.status === "pending" && result.redirect_url) {
-        
-      } else {
-        alert("การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ"));
+        const result = await res.json();
+
+        if (result.status === "pending" && result.qr_url) {
+          // ปัจจุบันเปิดในแท็บใหม่ — ถ้าต้องการโชว์ใน Modal ก็เปลี่ยนมาวาด <img src={qr_url} />
+          window.open(result.qr_url, "_blank");
+        } else {
+          alert("สร้าง PromptPay QR ไม่สำเร็จ: " + (result.message || ""));
+        }
       }
-    } else if (selectedPayment === "qr") {
-      const res = await fetch("/api/payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: amountBaht, method: "qr" }),
-      });
-
-      const result = await res.json();
-
-      if (result.status === "pending" && result.qr_url) {
-        // ปัจจุบันเปิดในแท็บใหม่ — ถ้าต้องการโชว์ใน Modal ก็เปลี่ยนมาวาด <img src={qr_url} />
-        window.open(result.qr_url, "_blank");
-      } else {
-        alert("สร้าง PromptPay QR ไม่สำเร็จ: " + (result.message || ""));
-      }
-    }
     } catch (error) {
       console.error(error);
       alert("เกิดข้อผิดพลาดในการชำระเงิน");
