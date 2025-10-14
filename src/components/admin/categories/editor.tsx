@@ -172,7 +172,7 @@ export default function CategoryEditor({ mode, id }: Props) {
           <div className="flex justify-end gap-2">
             <button
               type="button"
-              className="rounded-lg border px-4 py-2"
+              className="rounded-lg border px-4 py-2 cursor-pointer"
               onClick={() => router.back()}
               disabled={saving}
             >
@@ -180,7 +180,7 @@ export default function CategoryEditor({ mode, id }: Props) {
             </button>
             <button
               type="button"
-              className="rounded-lg bg-[var(--blue-600)] px-4 py-2 text-white disabled:opacity-60"
+              className="rounded-lg bg-[var(--blue-600)] px-4 py-2 text-white disabled:opacity-60 cursor-pointer"
               onClick={submit}
               disabled={saving}
             >

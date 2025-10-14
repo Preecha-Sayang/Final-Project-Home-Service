@@ -76,7 +76,7 @@ export default function CategoriesPage() {
                         className="flex justify-center items-center w-[238px] h-[44px] rounded-lg bg-[var(--blue-600)] px-3 gap-2 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
                         onClick={() => router.push("/admin/categories/new")}
                     >
-                        เพิ่ม Promotion Code <Plus className="h-5 w-5" />
+                        เพิ่มหมวดหมู่ <Plus className="h-5 w-5" />
                     </button>
                 </div>
         </div>
