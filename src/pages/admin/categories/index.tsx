@@ -1,122 +1,104 @@
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/router";
+import React, { useEffect, useState } from "react";
 import CategoryTable from "@/components/admin/categories/catagory_table";
-import { CategoryItem, CategoryRow, mapRowToCategoryItem } from "@/types/category";
-import {
-  deleteService,
-  listCategories,
-  reorderServices,
-} from "lib/client/categoriesApi";
+import type { CategoryRow, CategoryListOk } from "@/types/category";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
+import { useRouter } from "next/router";
+import { Plus } from "lucide-react";
 
-export default function CategoryPage() {
+
+export default function CategoriesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [items, setItems] = useState<CategoryRow[]>([]);
-  const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: CategoryItem; loading?: boolean }>({ open: false });
+  const [search, setSearch] = useState("");
+  const [askDeleteId, setAskDeleteId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  async function fetchList(): Promise<void> {
+    setLoading(true);
+    const r = await fetch("/api/categories");
+    const d = (await await r.json()) as CategoryListOk;
+    setItems(d.categories);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      setLoading(true);
-      try {
-        const {categories} = await listCategories();
-        const item = categories.map(mapRowToCategoryItem)
-        if (alive) setItems(item);
-      } finally {
-        setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
+    void fetchList();
   }, []);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((s) => s.name.toLowerCase().includes(q));
-  }, [items, search]);
-
-  {
-    /*ต้องมีการยิง api*/
-  }
-  async function handleReorder(next: CategoryItem[]) {
+  async function handleReorder(next: CategoryRow[]) {
     setItems(next);
-    try {
-      await reorderServices(next.map((x) => ({ id: x.id, index: x.index })));
-    } catch {
-      // ปล่อยว่างก่อน
-    }
+    const ids = next.map((x) => x.category_id);
+    await fetch("/api/categories/reorder", {
+      method: "POST",
+      headers: { "Content-type": "application/json" },
+      body: JSON.stringify({ ids }),
+    });
   }
 
-  // ลบ
-  async function handleDelete(item: CategoryItem) {
-    const prev = items;
-    setItems(
-      items
-        .filter((x) => x.id !== item.id)
-        .map((x, i) => ({ ...x, index: i + 1 }))
-    );
+  async function confirmDelete(): Promise<void> {
+    if (askDeleteId == null) return;
+    setDeleting(true);
     try {
-      await deleteService(item.id);
-    } catch {
-      setItems(prev);
+      const r = await fetch(`/api/categories/${askDeleteId}`, {
+        method: "DELETE",
+      });
+      const d = await r.json();
+      if (!r.ok || !d?.ok) throw new Error(d?.message || "Delete failed");
+      setItems((arr) => arr.filter((x) => x.category_id !== askDeleteId));
+    } catch (e) {
+      alert(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeleting(false);
+      setAskDeleteId(null);
     }
   }
-
   return (
     <>
-      {/*header*/}
-      <div className="w-full bg-white rounded-2xl border border-[var(--gray-100)] px-5 py-4 mb-6 flex items-center justify-between">
-        <div className="text-xl font-medium text-[var(--gray-900)]">
-          หมวดหมู่
+      <div className="w-full bg-white h-[80px] px-10 py-4 flex items-center justify-between shadow-[0_10px_24px_rgba(0,0,0,.06)]">
+          <div className="text-xl font-medium text-[var(--gray-900)]">หมวดหมู่</div>
+                <div className="flex items-center gap-2">
+                    <div className="relative">
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value) }
+                            placeholder="ค้นหาหมวดหมู่..."
+                            className="w-[350px] h-[44px] rounded-lg border border-[var(--gray-300)] px-11 text-sm"
+                        />
+                        {/* ไอคอนแว่นขยายด้านขวา */}
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--gray-400)]">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                <path d="M21 21L15 15L21 21ZM17 10C17 10.9193 16.8189 11.8295 16.4672 12.6788C16.1154 13.5281 15.5998 14.2997 14.9497 14.9497C14.2997 15.5998 13.5281 16.1154 12.6788 16.4672C11.8295 16.8189 10.9193 17 10 17C9.08075 17 8.1705 16.8189 7.32122 16.4672C6.47194 16.1154 5.70026 15.5998 5.05025 14.9497C4.40024 14.2997 3.88463 13.5281 3.53284 12.6788C3.18106 11.8295 3 10.9193 3 10C3 8.14348 3.7375 6.36301 5.05025 5.05025C6.36301 3.7375 8.14348 3 10 3C11.8565 3 13.637 3.7375 14.9497 5.05025C16.2625 6.36301 17 8.14348 17 10Z" stroke="#CCD0D7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </span>
+                    </div>
+                    <button
+                        className="flex justify-center items-center w-[238px] h-[44px] rounded-lg bg-[var(--blue-600)] px-3 gap-2 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
+                        onClick={() => router.push("/admin/categories/new")}
+                    >
+                        เพิ่ม Promotion Code <Plus className="h-5 w-5" />
+                    </button>
+                </div>
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="ค้นหาหมวดหมู่..."
-            className="h-9 w-64 rounded-lg border border-[var(--gray-300)] px-3 text-sm"
-          />
-          <button
-            onClick={() => router.push("/admin/categories/new")}
-            className="h-9 rounded-lg bg-[var(--blue-600)] px-6 text-sm font-medium text-white hover:bg-[var(--blue-700)] cursor-pointer"
-          >
-            เพื่มหมวดหมู่ +
-          </button>
-        </div>
-      </div>
-
-      {/*TableCard*/}
-      <div className="m-6 rounded-2xl border border-[var(--gray-300)] bg-white p-4 shadow">
+      <div className="p-8">
         <CategoryTable
-          items={filtered}
-          loading={loading}
-          search={search}
-          onEdit={(item) => router.push(`/admin/categories/${item.id}/edit`)}
-          onDelete={(item) => setConfirmDel({ open: true, item, loading: false})}
-          onReorder={handleReorder}
-          onView={(item) => router.push(`/admin/categories/${item.id}`)}
+            items={items}
+            loading={loading}
+            search={search}
+            onEdit={(c) => router.push(`/admin/categories/${c.category_id}/edit`)}
+            onDelete={(c) => setAskDeleteId(c.category_id)}
+            onReorder={handleReorder}
+            onView={(c) => router.push(`/admin/categories/${c.category_id}`)}
         />
       </div>
-
-      <ConfirmDialog
-          open={confirmDel.open}
-          title="ยืนยันการลบรายการ?"
-          description={
-            <>คุณต้องการลบรายการ ‘{confirmDel.item?.name}’ ใช่หรือไม่</>
-          }
-          loading={!!confirmDel.loading}
-          onCancel={() => setConfirmDel({ open: false })}
-          onConfirm={async () => {
-            if (!confirmDel.item) return;
-            setConfirmDel((s) => ({ ...s, loading: true }));
-            await handleDelete(confirmDel.item);
-            setConfirmDel({ open: false, item: undefined, loading: false });
-        }}
-      />
-    </>
+        <ConfirmDialog
+            open={askDeleteId != null}
+            title="ลบหมวดหมู่?"
+            description="การลบจะไม่สามารถย้อนกลับได้"
+            loading={deleting}
+            onCancel={() => setAskDeleteId(null)}
+            onConfirm={confirmDelete}
+        />
+   </>
   );
 }
