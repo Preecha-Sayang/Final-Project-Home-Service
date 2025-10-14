@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import { useEffect, useMemo } from "react";
 
 const menuitems: NavbarMenuItem[] = [
-  { label: "หมวดหมู่", path: "/admin/categories", icon: "/images/icon_category.svg" },
+  { label: "หมวดหมู่", path: "/admin/__categories_demo", icon: "/images/icon_category.svg" }, //ใช้ __ ชั่วคราว
   { label: "บริการ", path: "/admin/services", icon: "/images/icon_service.svg" },
   { label: "Promotion Code", path: "/admin/promotions", icon: "/images/icon_promotion.svg" },
 ];
@@ -17,7 +17,7 @@ type AdminShellProps = PropsWithChildren<{
 export default function AdminShell({
   children,
   adminRoots = ["/admin", "/admin/"],
-  defaultPath = "/admin/categories",
+  defaultPath = "/admin/__categories_demo", //ใช้ __ ชั่วคราว
 }: AdminShellProps) {
   const router = useRouter();
   const pathname = router.asPath || router.pathname;
