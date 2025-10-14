@@ -2,7 +2,6 @@ import { Footer } from "@/components/footer";
 import Navbar from "@/components/navbar/navbar";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import OrderService from "@/pages/afterservice/index";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
@@ -35,8 +34,8 @@ type Subdistrict = {
 };
 
 type UserProfileFormProps = {
-  profileImage: string; // existing hosted URL (if any)
-  imageFile: File | null; // newly selected file
+  profileImage: string; // URL รูปที่มีอยู่แล้ว (ถ้ามี)
+  imageFile: File | null; // ไฟล์รูปที่เลือกใหม่
   onImageFileChange: (file: File | null) => void;
   formData: {
     fullname: string;
@@ -110,10 +109,10 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
 
   return (
     <div className="w-full h-full bg-[var(--white)] p-8">
-      {/* รูปโปรไฟล์ / Profile Picture Section */}
+      {/* รูปโปรไฟล์ */}
       <div className="flex justify-center mb-8">
         <div className="flex flex-col items-center gap-3">
-          {/* Clickable circular avatar with preview and drag/drop */}
+          {/* รูปอวาตาร์แบบวงกลมคลิกได้พร้อมแสดงตัวอย่างและลากวางได้ */}
           <div
             className={`w-32 h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
             onClick={pick}
@@ -130,11 +129,11 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
               <span className="text-4xl font-medium text-[var(--gray-600)]">Vo</span>
             )}
 
-            {/* small overlay hint */}
+            {/* ชั้นทับโปร่งแสงเมื่อ hover */}
             <div className="absolute inset-0 bg-[var(--black)]/0 hover:bg-[var(--black)]/10 transition-colors" />
           </div>
 
-          {/* Hidden file input */}
+          {/* ช่องเลือกไฟล์แบบซ่อน */}
           <input
             ref={inputRef}
             type="file"
@@ -221,12 +220,12 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-            <label className="text-sm font-semibold text-[var(--gray-900)]">จังหวัด Province</label>
+            <label className="text-sm font-semibold text-[var(--gray-900)]">จังหวัด</label>
           </div>
           <InputDropdown
             value={formData.province}
             onChange={(value) => onChange("province", value)}
-            options={provinceList.map((province) => ({ label: province.province_name_en, value: province.province_code.toString() }))}
+            options={provinceList.map((province) => ({ label: province.province_name_th, value: province.province_code.toString() }))}
             placeholder="เลือกจังหวัด"
             className="h-[44px]"
           />
@@ -236,12 +235,12 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/อำเภอ District</label>
+            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/อำเภอ</label>
           </div>
           <InputDropdown
             value={formData.district}
             onChange={(value) => onChange("district", value)}
-            options={districtList.map((district) => ({ label: district.district_name_en, value: district.district_code.toString() }))}
+            options={districtList.map((district) => ({ label: district.district_name_th, value: district.district_code.toString() }))}
             placeholder="เลือกแขวง/อำเภอ"
             className="h-[44px]"
           />
@@ -251,12 +250,12 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Image src="/images/icon_pin.svg" alt="location" width={16} height={16} className="brightness-0" />
-            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล subdistrict</label>
+            <label className="text-sm font-semibold text-[var(--gray-900)]">แขวง/ตำบล</label>
           </div>
           <InputDropdown
               value={formData.subdistrict}
               onChange={(value) => onChange("subdistrict", value)}
-              options={subdistrictList.map((subdistrict) => ({ label: subdistrict.subdistrict_name_en, value: subdistrict.subdistrict_code.toString() }))}
+              options={subdistrictList.map((subdistrict) => ({ label: subdistrict.subdistrict_name_th, value: subdistrict.subdistrict_code.toString() }))}
               placeholder="เลือกแขวง/ตำบล"
               className="h-[44px]"
           />
@@ -321,10 +320,10 @@ function UserProfile() {
     subdistrict: "",
   });
 
-  // Lazy load districts only after a province is selected and reset dependent fields
+  // โหลดข้อมูลอำเภอแบบ lazy หลังจากเลือกจังหวัดและรีเซ็ตฟิลด์ที่เกี่ยวข้อง
   useEffect(() => {
     const provinceCode = formData.province;
-    // Reset dependent selections when user changes province is handled in handleInputChange
+    // การรีเซ็ตตัวเลือกที่เกี่ยวข้องเมื่อผู้ใช้เปลี่ยนจังหวัดจะจัดการใน handleInputChange
 
     if (!provinceCode) {
       setDistrictList([]);
@@ -338,7 +337,7 @@ function UserProfile() {
 
   const [subdistrictList, setSubdistrictList] = useState<Subdistrict[]>([]);
 
-  // Lazy load subdistricts only after a district is selected and reset dependent fields
+  // โหลดข้อมูลตำบลแบบ lazy หลังจากเลือกอำเภอและรีเซ็ตฟิลด์ที่เกี่ยวข้อง
   useEffect(() => {
     const districtCode = formData.district;
 
@@ -366,7 +365,7 @@ function UserProfile() {
     return () => clearTimeout(timer);
   }, [keyword]);
 
-  // Sync initial user data into form once loaded, including address
+  // ซิงค์ข้อมูลผู้ใช้เริ่มต้นลงฟอร์มเมื่อโหลดเสร็จ รวมถึงที่อยู่
   useEffect(() => {
     if (!userData) return;
     const firstAddress = (userData as any)?.addresses?.[0] || undefined;
@@ -407,10 +406,10 @@ function UserProfile() {
       return;
     }
     try {
-      // Determine avatar URL to save
+      // กำหนด URL ของรูปอวาตาร์ที่จะบันทึก
       let avatarUrlToSave = profileImageUrl;
 
-      // If a new image is selected, upload it first
+      // ถ้ามีการเลือกรูปใหม่ ให้อัพโหลดก่อน
       if (profileImageFile) {
         const form = new FormData();
         form.append("file", profileImageFile);
@@ -455,7 +454,7 @@ function UserProfile() {
         throw new Error(err?.error || `Save failed (${res.status})`);
       }
       const data = await res.json();
-      // Optionally sync the returned profile into local state
+      // ซิงค์ข้อมูลโปรไฟล์ที่ได้รับกลับมาไปยัง state ภายใน
       if (data?.profile) {
         setUserData((prev) => ({ ...(prev as any), ...data.profile }));
       }
@@ -476,7 +475,7 @@ function UserProfile() {
 
   const handleCancel = () => {
     console.log("Cancelled");
-    // Reset or navigate away
+    // รีเซ็ตหรือไปยังหน้าอื่น
   };
 
 

@@ -5,18 +5,21 @@ import fs from "fs";
 import os from "os";
 import { withAuth, AuthenticatedNextApiRequest } from "@/middlewere/auth";
 
+// ปิด bodyParser ของ Next.js เพื่อให้ formidable จัดการไฟล์ได้
 export const config = {
   api: {
     bodyParser: false,
   },
 };
 
+// ตั้งค่า Cloudinary สำหรับอัพโหลดรูปภาพ
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// ฟังก์ชันแปลงข้อมูลฟอร์มเป็นไฟล์
 async function parseForm(req: NextApiRequest): Promise<{ file?: formidable.File }> {
   const form = formidable({
     multiples: false,
@@ -35,6 +38,8 @@ async function parseForm(req: NextApiRequest): Promise<{ file?: formidable.File 
   });
 }
 
+// POST /api/profile/avatar
+// อัพโหลดรูปอวาตาร์ไปยัง Cloudinary และคืนค่า URL
 async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     res.setHeader("Allow", ["POST"]);
@@ -42,6 +47,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   }
 
   try {
+    // แปลงข้อมูลฟอร์มและดึงไฟล์
     const { file } = await parseForm(req);
     if (!file) return res.status(400).json({ error: "Missing file" });
 
@@ -50,11 +56,12 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       return res.status(400).json({ error: "Uploaded file has no path. Please try again." });
     }
 
-    // Optional MIME type check
+    // ตรวจสอบประเภทไฟล์ MIME (ไม่บังคับ)
     // if (!["image/jpeg", "image/png"].includes(file.mimetype || "")) {
     //   return res.status(400).json({ error: "Invalid file type" });
     // }
 
+    // อัพโหลดไฟล์ไปยัง Cloudinary
     const uploadResult: { secure_url: string } = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: "profiles", resource_type: "image", overwrite: true },
@@ -67,6 +74,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       fs.createReadStream(filepath).pipe(stream);
     });
 
+    // คืนค่า URL ของรูปที่อัพโหลด
     return res.status(200).json({ url: uploadResult.secure_url });
   } catch (err) {
     console.error("/api/profile/avatar error", err);

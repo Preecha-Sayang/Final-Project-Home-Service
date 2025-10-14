@@ -6,7 +6,9 @@ const databasePool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-
+// GET /api/location/subdistricts?district_code=XX
+// คืนค่ารายการแขวง/ตำบลตามเขต/อำเภอที่เลือกจากตาราง geography
+// รูปแบบ: [{ subdistrict_code: number, subdistrict_name_th: string, subdistrict_name_en: string }, ...]
 export default async function handler(
   request: NextApiRequest,
   response: NextApiResponse
