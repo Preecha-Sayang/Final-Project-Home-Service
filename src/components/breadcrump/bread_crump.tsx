@@ -19,7 +19,7 @@ export default function Breadcrumb({
           <span className="text-[16px]">{root}</span>
         </Link>
         <span className="text-gray-400">{">"}</span>
-        <span className="font-bold text-blue-600 text-[23px]">{current}</span>
+        <span className="font-medium text-blue-600 text-[32px]">{current}</span>
       </div>
     </div>
   );

@@ -10,7 +10,12 @@ interface ServiceCardProps {
   serviceId?: number;
   // description?: string;
   onCategoryClick?: (category: string) => void;
+  categoryColors?: {
+    bg?: string | null;
+    text?: string | null;
+    ring?: string | null;
 }
+};
 
 function ServiceCard({ imgSrc, category, title, price, serviceId, onCategoryClick }: ServiceCardProps) {
   const router = useRouter();

@@ -1,6 +1,6 @@
 import * as React from "react";
 import {
-    base, ring, state, cn, labelCls, messageCls, InputStatus,
+    base, ring, state, cn, messageCls, InputStatus,
 } from "../_style";
 
 export type InputFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
@@ -116,7 +116,7 @@ const InputField = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, Inpu
         return (
             <div className="w-full">
                 {label && (
-                    <label className={labelCls()}>
+                    <label className="text-xs font-light text-[var(--gray-500)]">
                         {typeof label === "string"
                             ? (() => {
                                 const m = label.match(/^(.*?)(\s*\*)$/);
