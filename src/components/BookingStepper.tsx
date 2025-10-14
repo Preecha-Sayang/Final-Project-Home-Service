@@ -36,9 +36,9 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
                 <div className="flex flex-col items-center text-center flex-shrink-0">
                   <div
                     className={cn(
-                      "w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 mb-2 transition-all duration-200",
+                      "w-12 h-12 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 mb-2 transition-all duration-200",
                       isActive
-                        ? "bg-white border-blue-600 text-blue-600 shadow-lg scale-110"
+                        ? "w-15 h-15 bg-white border-blue-600 text-blue-600 shadow-lg scale-110"
                         : isCompleted
                           ? "bg-blue-600 border-blue-600 text-white"
                           : "bg-white border-gray-300 text-gray-400",
@@ -59,7 +59,7 @@ const BookingStepper: React.FC<BookingStepperProps> = ({
                   </span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="flex-1 mx-4 md:mx-6">
+                  <div className="flex-1">
                     <div
                       className={cn(
                         "h-0.5 md:h-1 rounded-full transition-all duration-300",

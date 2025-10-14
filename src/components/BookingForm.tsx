@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { MapPin } from 'lucide-react'
 import { useBookingStore } from '@/stores/bookingStore'
 import {
@@ -6,11 +6,11 @@ import {
   type District,
   type Subdistrict,
 } from '@/hooks/useThailandAddress'
-import DatePicker from '@/components/input/inputDatePicker/date_picker'
-import TimePicker from '@/components/input/inputTimePicker/time_picker'
+import DatePicker from '@/components/input/inputDatePicker/date_picker_select'
+import TimePicker from '@/components/input/inputTimePicker/time_picker_select'
 import InputField from '@/components/input/inputField/input_state'
 import InputDropdown from '@/components/input/inputDropdown/input_dropdown'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, isToday, parse } from 'date-fns'
 
 const BookingDetailsForm: React.FC = () => {
   const { customerInfo, updateCustomerInfo } = useBookingStore()
@@ -107,6 +107,43 @@ const BookingDetailsForm: React.FC = () => {
     }
   }
 
+  // คำนวณเวลาขั้นต่ำสำหรับ TimePicker (ถ้าเลือกวันปัจจุบัน)
+  const minTime = useMemo(() => {
+    if (!serviceDate) return undefined;
+    
+    try {
+      // แปลงวันที่จาก dd-MM-yyyy เป็น Date object
+      const selectedDate = parse(serviceDate, 'dd-MM-yyyy', new Date());
+      
+      // ถ้าเป็นวันปัจจุบัน ให้คำนวณเวลาขั้นต่ำ (ปัดขึ้นไปอีก 15 นาที)
+      if (isToday(selectedDate)) {
+        const now = new Date();
+        const currentMinutes = now.getMinutes();
+        const roundedMinutes = Math.ceil((currentMinutes + 15) / 15) * 15; // ปัดขึ้นทุก 15 นาที
+        
+        let hour = now.getHours();
+        let minute = roundedMinutes;
+        
+        // ถ้านาทีเกิน 60 ให้เพิ่มชั่วโมง
+        if (minute >= 60) {
+          hour += 1;
+          minute = minute % 60;
+        }
+        
+        // ถ้าเกิน 23:45 ไม่ให้เลือกเวลาเลย
+        if (hour >= 24) {
+          return '23:59';
+        }
+        
+        return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      }
+    } catch (error) {
+      console.error('Error parsing date:', error);
+    }
+    
+    return undefined;
+  }, [serviceDate]);
+
   if (addressLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
@@ -168,7 +205,8 @@ const BookingDetailsForm: React.FC = () => {
           onChange={setServiceTime}
           placeholder="กรุณาเลือกเวลา"
           step={15}
-          />
+          minTime={minTime}
+        />
         </div>
 
       {/* ที่อยู่และแขวง/ตำบล - แนวนอน */}

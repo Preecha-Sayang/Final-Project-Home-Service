@@ -89,12 +89,13 @@ const ServiceItem: React.FC<ServiceItemProps> = ({
 
   return (
     <div className="space-y-0">
-      {options.map((option) => {
+      {options.map((option, index) => {
         const cartItem = cartItems.find(item => item.service_option_id === option.service_option_id)
         const quantity = cartItem?.quantity || 0
+        const isLastItem = index === options.length - 1
 
         return (
-          <div key={option.service_option_id} className="flex flex-col sm:flex-row justify-between items-center p-4 border-b border-gray-200 gap-2 sm:gap-0">
+          <div key={option.service_option_id} className={`flex flex-col sm:flex-row justify-between items-center p-4 gap-2 sm:gap-0 ${!isLastItem ? 'border-b border-gray-200' : ''}`}>
             <div className="w-full sm:w-auto flex flex-col items-start">
               <h6 className="text-medium font-semibold text-gray-800 mb-1">
                 {option.name}

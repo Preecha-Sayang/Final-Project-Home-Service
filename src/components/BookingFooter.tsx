@@ -26,7 +26,7 @@ const BookingFooter: React.FC<BookingFooterProps> = ({
           {showBack && (
             <button
               onClick={onBack}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             >
               {backText}
             </button>
@@ -39,7 +39,7 @@ const BookingFooter: React.FC<BookingFooterProps> = ({
               className={`px-6 py-3 rounded-lg transition-colors ${
                 nextDisabled
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
               }`}
             >
               {nextText}
