@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
 import BookingStepper from '@/components/BookingStepper'
@@ -11,6 +11,7 @@ import { useBookingStore } from '@/stores/bookingStore'
 import axios from 'axios'
 import Navbar from '@/components/navbar/navbar'
 import { isToday, isBefore, startOfDay } from 'date-fns'
+import PaymentForm, { PaymentFormRef } from '@/components/payments/PaymentForm'
 
 type CartItem = {
   service_option_id: number
@@ -33,6 +34,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const { customerInfo } = useBookingStore()
+  const paymentFormRef = useRef<PaymentFormRef>(null)
 
   useEffect(() => {
     const fetchServiceName = async () => {
@@ -131,10 +133,19 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
 
       case 'payment':
         return (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">ชำระเงิน</h2>
-            <p className="text-gray-600">หน้าชำระเงินจะอยู่ที่นี่</p>
-          </div>
+          <PaymentForm 
+            ref={paymentFormRef}
+            totalPrice={calculateTotal()}
+            selectedItems={selectedItems}
+            onPaymentSuccess={() => {
+              alert('ชำระเงินสำเร็จ!')
+              // You can redirect or handle success here
+              // Note: PaymentForm will handle redirect with booking_id
+            }}
+            onPaymentError={(error) => {
+              console.error('Payment error:', error)
+            }}
+          />
         )
       default:
         return null
@@ -206,7 +217,10 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
     return (
       <BookingFooter
         onBack={handleBack}
-        onNext={currentStep === 'payment' ? () => alert('ชำระเงินสำเร็จ!') : handleNext}
+        onNext={currentStep === 'payment' ? () => {
+          // Call payment form's handlePayment when on payment step
+          paymentFormRef.current?.handlePayment()
+        } : handleNext}
         backText={currentStep === 'items' ? 'กลับไปหน้าบริการ' : 'ย้อนกลับ'}
         nextText={currentStep === 'payment' ? 'ชำระเงิน' : 'ดำเนินการต่อ'}
         nextDisabled={!canProceed()}
