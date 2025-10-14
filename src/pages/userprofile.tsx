@@ -5,6 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
+import ServiceListProcess from "@/pages/afterservice/servicelist-process";
+import ServiceListSuccess from "@/pages/afterservice/servicelist-success";
 import { Save, X, Camera } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
@@ -577,11 +579,11 @@ function UserProfile() {
                     addressError={addressError}
                   />
                 ) : keyword === "รายการคำสั่งซ่อม" ? (
-                    <p className="p-8">OrderService</p>
+                    <ServiceListProcess onLoadDone={() => setIsLoading(false)}/>
                 ) : keyword === "ประวัติการสั่งซ่อม" ? (
-                  <p className="p-8">กำลังคิดค้นนวัฒกรรม</p>
+                  <ServiceListSuccess onLoadDone={() => setIsLoading(false)}/>
                 ) : (
-                  <p className="p-8">กรุณาเลือกนวัฒกรรมใหม่</p>
+                  <></>
                 )}
               </>
             )}
