@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
+import { Save, X, Camera } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 type UserData = {
@@ -52,10 +53,11 @@ type UserProfileFormProps = {
   subdistrictList: Subdistrict[];
   onSave: () => void;
   onCancel: () => void;
+  addressError: string;
 };
 
 
-function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData, onChange, provinceList, districtList, subdistrictList, onSave, onCancel }: UserProfileFormProps) {
+function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData, onChange, provinceList, districtList, subdistrictList, onSave, onCancel, addressError }: UserProfileFormProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [dragOver, setDragOver] = useState(false);
@@ -112,6 +114,15 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       {/* รูปโปรไฟล์ */}
       <div className="flex justify-center mb-8">
         <div className="flex flex-col items-center gap-3">
+          {/* ปุ่มไอคอนกล้องมุมขวาล่าง */}
+          <button
+              type="button"
+              onClick={pick}
+              aria-label="อัปโหลดรูปโปรไฟล์"
+              className="absolute bottom-1 right-1 z-10 w-7 h-7 rounded-full bg-[var(--white)] shadow-lg ring-1 ring-[var(--white)] border border-[var(--gray-200)] flex items-center justify-center"
+            >
+              <Camera size={14} className="text-[var(--gray-600)]" />
+            </button>
           {/* รูปอวาตาร์แบบวงกลมคลิกได้พร้อมแสดงตัวอย่างและลากวางได้ */}
           <div
             className={`w-32 h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
@@ -132,7 +143,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             {/* ชั้นทับโปร่งแสงเมื่อ hover */}
             <div className="absolute inset-0 bg-[var(--black)]/0 hover:bg-[var(--black)]/10 transition-colors" />
           </div>
-
+          
           {/* ช่องเลือกไฟล์แบบซ่อน */}
           <input
             ref={inputRef}
@@ -211,9 +222,16 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             value={formData.address}
             onChange={(e) => onChange("address", e.target.value)}
             required
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
-              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            className={`w-full h-[44px] px-4 border rounded-md text-base font-medium text-[var(--gray-900)]
+              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]
+              ${addressError ? 'border-[var(--red)]' : 'border-[var(--gray-300)]'}`}
           />
+          {/* ข้อความแสดงข้อผิดพลาดของที่อยู่ */}
+          {addressError && (
+            <div className="text-xs text-[var(--red)] mt-1" role="alert" aria-live="polite">
+              {addressError}
+            </div>
+          )}
         </div>
 
         {/* จังหวัด / Province */}
@@ -264,12 +282,18 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       </div>
 
       {/* ปุ่มบันทึกและยกเลิก / Save and Cancel Buttons */}
-      <div className="flex justify-center gap-4 mt-8">
-        <ButtonPrimary onClick={onSave} className="w-[200px]">
-          บันทึก
+      <div className="grid grid-cols-2 gap-x-6 mt-8">
+        <ButtonPrimary onClick={onSave} className="w-full">
+          <span className="flex items-center justify-center gap-2">
+            <Save size={16} />
+            <span>บันทึก</span>
+          </span>
         </ButtonPrimary>
-        <ButtonSecondary onClick={onCancel} className="w-[200px]">
-          ยกเลิก
+        <ButtonSecondary onClick={onCancel} className="w-full">
+          <span className="flex items-center justify-center gap-2 text-[var(--blue-600)]">
+            <X size={16} />
+            <span>ยกเลิก</span>
+          </span>
         </ButtonSecondary>
       </div>
     </div>
@@ -356,6 +380,7 @@ function UserProfile() {
 
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
+  const [addressError, setAddressError] = useState<string>("");
 
   useEffect(() => {
     setIsLoading(true);
@@ -384,6 +409,11 @@ function UserProfile() {
   }, [userData]);
 
   const handleInputChange = (field: string, value: string) => {
+    // ล้าง error ของ address เมื่อผู้ใช้เริ่มพิมพ์
+    if (field === "address" && addressError) {
+      setAddressError("");
+    }
+    
     setFormData((prev) => {
       if (field === "province") {
         return { ...prev, province: value, district: ""};
@@ -401,10 +431,16 @@ function UserProfile() {
       console.warn("No access token");
       return;
     }
+    
+    // ตรวจสอบว่ามีที่อยู่หรือไม่
     if (!formData.address || formData.address.trim() === "") {
-      alert("กรุณากรอกที่อยู่");
+      setAddressError("กรุณากรอกที่อยู่");
       return;
     }
+    
+    // ล้าง error ก่อนบันทึก
+    setAddressError("");
+    
     try {
       // กำหนด URL ของรูปอวาตาร์ที่จะบันทึก
       let avatarUrlToSave = profileImageUrl;
@@ -538,6 +574,7 @@ function UserProfile() {
                     subdistrictList={subdistrictList}
                     onSave={handleSave}
                     onCancel={handleCancel}
+                    addressError={addressError}
                   />
                 ) : keyword === "รายการคำสั่งซ่อม" ? (
                     <p className="p-8">OrderService</p>
