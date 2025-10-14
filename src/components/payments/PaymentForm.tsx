@@ -151,7 +151,11 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
           if (onPaymentSuccess) {
             onPaymentSuccess();
           } else {
-            router.push("/payment/paymentsummary");
+            // Redirect to booking success page with booking_id if available
+            const successUrl = result.booking_id 
+              ? `/booking/success?booking_id=${result.booking_id}`
+              : "/booking/success";
+            router.push(successUrl);
           }
         } else if (result.status === "pending" && result.redirect_url) {
           // Handle redirect if needed
