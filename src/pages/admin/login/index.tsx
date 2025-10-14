@@ -64,11 +64,11 @@ export default function AdminLogin() {
         // แสดง error ที่ email และ password พร้อมกัน
         setError("email", {
           type: "manual",
-          message: "ชื่อผู้ใช้ไม่ถูกต้อง",
+          message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
         });
         setError("password", {
           type: "manual",
-          message: "รหัสผ่านไม่ถูกต้อง",
+          message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
         });
       } else {
         alert(result.error || "เกิดข้อผิดพลาด");
