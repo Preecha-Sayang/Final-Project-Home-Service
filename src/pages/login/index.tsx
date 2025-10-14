@@ -44,7 +44,14 @@ const onSubmit = async (data: LoginFormInputs) => {
 
     const { accessToken, refreshToken } = res.data;
     login(accessToken, refreshToken); // ✅ login ผ่าน context
-    router.push("/");
+    
+    // ตรวจสอบว่ามี redirect parameter หรือไม่
+    const redirect = router.query.redirect as string;
+    if (redirect) {
+      router.push(redirect);
+    } else {
+      router.push("/");
+    }
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
@@ -117,7 +124,14 @@ const onSubmit = async (data: LoginFormInputs) => {
           <div className="flex flex-col md:flex-row gap-1 mt-4 ">
             <span>ยังไม่มีบัญชีผู้ใช้ HomeService?</span>
             
-            <ButtonGhost onClick={() => router.push("/register")}>
+            <ButtonGhost onClick={() => {
+              const redirect = router.query.redirect as string;
+              if (redirect) {
+                router.push(`/register?redirect=${encodeURIComponent(redirect)}`);
+              } else {
+                router.push("/register");
+              }
+            }}>
               <span>ลงทะเบียน</span>
             </ButtonGhost>
           </div>

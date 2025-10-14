@@ -12,6 +12,7 @@ import axios from 'axios'
 import Navbar from '@/components/navbar/navbar'
 import { isToday, isBefore, startOfDay } from 'date-fns'
 import PaymentForm, { PaymentFormRef } from '@/components/payments/PaymentForm'
+import { useAuth } from '@/context/AuthContext'
 
 type CartItem = {
   service_option_id: number
@@ -28,6 +29,7 @@ interface ServiceBookingPageProps {
 
 const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) => {
   const router = useRouter()
+  const { isLoggedIn } = useAuth()
   const [currentStep, setCurrentStep] = useState<'items' | 'details' | 'payment'>('items')
   const [selectedItems, setSelectedItems] = useState<CartItem[]>([])
   const [serviceName, setServiceName] = useState<string>('')
@@ -60,6 +62,13 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
 
   const handleNext = () => {
     if (currentStep === 'items') {
+      // ตรวจสอบว่า login แล้วหรือยัง ก่อนจะไป step 2
+      if (!isLoggedIn) {
+        // เก็บ path ปัจจุบันเพื่อให้กลับมาหลัง login
+        const currentPath = router.asPath
+        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+        return
+      }
       setCurrentStep('details')
     } else if (currentStep === 'details') {
       setCurrentStep('payment')
@@ -214,6 +223,13 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
       }
     }
 
+    // กำหนดข้อความปุ่ม Next
+    const getNextButtonText = () => {
+      if (currentStep === 'payment') return 'ชำระเงิน'
+      if (currentStep === 'items' && !isLoggedIn && selectedItems.length > 0) return 'Login เพื่อดำเนินการต่อ'
+      return 'ดำเนินการต่อ'
+    }
+
     return (
       <BookingFooter
         onBack={handleBack}
@@ -222,7 +238,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
           paymentFormRef.current?.handlePayment()
         } : handleNext}
         backText={currentStep === 'items' ? 'กลับไปหน้าบริการ' : 'ย้อนกลับ'}
-        nextText={currentStep === 'payment' ? 'ชำระเงิน' : 'ดำเนินการต่อ'}
+        nextText={getNextButtonText()}
         nextDisabled={!canProceed()}
         showBack={true}
         showNext={true}

@@ -78,12 +78,18 @@ function Register() {
       setErrors({});
 
       // เรียก API signup
-      const { data } = await axios.post("/api/auth/signup", form, {
+      await axios.post("/api/auth/signup", form, {
         headers: { "Content-Type": "application/json" },
       });
 
       alert("สมัครสมาชิกสำเร็จ");
-      router.push("/login/login");
+      // ตรวจสอบว่ามี redirect parameter หรือไม่
+      const redirect = router.query.redirect as string;
+      if (redirect) {
+        router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+      } else {
+        router.push("/login");
+      }
     } catch (err) {
       if (err instanceof yup.ValidationError) {
         const newErrors: { [key: string]: string } = {};
@@ -210,7 +216,14 @@ function Register() {
             </ButtonPrimary>
           </form>
 
-          <ButtonGhost onClick={() => router.push("/login")}>
+          <ButtonGhost onClick={() => {
+            const redirect = router.query.redirect as string;
+            if (redirect) {
+              router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
+            } else {
+              router.push("/login");
+            }
+          }}>
             <span>กลับไปหน้าเข้าสู่ระบบ</span>
           </ButtonGhost>
         </div>
