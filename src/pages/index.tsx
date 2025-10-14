@@ -5,44 +5,44 @@ import PopularServices from "@/components/PopularServices";
 import Link from "next/link";
 import Image from "next/image";
 
-
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
 
-            {/* Hero Section */}
-            <section className="bg-gradient-to-r from-blue-50 to-blue-100 h-auto md:h-[520px] pt-8 md:pt-8">
-                <div className="max-w-6xl mx-auto px-4 md:px-0 flex flex-col md:flex-row items-center justify-between h-full relative">
-            {/* ข้อความ */}
-                    <div className="flex-1 text-left mb-8 md:mb-0">
-                    <div className="text-4xl md:text-6xl font-bold text-blue-700 mb-8 font-prompt ">
-                            เรื่องบ้าน...ให้เราช่วยดูแลคุณ
-                    </div>
-                        <p className="text-2xl md:text-4xl font-bold text-gray-950 mb-10 font-prompt">
-                            สะดวก ราคาคุ้มค่า เชื่อถือได้
-                        </p>
-                        <p className="text-2xl md:text-2xl text-gray-500 mb-10 font-prompt">
-                            ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน<br />
-                            โดยพนักงานแม่บ้าน และช่างมืออาชีพ
-                        </p>
-                        <Link href="/services">
-                        <ButtonPrimary>เช็คราคาบริการ</ButtonPrimary>
-                        </Link>
-                    </div>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-50 to-blue-100 h-auto md:h-[520px] pt-8 md:pt-8">
+        <div className="max-w-6xl mx-auto px-4 md:px-0 flex flex-col md:flex-row items-center justify-between h-full relative">
+          {/* ข้อความ */}
+          <div className="flex-1 text-left mb-8 md:mb-0">
+            <div className="text-4xl md:text-6xl font-bold text-blue-700 mb-8 font-prompt ">
+              เรื่องบ้าน...ให้เราช่วยดูแลคุณ
+            </div>
+            <p className="text-2xl md:text-4xl font-bold text-gray-950 mb-10 font-prompt">
+              สะดวก ราคาคุ้มค่า เชื่อถือได้
+            </p>
+            <p className="text-2xl md:text-2xl text-gray-500 mb-10 font-prompt">
+              ซ่อมเครื่องใช้ไฟฟ้า ซ่อมแอร์ ทำความสะอาดบ้าน
+              <br />
+              โดยพนักงานแม่บ้าน และช่างมืออาชีพ
+            </p>
+            <Link href="/services">
+              <ButtonPrimary>เช็คราคาบริการ</ButtonPrimary>
+            </Link>
+          </div>
 
-                {/* รูป */}
-                    <div className=" justify-end items-end w-auto relative ">
-                        <Image
-                        src="/images/technicain.png"
-                        alt="Professional Technician"
-                        width={480}
-                        height={480}
-                        className=" max-w-[390px] md:max-w-[480px] relative bottom-0 right-0 md:left-10 md:top-4 h-auto object-contain pl-12 md:pl-0 ml-0 "
-                        />
-                    </div>
-                </div>
-            </section>
+          {/* รูป */}
+          <div className=" justify-end items-end w-auto relative ">
+            <Image
+              src="/images/technicain.png"
+              alt="Professional Technician"
+              width={480}
+              height={480}
+              className=" max-w-[390px] md:max-w-[480px] relative bottom-0 right-0 md:left-10 md:top-4 h-auto object-contain pl-12 md:pl-0 ml-0 "
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Our Services Section */}
       <section className="py-16 bg-gray-50">
@@ -62,7 +62,6 @@ export default function Home() {
       {/* Contact Section */}
       <section className="bg-blue-600 relative ">
         <div className="flex flex-col md:flex-row items-center justify-between text-white w-full">
-
           {/* รูปซ้าย (ชิดซ้ายสุด) */}
           <div className="relative w-full md:w-auto">
             <Image
@@ -77,11 +76,13 @@ export default function Home() {
           {/* ข้อความ */}
           <div className="flex-1 md:ml-40 md:text-left mb-40 md:mb-0 mt-10 md:mt-0">
             <h2 className="text-2xl md:text-4xl font-bold mb-6 font-prompt ">
-              มาร่วมเป็นพนักงานซ่อม<br />
+              มาร่วมเป็นพนักงานซ่อม
+              <br />
               กับ HomeServices
             </h2>
             <p className="text-lg md:text-xl mb-6 font-prompt">
-              เข้ารับการฝึกอบรมที่ได้มาตรฐาน ฟรี!<br />
+              เข้ารับการฝึกอบรมที่ได้มาตรฐาน ฟรี!
+              <br />
               และยังได้รับค่าตอบแทนที่มากขึ้นกว่าเดิม
             </p>
             <p className="text-xl md:text-3xl font-semibold font-prompt">
@@ -106,4 +107,3 @@ export default function Home() {
     </div>
   );
 }
-

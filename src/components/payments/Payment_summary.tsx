@@ -9,7 +9,7 @@ interface PaymentSummaryProps {
   status?: string | React.ReactNode;  
   itemName?: string;
   quantity?: number;
-  date?: string;
+  date?: Date;
   time?: string;
   address?: string;
   totalPrice?: string | number;
@@ -21,7 +21,7 @@ const PaymentSummary: React.FC<PaymentSummaryProps> = ({ status, itemName, quant
   // useEffect(() => {},[]
 
   return (
-    <div className="flex flex-col gap-4 pt-10 mx-50 max-w-lg border border-bg-[var(--white)] px-10 py-10 rounded-xl">
+    <div className="flex flex-col gap-4 pt-10 mx-auto max-w-lg border border-bg-[var(--white)] px-10 py-10 rounded-xl">
       <div className="flex flex-col items-center justify-center">
         <Image src={vector} className="w-14 h-14" alt="" />
         <p className="text-[var(--gray-950)] text-3xl mt-5">
@@ -55,7 +55,7 @@ const PaymentSummary: React.FC<PaymentSummaryProps> = ({ status, itemName, quant
 
       <div className="flex flex-row items-center justify-between gap-20 mt-6">
         <p className="tex50.00 ฿t-[var(--gray-700)]">รวม</p>
-        <p>{totalPrice}</p>
+        <p>{totalPrice.toLocaleString()} ฿</p>
       </div>
 
       <div className="mb-12 items-center justify-center mt-6">

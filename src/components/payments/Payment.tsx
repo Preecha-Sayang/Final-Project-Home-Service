@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import qr_code from "../../../public/images/icon_qr.svg";
 import credit_card from "../../../public/images/icon_card.svg";
@@ -19,11 +17,11 @@ export default function Payment() {
   };
 
   return (
-    <div className="mt-12">
-      <div className="flex flex-row items-center justify-center gap-12">
+    <div className="mt-6 items-center">
+      <div className="flex flex-row items-center justify-center gap-8">
         <div
           onClick={() => setSelectPayment("QR_CODE")}
-          className={`flex flex-col items-center justify-center gap-2 border border-[var(--gray-300)] px-48 py-6 rounded-xl cursor-pointer ${
+          className={`flex flex-col items-center justify-center gap-2 border border-[var(--gray-300)] w-full h-[86px] rounded-sm cursor-pointer ${
             selectedPayment === "QR_CODE" ? "bg-[var(--blue-100)]" : ""
           }`}
         >
@@ -43,7 +41,7 @@ export default function Payment() {
 
         <div
           onClick={() => setSelectPayment("CREDIT_CARD")}
-          className={`flex flex-col items-center justify-center gap-2 border border-[var(--blue-300)] px-48 py-6 rounded-xl cursor-pointer ${
+          className={`flex flex-col items-center justify-center gap-2 border border-[var(--gray-300)] w-full h-[86px] rounded-sm cursor-pointer ${
             selectedPayment === "CREDIT_CARD" ? "bg-[var(--blue-100)]" : ""
           }`}
         >
