@@ -12,7 +12,7 @@ export default function Badge({ label, colors }: Props) {
 
     return (
         <span
-            className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium cursor-pointer"
+            className="inline-flex items-center rounded-md px-3 h-[26px] text-xs font-medium cursor-pointer"
             style={{ backgroundColor: bg, color: text, boxShadow: `inset 0 0 0 1px ${ring}` }}
         >
             {label}

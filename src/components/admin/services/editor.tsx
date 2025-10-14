@@ -1,7 +1,9 @@
+// src/components/admin/services/editor.tsx
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { GripVertical, Plus } from "lucide-react";
 import Image from "next/image";
+import ImageLightbox from "@/components/common/Lightbox";
 
 import InputField from "@/components/input/inputField/input_state";
 import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
@@ -50,6 +52,7 @@ export default function ServiceEditor({ mode, id }: Props) {
 
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imageUrl, setImageUrl] = useState<string>("");
+    const [showImg, setShowImg] = useState(false);
 
     // สำหรับหน้า create เท่านั้น
     const [subItems, setSubItems] = useState<SubItem[]>([emptySub(0), emptySub(1)]);
@@ -227,7 +230,13 @@ export default function ServiceEditor({ mode, id }: Props) {
     }
     const addRow = () => setSubItems((s) => [...s, emptySub(s.length)]);
     const removeRow = (rowId: string) =>
-        setSubItems((s) => s.filter((x) => x.id !== rowId).map((x, i) => ({ ...x, index: i + 1 })));
+        // กันลบจนเหลือ 0: ถ้าเหลือ 1 แถว ไม่ทำงาน
+        setSubItems((s) => {
+            if (s.length <= 1) return s;
+            const next = s.filter((x) => x.id !== rowId).map((x, i) => ({ ...x, index: i + 1 }));
+            // ถ้าลบแล้วเหลือ 0 (กรณีลบแถวเดียว) ให้คงไว้เท่าเดิม
+            return next.length === 0 ? s : next;
+        });
     const patchRow = (rowId: string, p: Partial<SubItem>) =>
         setSubItems((s) => s.map((x) => (x.id === rowId ? { ...x, ...p } : x)));
 
@@ -282,7 +291,8 @@ export default function ServiceEditor({ mode, id }: Props) {
                 if (!res.ok || !data?.ok || !data.service) throw new Error(data?.message || "Create failed");
                 await router.push(`/admin/services/${data.service.service_id}`);
                 return;
-            } else { // edit.
+            } else {
+                // edit.
                 if (!id) return;
 
                 // 1. อัปเดตข้อมูลบริการ
@@ -344,6 +354,10 @@ export default function ServiceEditor({ mode, id }: Props) {
         void handleSubmit();
     }
 
+    // เหลือ 1 รายการ
+    const canDeleteOption = options.length > 1;
+    const canDeleteSubItem = subItems.length > 1;
+
     return (
         <>
             <form
@@ -393,11 +407,25 @@ export default function ServiceEditor({ mode, id }: Props) {
                             </span>
 
                             {imageUrl && !imageFile ? (
-                                <div>
-                                    <div className="relative h-[200px] w-[433px] overflow-hidden rounded-xl border border-[var(--gray-300)]">
-                                        <Image src={imageUrl} alt="service image" fill sizes="300px" className="object-cover" />
+                                <div className="flex flex-col">
+                                    <div className="flex justify-center w-[433px] border rounded-md">
+                                        <div
+                                            className="relative overflow-hidden border border-[var(--gray-300)] shadow-[0_10px_24px_rgba(0,0,0,.06)] hover:shadow-[0_15px_24px_rgba(0,0,0,.1)] cursor-zoom-in transition"
+                                            style={{ width: 300, height: 200 }}
+                                            onClick={() => setShowImg(true)}
+                                            title="คลิกเพื่อขยาย"
+                                        >
+                                            <Image src={imageUrl} alt="service image" fill sizes="300px" className="object-cover" />
+                                            <ImageLightbox
+                                                src={imageUrl}
+                                                alt={name || "image"}
+                                                open={showImg}
+                                                onClose={() => setShowImg(false)}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="flex justify-end pr-2 my-2 h-[18.5px] font-semibold">
+                                    <div className="flex justify-between pr-2 my-2 h-[18.5px] font-semibold">
+                                        <span className=" text-sm font-[400] text-[var(--gray-400)]">ขนาดภาพที่แนะนำ: 1440 x 225 PX</span>
                                         <button
                                             type="button"
                                             onClick={requestRemoveImage}
@@ -408,9 +436,19 @@ export default function ServiceEditor({ mode, id }: Props) {
                                     </div>
                                 </div>
                             ) : (
-                                <div className="pr-2 mt-3 font-semibold">
-                                    <ImageUpload value={imageFile} onChange={setImageFile} />
-                                    {/* {markRemoveImg && <div className="absolute mt-2 text-xs text-[var(--red)]">จะลบรูปเดิมเมื่อกดบันทึก</div>} */}
+                                <div>
+                                    <div className="pr-2 mt-3 font-semibold">
+                                        <ImageUpload value={imageFile} onChange={setImageFile} />
+                                        {/* {markRemoveImg && <div className="absolute mt-2 text-xs text-[var(--red)]">จะลบรูปเดิมเมื่อกดบันทึก</div>} */}
+                                    </div>
+
+                                    {!imageFile ? (
+                                        <div className="-mt-4 -mb-2">
+                                            <span className="text-sm font-[400] text-[var(--gray-400)]">ขนาดภาพที่แนะนำ: 1440 x 225 PX</span>
+                                        </div>
+                                    ) : (
+                                        ""
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -436,14 +474,17 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 className="flex items-center gap-3 rounded-xl bg-white p-3"
                                             >
                                                 {/* ตัวลาก */}
-                                                <div className="basis-[4.10%] flex justify-center text-[var(--gray-400)] cursor-grab active:cursor-grabbing select-none"
+                                                <div
+                                                    className="basis-[4.10%] flex justify-center text-[var(--gray-400)] cursor-grab active:cursor-grabbing select-none"
                                                     title="ลากเพื่อสลับลำดับ"
                                                 >
                                                     <GripVertical className="mt-2" />
                                                 </div>
                                                 {/* ชื่อรายการ */}
                                                 <div className="basis-[40.49%]">
-                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">ชื่อรายการ<span className="text-[var(--red)]">*</span></div>
+                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">
+                                                        ชื่อรายการ<span className="text-[var(--red)]">*</span>
+                                                    </div>
                                                     <InputField
                                                         value={o.name}
                                                         onChange={(e) => patchOption(localKey, { name: e.target.value })}
@@ -456,7 +497,9 @@ export default function ServiceEditor({ mode, id }: Props) {
 
                                                 {/* หน่วย */}
                                                 <div className="basis-[23.51%]">
-                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">หน่วยการบริการ<span className="text-[var(--red)]">*</span></div>
+                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">
+                                                        หน่วยการบริการ<span className="text-[var(--red)]">*</span>
+                                                    </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="basis-[85%]">
                                                             <InputDropdown
@@ -480,15 +523,15 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                             >
                                                                 <Plus className="h-5 w-5" />
                                                             </button>
-
                                                         </div>
-
                                                     </div>
                                                 </div>
 
                                                 {/* ราคา/หน่วย */}
                                                 <div className="basis-[22.39%]">
-                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">ค่าบริการ / 1 หน่วย<span className="text-[var(--red)]">*</span></div>
+                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">
+                                                        ค่าบริการ / 1 หน่วย<span className="text-[var(--red)]">*</span>
+                                                    </div>
                                                     <InputField
                                                         placeholder="0.00"
                                                         value={o.unit_price}
@@ -505,9 +548,17 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 <div className="basis-[9.51%] flex items-end justify-end">
                                                     <button
                                                         type="button"
-                                                        onClick={() => setAskDelOptionId(localKey)}
-                                                        disabled={deletingId === localKey}
-                                                        className="h-[44px] rounded-md px-4 mt-6 text-base font-semibold underline text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] disabled:opacity-60 cursor-pointer"
+                                                        onClick={() => {
+                                                            // ถ้าเหลือ 1 รายการ ไม่ให้ลบ/ไม่ต้องเปิด dialog
+                                                            if (!canDeleteOption) return;
+                                                            setAskDelOptionId(localKey);
+                                                        }}
+                                                        disabled={deletingId === localKey || !canDeleteOption}
+                                                        className={`h-[44px] rounded-md px-4 mt-6 text-base font-semibold underline ${canDeleteOption
+                                                                ? "text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
+                                                                : "text-[var(--gray-300)] cursor-not-allowed"
+                                                            } disabled:opacity-60`}
+                                                        title={canDeleteOption ? "ลบรายการ" : "ต้องมีอย่างน้อย 1 รายการ"}
                                                     >
                                                         {deletingId === localKey ? "กำลังลบ..." : "ลบรายการ"}
                                                     </button>
@@ -543,7 +594,6 @@ export default function ServiceEditor({ mode, id }: Props) {
                                     </div>
                                 </div>
                             </>
-
                         )}
 
                         <ConfirmDialog
@@ -599,7 +649,6 @@ export default function ServiceEditor({ mode, id }: Props) {
                         {/* subItemsใช้เฉพาะตอนสร้าง */}
                         {mode === "create" && (
                             <>
-
                                 <div className="grid gap-3">
                                     <div className="text-base font-medium text-[var(--gray-700)]">รายการบริการย่อย</div>
 
@@ -618,7 +667,9 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 </div>
 
                                                 <div className="basis-[40.49%]">
-                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">ชื่อรายการ<span className="text-[var(--red)]">*</span></div>
+                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">
+                                                        ชื่อรายการ<span className="text-[var(--red)]">*</span>
+                                                    </div>
                                                     <InputField
                                                         value={it.name ?? ""}
                                                         onChange={(e) => patchRow(it.id, { name: e.target.value })}
@@ -630,7 +681,9 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 </div>
 
                                                 <div className="basis-[23.51%]">
-                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">หน่วยการบริการ<span className="text-[var(--red)]">*</span></div>
+                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">
+                                                        หน่วยการบริการ<span className="text-[var(--red)]">*</span>
+                                                    </div>
                                                     <div className="flex items-center gap-2">
                                                         <div className="basis-[85%]">
                                                             <InputDropdown
@@ -659,7 +712,9 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 </div>
 
                                                 <div className="basis-[22.39%]">
-                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">ค่าบริการ / 1 หน่วย<span className="text-[var(--red)]">*</span></div>
+                                                    <div className="px-1 py-1 text-sm text-[var(--gray-700)]">
+                                                        ค่าบริการ / 1 หน่วย<span className="text-[var(--red)]">*</span>
+                                                    </div>
                                                     <InputField
                                                         placeholder="0.00"
                                                         value={it.price == null ? "" : String(it.price)}
@@ -678,9 +733,16 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 <div className="basis-[9.51%] flex justify-center items-center mt-6">
                                                     <button
                                                         type="button"
-                                                        onClick={() => removeRow(it.id)}
-                                                        className="h-[44px] rounded-md px-4 mt-1 text-[var(--gray-400)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] underline cursor-pointer"
-                                                        title="ลบรายการ"
+                                                        onClick={() => {
+                                                            if (!canDeleteSubItem) return; // กันลบจนเหลือ 0
+                                                            removeRow(it.id);
+                                                        }}
+                                                        disabled={!canDeleteSubItem}
+                                                        className={`h-[44px] rounded-md px-4 mt-1 underline ${canDeleteSubItem
+                                                                ? "text-[var(--gray-400)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
+                                                                : "text-[var(--gray-300)] cursor-not-allowed"
+                                                            }`}
+                                                        title={canDeleteSubItem ? "ลบรายการ" : "ต้องมีอย่างน้อย 1 รายการ"}
                                                     >
                                                         ลบรายการ
                                                     </button>
@@ -723,15 +785,12 @@ export default function ServiceEditor({ mode, id }: Props) {
                                 </div>
                             </div>
                         )}
-
-
                     </div>
                 )}
             </form>
             {/* ปุ่มลบบริการ — มุมขวาล่าง */}
             {mode === "edit" && (
                 <div className="flex items-center justify-end">
-
                     <button
                         type="button"
                         disabled={saving}
@@ -740,7 +799,13 @@ export default function ServiceEditor({ mode, id }: Props) {
                         title="ลบบริการ"
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                            <path d="M4 7H20M19 7L18.133 19.142C18.0971 19.6466 17.8713 20.1188 17.5011 20.4636C17.1309 20.8083 16.6439 21 16.138 21H7.862C7.35614 21 6.86907 20.8083 6.49889 20.4636C6.1287 20.1188 5.90292 19.6466 5.867 19.142L5 7H19ZM10 11V17V11ZM14 11V17V11ZM15 7V4C15 3.73478 14.8946 3.48043 14.7071 3.29289C14.5196 3.10536 14.2652 3 14 3H10C9.73478 3 9.48043 3.10536 9.29289 3.29289C9.10536 3.48043 9 3.73478 9 4V7H15Z" stroke="#9AA1B0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            <path
+                                d="M4 7H20M19 7L18.133 19.142C18.0971 19.6466 17.8713 20.1188 17.5011 20.4636C17.1309 20.8083 16.6439 21 16.138 21H7.862C7.35614 21 6.86907 20.8083 6.49889 20.4636C6.1287 20.1188 5.90292 19.6466 5.867 19.142L5 7H19ZM10 11V17V11ZM14 11V17V11ZM15 7V4C15 3.73478 14.8946 3.48043 14.7071 3.29289C14.5196 3.10536 14.2652 3 14 3H10C9.73478 3 9.48043 3.10536 9.29289 3.29289C9.10536 3.48043 9 3.73478 9 4V7H15Z"
+                                stroke="#9AA1B0"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
                         </svg>
                         ลบบริการ
                     </button>

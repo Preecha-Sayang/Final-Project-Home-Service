@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import ImageLightbox from "@/components/common/Lightbox";
 
 import { getService } from "lib/client/servicesApi";
 import type { ServiceItem } from "@/types/service";
-import Badge from "@/components/admin/services/badge";
 import BackHeader from "@/components/admin/common/BackHeader";
 
 import { formatThaiDateTimeAMPM } from "lib/formatDate";
@@ -30,6 +30,8 @@ export default function ServiceDetailPage() {
 
     const [options, setOptions] = useState<OptionRow[]>([]);
     const [loadingOptions, setLoadingOptions] = useState(false);
+
+    const [showImg, setShowImg] = useState(false);
 
     // โหลดข้อมูล service หลัก
     useEffect(() => {
@@ -111,42 +113,54 @@ export default function ServiceDetailPage() {
                 )}
 
                 {!loading && !error && item && (
-                    <div className="rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
+                    <div className="text-base rounded-2xl border border-[var(--gray-100)] bg-white p-6 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
                         <div className="grid gap-6">
                             {/* ชื่อบริการ */}
-                            <div className="grid gap-2">
-                                <div className="text-sm text-[var(--gray-600)]">ชื่อบริการ</div>
-                                <div className="text-base font-medium text-[var(--gray-900)]">{item.name}</div>
+                            <div className="flex flex-col w-[662px] text-base gap-8">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-[229px] font-medium text-[var(--gray-600)]">ชื่อบริการ</div>
+                                    <div className="w-[433px] text-[var(--gray-900)]">{item.name}</div>
+                                </div>
+
+                                {/* หมวดหมู่ */}
+                                <div className="flex items-center gap-2">
+                                    <div className="w-[229px] font-medium text-[var(--gray-600)]">หมวดหมู่</div>
+                                    <div className="w-[433px]">{item.category}</div>
+                                </div>
+
+                                {/* รูปภาพ */}
+                                <div className="flex items-start gap-2">
+                                    <div className="w-[229px] font-medium text-[var(--gray-600)]">รูปภาพ</div>
+                                    {item.imageUrl ? (
+                                        <div
+                                            className="relative rounded-md h-[200px] w-[433px] overflow-hidden shadow-[0_10px_24px_rgba(0,0,0,.06)] hover:shadow-[0_15px_24px_rgba(0,0,0,.1)] cursor-zoom-in transition"
+                                            style={{ width: 300, height: 200 }}
+                                            onClick={() => setShowImg(true)}
+                                            title="คลิกเพื่อขยาย"
+                                        >
+                                            <Image
+                                                src={item.imageUrl}
+                                                alt={item.name || "image"}
+                                                fill
+                                                className="object-cover rounded-md"
+                                            />
+                                            <ImageLightbox
+                                                src={item.imageUrl}
+                                                alt={item.name || "image"}
+                                                open={showImg}
+                                                onClose={() => setShowImg(false)}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="rounded-xl border border-dashed border-[var(--gray-300)] p-10 text-center text-sm text-[var(--gray-400)]">
+                                            (ยังไม่มีรูป)
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* หมวดหมู่ */}
-                            <div className="grid gap-2">
-                                <div className="text-sm text-[var(--gray-600)]">หมวดหมู่</div>
-                                <div><Badge label={item.category} colors={item.categoryColor} /></div>
-                            </div>
 
-                            {/* รูปภาพ */}
-                            <div className="grid gap-2">
-                                <div className="text-sm text-[var(--gray-600)]">รูปภาพ</div>
-                                {item.imageUrl ? (
-                                    <div className="relative h-40 w-full max-w-md overflow-hidden rounded-xl">
-                                        <Image
-                                            src={item.imageUrl}
-                                            alt={item.name || "image"}
-                                            fill
-                                            sizes="(max-width:768px) 100vw, 400px"
-                                            className="object-cover"
-                                            priority
-                                        />
-                                    </div>
-                                ) : (
-                                    <div className="rounded-xl border border-dashed border-[var(--gray-300)] p-10 text-center text-sm text-[var(--gray-400)]">
-                                        (ยังไม่มีรูป)
-                                    </div>
-                                )}
-                            </div>
-
-                            <hr className="border-[var(--gray-200)]" />
+                            <hr className="border-[var(--gray-300)] my-5" />
 
                             {/* รายการบริการย่อย */}
                             <div className="grid gap-3">
@@ -164,17 +178,17 @@ export default function ServiceDetailPage() {
 
                                 <div className="grid gap-2">
                                     {options.map((o) => (
-                                        <div key={o.service_option_id} className="grid grid-cols-12  gap-3 rounded-xl  bg-white p-3 text-sm">
+                                        <div key={o.service_option_id} className="grid grid-cols-12  gap-3 rounded-xl  bg-white py-3 text-sm">
                                             <div className="col-span-6">
                                                 <div className="py-1 text-[var(--gray-500)]">ชื่อรายการ</div>
                                                 <div className="text-base font-medium">{o.name}</div>
                                             </div>
                                             <div className="col-span-3">
-                                                <div className="py-1 text-[var(--gray-500)]">หน่วย</div>
+                                                <div className="py-1 text-[var(--gray-500)]">หน่วยการบริการ</div>
                                                 <div className="text-base font-medium">{o.unit}</div>
                                             </div>
                                             <div className="col-span-2">
-                                                <div className="py-1 text-[var(--gray-500)]">ราคา/หน่วย</div>
+                                                <div className="py-1 text-[var(--gray-500)]">ค่าบริการ / 1 หน่วย</div>
                                                 <div className="text-base font-medium">{fmtMoney(o.unit_price)}</div>
                                             </div>
                                         </div>
@@ -182,15 +196,15 @@ export default function ServiceDetailPage() {
                                 </div>
                             </div>
 
-                            <hr className="border-[var(--gray-300)]" />
+                            <hr className="border-[var(--gray-300)] my-5" />
 
                             {/* วันที่ */}
-                            <div className="pl-2 text-base text-[var(--gray-700)]">
-                                <div className="flex justify-between items-center w-[387px] h-[44px] gap-4">
+                            <div className="text-base text-[var(--gray-700)]">
+                                <div className="flex justify-between items-center w-[387px] h-[44px] my-1 gap-4">
                                     <div className="text-[var(--gray-500)]">สร้างเมื่อ</div>
                                     <div>{formatThaiDateTimeAMPM(item.createdAt)}</div>
                                 </div>
-                                <div className="flex justify-between items-center w-[387px] h-[44px] gap-4">
+                                <div className="flex justify-between items-center w-[387px] h-[44px] my-1 gap-4">
                                     <div className="flex items-center text-[var(--gray-500)]">แก้ไขล่าสุด</div>
                                     <div>{formatThaiDateTimeAMPM(item.updatedAt)}</div>
                                 </div>
