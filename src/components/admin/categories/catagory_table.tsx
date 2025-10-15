@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from "react";
-import { GripVertical, Pencil, Trash2 } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import type { CategoryRow } from "@/types/category";
 import { formatThaiDateTimeAMPM } from "lib/formatDate";
 import CategoryColorBadge from "./CategoryColorBadge";

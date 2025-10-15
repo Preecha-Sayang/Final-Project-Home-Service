@@ -4,7 +4,7 @@ import { formatThaiDateTimeAMPM } from "lib/formatDate";
 
 type Props = { item: PromotionRow; onEdit?: () => void };
 
-export default function PromotionPreview({ item, onEdit }: Props) {
+export default function PromotionPreview({ item}: Props) {
     const value = Number(item.discount_value ?? 0);
     const priceText =
         item.discount_type === "percent"

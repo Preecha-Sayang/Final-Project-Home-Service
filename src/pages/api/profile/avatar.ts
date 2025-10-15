@@ -6,11 +6,11 @@ import os from "os";
 import { withAuth, AuthenticatedNextApiRequest } from "@/middlewere/auth";
 
 // ปิด bodyParser ของ Next.js เพื่อให้ formidable จัดการไฟล์ได้
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// export const config = {
+//   api: {
+//     bodyParser: false,
+//   },
+// };
 
 // ตั้งค่า Cloudinary สำหรับอัพโหลดรูปภาพ
 cloudinary.config({

@@ -5,7 +5,7 @@ import { cloudinary } from "lib/server/upload/cloudinary";
 import { parseForm } from "lib/server/upload/parseForm";
 import type { File } from "formidable";
 
-export const config = { api: { bodyParser: false as const } };
+// export const config = { api: { bodyParser: false as const } };
 
 type ServiceRowDB = {
     servicename: string;

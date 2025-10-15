@@ -8,14 +8,14 @@ export function Agreement({ onClose }: { onClose: () => void }) {
     >
       <div
         className="bg-white p-8 rounded-2xl max-w-3xl w-full max-h-[70vh] overflow-y-auto shadow-xl transform transition-all duration-500 ease-in-out scale-95 hover:scale-100"
-        onClick={(e) => e.stopPropagation()} // Prevent event propagation
+        onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">ข้อตกลงและเงื่อนไข</h2>
 
         <h3 className="text-xl font-semibold text-gray-700 mb-4">ข้อตกลงการใช้บริการ</h3>
         <p className="text-gray-600 mb-6">
-          ข้อตกลงและเงื่อนไขนี้ ("ข้อตกลง") กำหนดเงื่อนไขในการใช้บริการต่าง ๆ ที่ให้บริการโดย
-          [ชื่อบริษัท/เว็บไซต์] ("บริษัท", "เรา", "ของเรา") ให้กับผู้ใช้บริการ ("ผู้ใช้", "คุณ")
+          ข้อตกลงและเงื่อนไขนี้ (&quot;ข้อตกลง&quot;) กำหนดเงื่อนไขในการใช้บริการต่าง ๆ ที่ให้บริการโดย
+          [ชื่อบริษัท/เว็บไซต์] (&quot;บริษัท&quot;, &quot;เรา&quot;, &quot;ของเรา&quot;) ให้กับผู้ใช้บริการ (&quot;ผู้ใช้&quot;, &quot;คุณ&quot;)
           โดยการเข้าถึงหรือใช้บริการของเรา คุณยอมรับที่จะผูกพันตามข้อตกลงนี้ หากคุณไม่ยอมรับ
           ข้อตกลงนี้ โปรดหยุดการใช้บริการทันที
         </p>
@@ -77,7 +77,7 @@ export function Policy({ onClose }: { onClose: () => void }) {
     >
        <div
         className="bg-white p-8 rounded-2xl max-w-3xl w-full max-h-[70vh] overflow-y-auto shadow-xl transform transition-all duration-500 ease-in-out scale-95 hover:scale-100"
-        onClick={(e) => e.stopPropagation()} // Prevent event propagation
+        onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">นโยบายความเป็นส่วนตัว (Privacy Policy)</h2>
 

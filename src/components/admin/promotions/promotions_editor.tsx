@@ -41,7 +41,7 @@ function todayISODateOnly() {
 export default function PromotionEditor({ mode, id }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(mode === "edit");
-    const [saving, setSaving] = useState(false);
+    // const [saving, setSaving] = useState(false);
 
     const [code, setCode] = useState("");
     const [dtype, setDtype] = useState<PromotionType>("fixed");
@@ -119,7 +119,7 @@ export default function PromotionEditor({ mode, id }: Props) {
             expire_at,
         };
 
-        setSaving(true);
+        // setSaving(true);
         try {
             if (mode === "create") {
                 const p = await createPromotion(payload);
@@ -131,20 +131,20 @@ export default function PromotionEditor({ mode, id }: Props) {
         } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
         } finally {
-            setSaving(false);
+            // setSaving(false);
         }
     }
 
     async function confirmDelete() {
         if (!id) return;
-        setSaving(true);
+        // setSaving(true);
         try {
             await deletePromotion(id);
             await router.push("/admin/promotions");
         } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
         } finally {
-            setSaving(false);
+            // setSaving(false);
             setAskDelete(false);
         }
     }

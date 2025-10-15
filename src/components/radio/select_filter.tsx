@@ -11,7 +11,6 @@ interface SelectFilterProps {
 }
 
 function SelectFilterExample({
-  id,
   selected = "Selected",
   disabled = false,
   onChange,

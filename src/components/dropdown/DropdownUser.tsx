@@ -12,12 +12,11 @@ type DropdownUserProps = {
 
 export default function DropdownUser({
   imageURL,
-  fullname,
 }: DropdownUserProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
 
-  const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     logout();
