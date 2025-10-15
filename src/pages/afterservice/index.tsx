@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import ServiceListProcess from "./servicelist-process";
 import ServiceListSuccess from "./servicelist-success";
+import UserProfile from "../userprofile";
 
 function AfterService() {
   const menuItems = [
@@ -24,7 +25,7 @@ function AfterService() {
   function RenderContent() {
     switch (keyword) {
       case "ข้อมูลผู้ใช้งาน":
-        return <p>กำลังคิดค้นนวัฒกรรม</p>;
+        return <UserProfile />;
 
       case "รายการคำสั่งซ่อม":
         return <ServiceListProcess onLoadDone={() => setIsLoading(false)}/>;

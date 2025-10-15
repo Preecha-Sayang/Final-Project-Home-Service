@@ -46,8 +46,8 @@ function Checkbox({
         className={`
           flex items-center text-sm font-normal select-none transition-all duration-200
           ${disabled
-            ? 'cursor-not-allowed text-gray-400'
-            : 'cursor-pointer text-gray-700 hover:text-blue-500'
+            ? 'cursor-not-allowed text-[var(--gray-400)]'
+            : 'cursor-pointer text-[var(--gray-700)] hover:text-[var(--blue-500)]'
           }
         `}
       >
@@ -57,11 +57,11 @@ function Checkbox({
              relative w-[20px] h-[20px] mr-2 rounded-md border-2 transition-all duration-200 flex items-center justify-center
              ${disabled
                ? checked
-                 ? 'border-gray-300 bg-gray-200'
-                 : 'border-gray-300 bg-gray-100'
+                 ? 'border-[var(--gray-300)] bg-[var(--gray-200)]'
+                 : 'border-[var(--gray-300)] bg-[var(--gray-100)]'
                : checked
-                 ? 'border-blue-500 bg-blue-500'
-                 : 'border-gray-300 hover:border-blue-500'
+                 ? 'border-[var(--blue-500)] bg-[var(--blue-500)]'
+                 : 'border-[var(--gray-300)] hover:border-[var(--blue-500)]'
              }
            `}
          >
@@ -70,7 +70,7 @@ function Checkbox({
             <span
               className={`
                 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                ${disabled ? 'bg-blue-500' : 'text-white drop-shadow-sm'}
+                ${disabled ? 'bg-[var(--blue-500)]' : 'text-[var(--white)] drop-shadow-sm'}
               `}
             >
                <svg

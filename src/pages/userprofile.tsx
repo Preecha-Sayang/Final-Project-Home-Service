@@ -5,9 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
-import ServiceListProcess from "@/pages/afterservice/servicelist-process";
-import ServiceListSuccess from "@/pages/afterservice/servicelist-success";
-import { Save, X, Camera } from "lucide-react";
+import { Save, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 type UserData = {
@@ -302,7 +300,6 @@ function UserProfile() {
   ];
   
   const [keyword, setkeyword] = useState("ข้อมูลผู้ใช้งาน");
-  const [isLoading, setIsLoading] = useState(false);
 
   const [userData, setUserData] = useState<UserData | undefined>(undefined);
   const { accessToken } = useAuth();
@@ -376,13 +373,6 @@ function UserProfile() {
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
   const [addressError, setAddressError] = useState<string>("");
 
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [keyword]);
 
   // ซิงค์ข้อมูลผู้ใช้เริ่มต้นลงฟอร์มเมื่อโหลดเสร็จ รวมถึงที่อยู่
   useEffect(() => {
@@ -460,7 +450,16 @@ function UserProfile() {
         setProfileImageFile(null);
       }
 
-      const payload: any = {
+      const payload: {
+        fullname?: string;
+        email?: string;
+        phone_number?: string;
+        address?: string;
+        province_code?: string;
+        district_code?: string;
+        subdistrict_code?: string;
+        avatar?: string;
+      } = {
         fullname: formData.fullname || undefined,
         email: formData.email || undefined,
         phone_number: formData.phone || undefined,
@@ -550,35 +549,21 @@ function UserProfile() {
             </div>
           </div>
           <div className="w-[800px] min-h-[600px] bg-[var(--white)] shadow-sm">
-            {isLoading ? (
-              <div className="flex flex-col justify-center items-center w-[100%] h-[600px]">
-                <div className="w-8 h-8 border-4 border-[var(--gray-300)] border-t-[var(--blue-500)] rounded-full animate-spin"></div>
-              </div>
-            ) : (
-              <>
-                {keyword === "ข้อมูลผู้ใช้งาน" ? (
-                  <UserProfileForm
-                    profileImage={profileImageUrl}
-                    imageFile={profileImageFile}
-                    onImageFileChange={(file) => setProfileImageFile(file)}
-                    formData={formData}
-                    onChange={handleInputChange}
-                    provinceList={provinceList}
-                    districtList={districtList}
-                    subdistrictList={subdistrictList}
-                    onSave={handleSave}
-                    onCancel={handleCancel}
-                    addressError={addressError}
-                  />
-                ) : keyword === "รายการคำสั่งซ่อม" ? (
-                  <ServiceListProcess onLoadDone={() => setIsLoading(false)}/>
-                ) : keyword === "ประวัติการสั่งซ่อม" ? (
-                  <ServiceListSuccess onLoadDone={() => setIsLoading(false)}/>
-                ) : (
-                  <></>
-                )}
-              </>
-            )}
+            {keyword === "ข้อมูลผู้ใช้งาน" ? (
+              <UserProfileForm
+                profileImage={profileImageUrl}
+                imageFile={profileImageFile}
+                onImageFileChange={(file) => setProfileImageFile(file)}
+                formData={formData}
+                onChange={handleInputChange}
+                provinceList={provinceList}
+                districtList={districtList}
+                subdistrictList={subdistrictList}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                addressError={addressError}
+              />
+            ) : null}
           </div>
         </div>
       </div>

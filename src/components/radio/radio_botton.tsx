@@ -49,22 +49,22 @@ function RadioButton({
         className={`
           flex items-center text-sm font-normal select-none transition-all duration-200
           ${disabled
-            ? 'cursor-not-allowed text-gray-400'
-            : 'cursor-pointer text-gray-700 hover:text-blue-500'
+            ? 'cursor-not-allowed text-[var(--gray-400)]'
+            : 'cursor-pointer text-[var(--gray-700)] hover:text-[var(--blue-500)]'
           }
         `}
       >
         {/* วงกลมปุ่ม radio แบบ custom - ขนาด 20px x 20px */}
         <span
           className={`
-            relative w-[20px] h-[20px] mr-2 rounded-full border-2 bg-white transition-all duration-200
+            relative w-[20px] h-[20px] mr-2 rounded-full border-2 bg-[var(--white)] transition-all duration-200
             ${disabled
               ? checked
-                ? 'border-gray-300 bg-gray-50'
-                : 'border-gray-300 bg-gray-50'
+                ? 'border-[var(--gray-300)] bg-[var(--gray-50)]'
+                : 'border-[var(--gray-300)] bg-[var(--gray-50)]'
               : checked
-                ? 'border-blue-500 bg-white'
-                : 'border-gray-300 hover:border-blue-500'
+                ? 'border-[var(--blue-500)] bg-[var(--white)]'
+                : 'border-[var(--gray-300)] hover:border-[var(--blue-500)]'
             }
           `}
         >
@@ -73,7 +73,7 @@ function RadioButton({
             <span
               className={`
                 absolute top-1/2 left-1/2 w-2 h-2 rounded-full transform -translate-x-1/2 -translate-y-1/2
-                ${disabled ? 'bg-gray-400' : 'bg-blue-500'}
+                ${disabled ? 'bg-[var(--gray-400)]' : 'bg-[var(--blue-500)]'}
               `}
             />
           )}

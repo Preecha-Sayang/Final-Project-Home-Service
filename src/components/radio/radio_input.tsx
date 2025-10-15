@@ -123,28 +123,28 @@ export function RadioButtonWithInput({
                             disabled={disabled}
                             className={`
                                 w-full h-[42px] pt-[9px] pr-[13px] pb-[9px] pl-[13px]
-                                bg-gray-100 
-                                border border-gray-300 
+                                bg-[var(--gray-100)] 
+                                border border-[var(--gray-300)] 
                                 rounded-[6px] 
                                 text-sm 
-                                text-gray-700
-                                placeholder-gray-400
+                                text-[var(--gray-700)]
+                                placeholder-[var(--gray-400)]
                                 focus:outline-none 
                                 focus:ring-2 
-                                focus:ring-blue-500 
+                                focus:ring-[var(--blue-500)] 
                                 focus:border-transparent
                                 transition-all duration-200
                                 shadow-sm
                                 ${disabled
-                                    ? 'cursor-not-allowed bg-gray-50 text-gray-400'
-                                    : 'hover:bg-gray-50'
+                                    ? 'cursor-not-allowed bg-[var(--gray-50)] text-[var(--gray-400)]'
+                                    : 'hover:bg-[var(--gray-50)]'
                                 }
                             `}
                         />
 
                         {/* Postfix (เช่น สัญลักษณ์สกุลเงิน) ด้านขวา */}
                         <div className="absolute right-[13px] top-1/2 transform -translate-y-1/2 pointer-events-none">
-                            <span className="text-gray-500 text-sm font-medium">{postfix}</span>
+                            <span className="text-[var(--gray-500)] text-sm font-medium">{postfix}</span>
                         </div>
                     </div>
                 </div>
