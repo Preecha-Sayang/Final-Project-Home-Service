@@ -21,7 +21,6 @@ export default function App({ Component, pageProps }: AppProps) {
   const protectedRoutes = [
     "/admin",
     "/afterservice",
-    "/service",
     "/payment",
     // เพิ่มหน้าอื่นๆ ที่ต้อง login ตรงนี้
   ];
