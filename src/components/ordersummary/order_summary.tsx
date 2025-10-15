@@ -32,7 +32,6 @@ export default function OrderSummary({
   showPromotionWhenZero = false,
   currency = "฿",
   decimalDigits = 2,
-  useIcons = true,
 }: OrderSummaryProps) {
   const [open, setOpen] = useState(defaultOpen);
   

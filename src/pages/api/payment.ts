@@ -9,7 +9,7 @@ const authHeader = "Basic " + Buffer.from(`${SECRET}:`).toString("base64");
 const toSatang = (baht: number) => Math.round(baht * 100);
 
 // CHANGED: helper form-encode ตามที่ Omise API ต้องการ (x-www-form-urlencoded)
-const encode = (obj: Record<string, any>) =>
+const encode = (obj: Record<string, string | number | null | undefined>) =>
   new URLSearchParams(
     Object.entries(obj).map(([k, v]) => [k, v == null ? "" : String(v)])
   ).toString();
@@ -135,13 +135,14 @@ export default async function handler(
     }
 
     return res.status(400).json({ status: "error", message: "Invalid method" });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Payment error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Payment API error";
     return res
       .status(500)
       .json({
         status: "error",
-        message: error?.message || "Payment API error",
+        message: errorMessage,
       });
   }
 }

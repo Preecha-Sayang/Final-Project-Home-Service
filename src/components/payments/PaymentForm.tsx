@@ -14,6 +14,29 @@ export interface PaymentFormRef {
   handlePayment: () => Promise<void>;
 }
 
+// Omise types
+interface OmiseWindow extends Window {
+  Omise?: {
+    setPublicKey: (key: string) => void;
+    createToken: (
+      type: string,
+      data: {
+        name: string;
+        number: string;
+        expiration_month: number;
+        expiration_year: number;
+        security_code: string;
+      },
+      callback: (status: number, response: OmiseTokenResponse) => void
+    ) => void;
+  };
+}
+
+interface OmiseTokenResponse {
+  id: string;
+  message?: string;
+}
+
 const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({ 
   totalPrice, 
   onPaymentSuccess,
@@ -47,10 +70,9 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
     s.src = "https://cdn.omise.co/omise.js";
     s.async = true;
     s.onload = () => {
-      // @ts-ignore
-      if (window.Omise) {
-        // @ts-ignore
-        window.Omise.setPublicKey(process.env.NEXT_PUBLIC_OMISE_PUBLIC_KEY);
+      const omiseWindow = window as OmiseWindow;
+      if (omiseWindow.Omise) {
+        omiseWindow.Omise.setPublicKey(process.env.NEXT_PUBLIC_OMISE_PUBLIC_KEY || "");
       }
     };
     document.body.appendChild(s);
@@ -104,7 +126,8 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
       }
 
       if (selectedPayment === "credit_card") {
-        const Omise = (window as any).Omise;
+        const omiseWindow = window as OmiseWindow;
+        const Omise = omiseWindow.Omise;
         if (!Omise) {
           alert("โหลดไม่สำเสร็จ กรุณาลองใหม่");
           setProcessing(false);
@@ -123,7 +146,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
                 expiration_year: exp.year,
                 security_code: form.ccv,
               },
-              (status: number, response: any) => {
+              (status: number, response: OmiseTokenResponse) => {
                 if (status === 200) resolve({ id: response.id });
                 else
                   reject(new Error(response.message || "Create token failed"));
