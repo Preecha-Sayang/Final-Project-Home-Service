@@ -35,8 +35,15 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
   const [serviceName, setServiceName] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const { customerInfo } = useBookingStore()
+  const { customerInfo, resetForNewService } = useBookingStore()
   const paymentFormRef = useRef<PaymentFormRef>(null)
+
+  // Reset booking store และ selected items เมื่อเข้าหน้า service ใหม่หรือ reload
+  useEffect(() => {
+    resetForNewService()
+    setSelectedItems([])
+    setCurrentStep('items')
+  }, [serviceId, resetForNewService])
 
   useEffect(() => {
     const fetchServiceName = async () => {
