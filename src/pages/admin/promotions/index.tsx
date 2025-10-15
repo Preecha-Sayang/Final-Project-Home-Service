@@ -21,12 +21,13 @@ export default function AdminPromotionPage() {
     const [askDeleteId, setAskDeleteId] = useState<number | null>(null);
     const [askDeleteName, setAskDeleteName] = useState<string>("");
     const [doing, setDoing] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [sort, setSort] = useState<SortState>({ sortBy: "create_at", order: "DESC" });
 
     useEffect(() => {
         (async () => {
-            // setLoading(true);
+            setLoading(true);
             try {
                 const { items, total } = await listPromotions({
                     q: search.trim(),
@@ -38,7 +39,7 @@ export default function AdminPromotionPage() {
                 setRows(items);
                 setTotal(total);
             } finally {
-                // setLoading(false);
+                setLoading(false);
             }
         })();
     }, [search, page, sort]);

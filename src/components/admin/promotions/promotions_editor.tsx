@@ -41,7 +41,7 @@ function todayISODateOnly() {
 export default function PromotionEditor({ mode, id }: Props) {
     const router = useRouter();
     const [loading, setLoading] = useState(mode === "edit");
-    // const [saving, setSaving] = useState(false);
+    const [saving, setSaving] = useState(false);
 
     const [code, setCode] = useState("");
     const [dtype, setDtype] = useState<PromotionType>("fixed");
@@ -96,6 +96,7 @@ export default function PromotionEditor({ mode, id }: Props) {
     }
 
     async function submit() {
+        if (saving) return;
         if (!code.trim()) { alert("กรุณากรอก Promotion Code"); return; }
         if (!/^[A-Za-z0-9_-]+$/.test(code)) { alert("รหัสอนุญาตเฉพาะ A-Z a-z 0-9 _ -"); return; }
 
@@ -131,20 +132,20 @@ export default function PromotionEditor({ mode, id }: Props) {
         } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
         } finally {
-            // setSaving(false);
+            setSaving(false);
         }
     }
 
     async function confirmDelete() {
         if (!id) return;
-        // setSaving(true);
+        setSaving(true);
         try {
             await deletePromotion(id);
             await router.push("/admin/promotions");
         } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
         } finally {
-            // setSaving(false);
+            setSaving(false);
             setAskDelete(false);
         }
     }
@@ -346,14 +347,13 @@ export default function PromotionEditor({ mode, id }: Props) {
                         )}
 
                         {/* ปุ่มล่างยังคงไว้ เผื่อการใช้งาน scroll ยาว */}
-
-
                         <ConfirmDialog
                             open={askDelete}
                             title="ลบ Promotion นี้?"
                             description="การลบไม่สามารถย้อนกลับได้"
                             onCancel={() => setAskDelete(false)}
                             onConfirm={confirmDelete}
+                            loading={saving}
                         />
                     </div>
                 )}
@@ -364,6 +364,7 @@ export default function PromotionEditor({ mode, id }: Props) {
                         type="button"
                         className="flex px-6 py-4 gap-2 text-base text-[var(--gray-600)] font-semibold underline hover:text-[var(--blue-600)] disabled:opacity-60 cursor-pointer"
                         onClick={() => setAskDelete(true)}
+                        disabled={saving}
                     >
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
                             <path d="M4 7H20M19 7L18.133 19.142C18.0971 19.6466 17.8713 20.1188 17.5011 20.4636C17.1309 20.8083 16.6439 21 16.138 21H7.862C7.35614 21 6.86907 20.8083 6.49889 20.4636C6.1287 20.1188 5.90292 19.6466 5.867 19.142L5 7H19ZM10 11V17V11ZM14 11V17V11ZM15 7V4C15 3.73478 14.8946 3.48043 14.7071 3.29289C14.5196 3.10536 14.2652 3 14 3H10C9.73478 3 9.48043 3.10536 9.29289 3.29289C9.10536 3.48043 9 3.73478 9 4V7H15Z" stroke="#9AA1B0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
