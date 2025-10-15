@@ -55,7 +55,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
 
     // อัพเดตตาราง users ถ้ามีข้อมูลผู้ใช้ที่ต้องการเปลี่ยน
     const userUpdates: string[] = [];
-    const userParams: any[] = [];
+    const userParams: (string | number)[] = [];
     if (typeof fullname === "string") {
       userParams.push(fullname);
       userUpdates.push(`fullname = $${userParams.length}`);
@@ -134,7 +134,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
 
       if (targetAddressId) {
         const addrUpdates: string[] = [];
-        const addrParams: any[] = [];
+        const addrParams: (string | number)[] = [];
         if (typeof address === "string") {
           addrParams.push(address);
           addrUpdates.push(`address = $${addrParams.length}`);
@@ -163,7 +163,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         // เพิ่มที่อยู่ใหม่
         const cols: string[] = ["user_id"];
         const vals: string[] = ["$1"];
-        const params: any[] = [userId];
+        const params: (string | number)[] = [userId];
         if (typeof address === "string") {
           cols.push("address");
           params.push(address);
@@ -224,7 +224,22 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       [userId]
     );
 
-    const row = result.rows[0] as any;
+    const row = result.rows[0] as {
+      user_id: number;
+      fullname: string;
+      email: string;
+      phone_number: string;
+      create_at: string;
+      avatar: string | null;
+      addresses: Array<{
+        address_id: number;
+        user_id: number;
+        address: string;
+        province_code: number;
+        district_code: number;
+        subdistrict_code: number;
+      }>;
+    };
 
     return res.status(200).json({
       success: true,

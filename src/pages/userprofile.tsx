@@ -116,15 +116,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       {/* รูปโปรไฟล์ */}
       <div className="flex justify-center mb-8">
         <div className="flex flex-col items-center gap-3">
-          {/* ปุ่มไอคอนกล้องมุมขวาล่าง */}
-          <button
-              type="button"
-              onClick={pick}
-              aria-label="อัปโหลดรูปโปรไฟล์"
-              className="absolute bottom-1 right-1 z-10 w-7 h-7 rounded-full bg-[var(--white)] shadow-lg ring-1 ring-[var(--white)] border border-[var(--gray-200)] flex items-center justify-center"
-            >
-              <Camera size={14} className="text-[var(--gray-600)]" />
-            </button>
+    
           {/* รูปอวาตาร์แบบวงกลมคลิกได้พร้อมแสดงตัวอย่างและลากวางได้ */}
           <div
             className={`w-32 h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
@@ -313,7 +305,7 @@ function UserProfile() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [userData, setUserData] = useState<UserData | undefined>(undefined);
-  const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     if (!accessToken) return;
@@ -395,7 +387,7 @@ function UserProfile() {
   // ซิงค์ข้อมูลผู้ใช้เริ่มต้นลงฟอร์มเมื่อโหลดเสร็จ รวมถึงที่อยู่
   useEffect(() => {
     if (!userData) return;
-    const firstAddress = (userData as any)?.addresses?.[0] || undefined;
+    const firstAddress = (userData as { addresses?: Array<{ address: string; province_code: number; district_code: number; subdistrict_code: number }> })?.addresses?.[0] || undefined;
     setFormData((prev) => ({
       ...prev,
       fullname: userData.fullname ?? "",
@@ -406,7 +398,7 @@ function UserProfile() {
       district: firstAddress?.district_code ? String(firstAddress.district_code) : "",
       subdistrict: firstAddress?.subdistrict_code ? String(firstAddress.subdistrict_code) : "",
     }));
-    const avatarUrl = (userData as any)?.avatar || "";
+    const avatarUrl = (userData as { avatar?: string })?.avatar || "";
     setProfileImageUrl(avatarUrl);
   }, [userData]);
 
@@ -494,7 +486,7 @@ function UserProfile() {
       const data = await res.json();
       // ซิงค์ข้อมูลโปรไฟล์ที่ได้รับกลับมาไปยัง state ภายใน
       if (data?.profile) {
-        setUserData((prev) => ({ ...(prev as any), ...data.profile }));
+        setUserData((prev) => ({ ...prev, ...data.profile }));
       }
       
       // ส่ง event เพื่อแจ้งให้ navbar อัพเดตข้อมูล
@@ -579,7 +571,7 @@ function UserProfile() {
                     addressError={addressError}
                   />
                 ) : keyword === "รายการคำสั่งซ่อม" ? (
-                    <ServiceListProcess onLoadDone={() => setIsLoading(false)}/>
+                  <ServiceListProcess onLoadDone={() => setIsLoading(false)}/>
                 ) : keyword === "ประวัติการสั่งซ่อม" ? (
                   <ServiceListSuccess onLoadDone={() => setIsLoading(false)}/>
                 ) : (
