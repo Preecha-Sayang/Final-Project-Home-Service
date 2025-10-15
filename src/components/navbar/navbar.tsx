@@ -80,7 +80,7 @@ export default function Navbar() {
           {/* บริการของเรา - แสดงทั้งบนมือถือและเดสก์ท็อป */}
           <Link href="/services" className="cursor-pointer">
             <p className="flex items-center text-[var(--gray-900)] font-semibold mt-1.5 text-sm lg:text-base">
-              บริการของเรา 
+              บริการของเรา
             </p>
           </Link>
         </div>

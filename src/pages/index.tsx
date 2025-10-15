@@ -10,6 +10,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Navbar />
 
+      
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-50 to-blue-100 h-auto md:h-[520px] pt-8 md:pt-8">
         <div className="max-w-6xl mx-auto px-4 md:px-0 flex flex-col md:flex-row items-center justify-between h-full relative">

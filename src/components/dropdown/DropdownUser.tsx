@@ -34,7 +34,10 @@ export default function DropdownUser({
   return (
     <div className="relative inline-block">
       {/* User Image Button */}
-      <button onClick={() => setIsOpen(!isOpen)} className="focus:outline-none w-[40px] h-[40px] flex justify-center items-center">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="focus:outline-none w-[40px] h-[40px] flex justify-center items-center"
+      >
         <Image
           src={imageURL || "/images/user_default.png"}
           alt="user"
