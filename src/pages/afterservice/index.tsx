@@ -4,7 +4,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import ServiceListProcess from "./servicelist-process";
 import ServiceListSuccess from "./servicelist-success";
-import UserProfile from "../userprofile";
+import UserProfile from "./userprofile";
+
 
 function AfterService() {
   const menuItems = [
