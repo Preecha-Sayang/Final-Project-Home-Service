@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
 import { Plus } from "lucide-react";
 import { Pagination } from "rsuite";
+import LoadingTable from "@/components/common/LoadingTable";
 
 const PAGE_SIZE = 30;
 
@@ -46,7 +47,6 @@ export default function AdminServicesPage() {
 
     // ลากจัดเรียง > อัปเดต state + ยิง API
     async function handleReorder(nextPageItems: ServiceItem[]) {
-        // const start = (page - 1) * PAGE_SIZE;
         const merged = [...items];
         const filteredStart = (page - 1) * PAGE_SIZE;
         const filteredIdsInPage = filtered.slice(filteredStart, filteredStart + PAGE_SIZE).map(x => x.id);
@@ -83,8 +83,7 @@ export default function AdminServicesPage() {
             const totalAfter = (filtered.length - 1);
             const maxPage = Math.max(1, Math.ceil(totalAfter / PAGE_SIZE));
             if (page > maxPage) setPage(maxPage);
-        } catch (e) {
-            console.error(e)
+        } catch {
             setItems(prev);
         }
     }
@@ -117,32 +116,39 @@ export default function AdminServicesPage() {
             </div>
 
             <div className="p-8">
-                <ServiceTable
-                    items={pagedItems}
-                    loading={loading}
-                    search={search}
-                    onEdit={(item) => router.push(`/admin/services/${item.id}/edit`)}
-                    onDelete={(item) => setConfirmDel({ open: true, item, loading: false })}
-                    onReorder={handleReorder}
-                    onView={(item) => router.push(`/admin/services/${item.id}`)}
-                />
+                {loading ? (
+                    <LoadingTable />
+                ) : (
+                    <>
+                        <ServiceTable
+                            items={pagedItems}
+                            // loading={loading}
+                            search={search}
+                            onEdit={(item) => router.push(`/admin/services/${item.id}/edit`)}
+                            onDelete={(item) => setConfirmDel({ open: true, item, loading: false })}
+                            onReorder={handleReorder}
+                            onView={(item) => router.push(`/admin/services/${item.id}`)}
+                        />
 
-                {/* Pagination */}
-                <div className="mt-4 px-4 flex justify-between items-center">
-                    <div className="text-sm text-[var(--gray-500)]">รวม {filtered.length} รายการ</div>
-                    <Pagination
-                        prev
-                        next
-                        ellipsis
-                        boundaryLinks
-                        total={filtered.length}
-                        limit={PAGE_SIZE}
-                        activePage={page}
-                        onChangePage={(p) => setPage(p)}
-                    />
-
-                </div>
+                        {/* Pagination */}
+                        <div className="mt-4 px-4 flex justify-between items-center">
+                            <div className="text-sm text-[var(--gray-500)]">รวม {filtered.length} รายการ</div>
+                            <Pagination
+                                prev
+                                next
+                                ellipsis
+                                boundaryLinks
+                                total={filtered.length}
+                                limit={PAGE_SIZE}
+                                activePage={page}
+                                onChangePage={(p) => setPage(p)}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
+
+
 
             <ConfirmDialog
                 open={confirmDel.open}

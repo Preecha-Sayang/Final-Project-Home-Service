@@ -104,7 +104,7 @@ export default function ServiceTable({
     }
 
     return (
-        <div className="overflow-hidden rounded-xl border border-[var(--gray-100)]">
+        <div className="overflow-hidden rounded-t-xl border border-[var(--gray-100)]">
             <table className="w-full table-fixed border-collapse">
                 <thead>
                     <tr className="bg-[var(--gray-100)] text-base text-[var(--gray-500)]">
