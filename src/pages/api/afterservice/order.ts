@@ -5,12 +5,13 @@ import {
   AuthenticatedNextApiRequest,
 } from "../../../middlewere/auth";
 
-
 async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const email = req.user?.email;
     if (!email) {
-      return res.status(400).json({ ok: false, message: "Email not found in token" });
+      return res
+        .status(400)
+        .json({ ok: false, message: "Email not found in token" });
     }
 
     // 1️⃣ ดึงข้อมูล booking ทั้งหมดของ user
@@ -32,10 +33,11 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       ORDER BY b.order_code ASC
     `;
 
-    if (bookings.length === 0)
-      return res.status(404).json({ ok: false, message: "No bookings found." });
+    if (bookings.length === 0) {
+      return res.status(200).json({ ok: true, bookings: [] });
+    }
 
-    const bookingIds = bookings.map(b => b.booking_id);
+    const bookingIds = bookings.map((b) => b.booking_id);
 
     // 2️⃣ ดึง booking_item + service_option ที่เกี่ยวข้องทั้งหมด
     const items = await sql`
@@ -50,17 +52,17 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
     `;
 
     // 3️⃣ รวมข้อมูล items เข้าไปในแต่ละ booking
-    const bookingsWithItems = bookings.map(b => {
+    const bookingsWithItems = bookings.map((b) => {
       const itemList = items
-        .filter(i => i.booking_id === b.booking_id)
-        .map(i => ({
+        .filter((i) => i.booking_id === b.booking_id)
+        .map((i) => ({
           name: i.item_name,
           quantity: i.quantity,
-          unit: i.unit || ""  // เผื่อไม่มี unit
+          unit: i.unit || "", // เผื่อไม่มี unit
         }));
       return {
         ...b,
-        items: itemList
+        items: itemList,
       };
     });
 
