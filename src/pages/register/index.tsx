@@ -8,6 +8,9 @@ import { useRouter } from "next/router";
 import * as yup from "yup";
 import { Agreement, Policy } from "@/components/agreement";
 import axios from "axios";
+import Swal from "sweetalert2";
+
+
 // สร้าง schema validation
 const schema = yup.object().shape({
   fullname: yup
@@ -82,14 +85,19 @@ function Register() {
         headers: { "Content-Type": "application/json" },
       });
 
-      alert("สมัครสมาชิกสำเร็จ");
-      // ตรวจสอบว่ามี redirect parameter หรือไม่
-      const redirect = router.query.redirect as string;
-      if (redirect) {
-        router.push(`/login?redirect=${encodeURIComponent(redirect)}`);
-      } else {
-        router.push("/login");
-      }
+      await Swal.fire({
+            title: "สมัครสมาชิกสำเร็จ!",
+            text: "ยินดีต้อนรับ 😊",
+            icon: "success",
+            confirmButtonText: "ตกลง",
+          }).then(() => {
+            const redirect = router.query.redirect as string;
+            if (redirect) {
+              router.push(redirect);
+            } else {
+              router.push("/login");
+            }
+          });
     } catch (err) {
       if (err instanceof yup.ValidationError) {
         const newErrors: { [key: string]: string } = {};

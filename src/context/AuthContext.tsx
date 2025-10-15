@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import {jwtDecode} from "jwt-decode";
 import axios from "axios";
 
@@ -10,6 +9,15 @@ type AuthContextType = {
   login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
 };
+
+// Define the expected JWT payload structure
+interface JwtPayload {
+  exp: number;
+  // Add other JWT fields you expect here
+  // iat?: number;
+  // userId?: string;
+  // etc.
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -31,54 +39,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("refreshToken", newRefreshToken);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setAccessToken(null);
     setRefreshToken(null);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-  };
+  }, []);
+
+  const refreshAccessToken = useCallback(async () => {
+    try {
+      const res = await axios.post("/api/auth/refresh", {
+        refreshToken,
+      });
+
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
+
+      login(newAccessToken, newRefreshToken ?? refreshToken);
+      console.log("✅ Access token refreshed");
+    } catch (err) {
+      console.error("❌ Failed to refresh token", err);
+      logout();
+    }
+  }, [refreshToken, logout]);
 
   useEffect(() => {
-  if (!accessToken || !refreshToken) return;
+    if (!accessToken || !refreshToken) return;
 
-  try {
-    const decoded: any = jwtDecode(accessToken);
-    const exp = decoded.exp * 1000;
-    const now = Date.now();
+    try {
+      const decoded = jwtDecode<JwtPayload>(accessToken);
+      const exp = decoded.exp * 1000;
+      const now = Date.now();
 
-    const timeout = exp - now - 10_000;
+      const timeout = exp - now - 10_000;
 
-    if (timeout <= 0) {
-      refreshAccessToken();
-    } else {
-      const timer = setTimeout(() => {
+      if (timeout <= 0) {
         refreshAccessToken();
-      }, timeout);
+      } else {
+        const timer = setTimeout(() => {
+          refreshAccessToken();
+        }, timeout);
 
-      return () => clearTimeout(timer);
+        return () => clearTimeout(timer);
+      }
+    } catch (err) {
+      console.error("Error decoding token:", err);
     }
-  } catch (err) {
-    console.error("Error decoding token:", err);
-  }
-}, [accessToken, refreshToken]);
-
-const refreshAccessToken = async () => {
-  try {
-    const res = await axios.post("/api/auth/refresh", {
-      refreshToken,
-    });
-
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
-
-    login(newAccessToken, newRefreshToken ?? refreshToken);
-    console.log("✅ Access token refreshed");
-  } catch (err) {
-    console.error("❌ Failed to refresh token", err);
-    logout();
-  }
-};
-
-
+  }, [accessToken, refreshToken, refreshAccessToken]);
 
   return (
     <AuthContext.Provider
@@ -94,35 +100,3 @@ export const useAuth = () => {
   if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
-
-// import { useAuth } from "@/context/AuthContext";
-
-
-// export default function Home() {
-//   const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
-
-//   return (
-//     <div>
-//       <h1>{isLoggedIn ? "Welcome, you're logged in!" : "You are not logged in"}</h1>
-      
-//       {/* ถ้าไม่ล็อกอินจะแสดงปุ่ม Login */}
-//       {!isLoggedIn ? (
-//         <button
-//           onClick={() => {
-//             login("sampleAccessToken", "sampleRefreshToken");
-//           }}
-//         >
-//           Login
-//         </button>
-//       ) : (
-//         <>
-//           {/* ถ้าล็อกอินแล้ว แสดงข้อมูลและปุ่ม Logout */}
-//           <p>Access Token: {accessToken}</p>
-//           <p>Refresh Token: {refreshToken}</p>
-//           <button onClick={logout}>Logout</button>
-//         </>
-//       )}
-//     </div>
-
-//   );
-// }

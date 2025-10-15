@@ -43,7 +43,6 @@ export default function DropdownUser({
           alt="user"
           width={512}
           height={512}
-          quality={100}
           className="h-8 w-8 rounded-full cursor-pointer hover:ring-2 hover:ring-[var(--blue-200)] object-cover"
         />
       </button>

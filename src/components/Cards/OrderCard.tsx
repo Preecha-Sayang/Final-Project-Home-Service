@@ -175,7 +175,9 @@ function OrderCard({
           </div>
 
           {/* Employee */}
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className={` ${
+                !employee ? "hidden" : "flex"
+              } items-center gap-2 text-sm text-gray-600`}>
             <Image
               src="/images/icon_user.svg"
               alt="icon_user"

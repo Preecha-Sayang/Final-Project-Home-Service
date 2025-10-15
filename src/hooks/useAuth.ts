@@ -1,4 +1,4 @@
-import { useAuth } from "@/context/AuthContext"; // ปรับ path ตามจริง
+import { useAuth } from "@/context/AuthContext";
 import axios, { AxiosRequestConfig } from "axios";
 
 type FetchWithTokenType = <T = unknown>(
@@ -28,36 +28,52 @@ export function useFetchWithToken(): FetchWithTokenType {
     try {
       const res = await doFetch(accessToken);
       return res.data;
-    } catch (error: any) {
-      const isUnauthorized = error.response?.status === 401;
+    } catch (error: unknown) {
+      // ✅ ใช้ AxiosError
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
 
-      if (!isUnauthorized) {
-        throw new Error(error.response?.data?.message || "Request failed");
+        // ❗  ถ้าไม่ใช่ 401 -> โยน error ออกไป
+        if (status !== 401) {
+          throw new Error(
+            error.response?.data?.message || "Request failed"
+          );
+        }
+      } else {
+        throw new Error("Unexpected error occurred");
       }
 
+      // 🚨 ถ้าไม่มี refreshToken -> logout
       if (!refreshToken) {
         logout();
         throw new Error("No refresh token, please login again");
       }
 
       try {
+        // 🔁 Try Refresh
         const refreshRes = await axios.post("/api/auth/refresh", {
           refreshToken,
         });
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshRes.data;
+        const {
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+        } = refreshRes.data;
 
-        // fallback ถ้าไม่ได้ refreshToken ใหม่
         login(newAccessToken, newRefreshToken ?? refreshToken);
 
-        // ลองยิงใหม่
+        // 🔁 Retry Original Request
         const retryRes = await doFetch(newAccessToken);
         return retryRes.data;
-      } catch (refreshError: any) {
+      } catch (refreshError: unknown) {
         logout();
-        throw new Error(
-          refreshError.response?.data?.message || "Refresh token expired, please login again"
-        );
+        if (axios.isAxiosError(refreshError)) {
+          throw new Error(
+            refreshError.response?.data?.message ||
+              "Refresh expired, please login again"
+          );
+        }
+        throw new Error("Token refresh failed, please login again");
       }
     }
   };
