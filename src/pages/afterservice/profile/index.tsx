@@ -1,5 +1,4 @@
-import { Footer } from "@/components/footer";
-import Navbar from "@/components/navbar/navbar";
+
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
@@ -293,11 +292,6 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
 }
 
 function UserProfile() {
-  const menuItems = [
-    { label: "ข้อมูลผู้ใช้งาน", icon: "/images/icon_user.svg" },
-    { label: "รายการคำสั่งซ่อม", icon: "/images/icon_tasklist.svg" },
-    { label: "ประวัติการสั่งซ่อม", icon: "/images/icon_history.svg" },
-  ];
   
   const [keyword, setkeyword] = useState("ข้อมูลผู้ใช้งาน");
 
@@ -510,44 +504,6 @@ function UserProfile() {
 
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <div className="h-[100px] w-[100%] bg-[var(--blue-600)] flex justify-center items-center">
-        <p className="text-[32px] font-[500] text-[var(--white)]">{keyword}</p>
-      </div>
-
-      <div className="flex-grow bg-[var(--gray-100)]">
-        <div className="flex flex-row justify-center gap-[35px] my-[30px]">
-          <div
-            id="category-select"
-            className="w-[250px] h-fit bg-[var(--white)] flex flex-col gap-[16px]
-                    px-[25px] pt-[25px] border-[1px] border-[var(--gray-300)]"
-          >
-            <p className="text-[var(--gray-700)] text-[20px] font-[400]">
-              บัญชีผู้ใช้
-            </p>
-            <div className="border bg-[var(--gray-100)]"></div>
-            <div>
-              {menuItems.map((item) => (
-                <div
-                  key={item.label}
-                  id={item.label}
-                  className={`flex flex-row items-center h-[50px] gap-[12px] px-[16px] w-full
-                    hover:cursor-pointer hover:bg-[var(--gray-200)] transition-colors
-                    ${keyword === item.label ? "bg-[var(--blue-100)] text-[var(--blue-600)]" : ""}`}
-                  onClick={() => setkeyword(item.label)}
-                >
-                  <Image
-                    src={item.icon}
-                    alt={`${item.label}_icon`}
-                    width={24}
-                    height={24}
-                  />
-                  <p>{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
           <div className="w-[800px] min-h-[600px] bg-[var(--white)] shadow-sm">
             {keyword === "ข้อมูลผู้ใช้งาน" ? (
               <UserProfileForm
@@ -565,11 +521,8 @@ function UserProfile() {
               />
             ) : null}
           </div>
-        </div>
-      </div>
 
-      <Footer />
-    </div>
+
   );
 }
 

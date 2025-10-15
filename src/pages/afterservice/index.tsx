@@ -4,7 +4,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import ServiceListProcess from "./servicelist-process";
 import ServiceListSuccess from "./servicelist-success";
-import UserProfile from "./userprofile";
+
+import { useSearchParams } from "next/navigation";
+import UserProfile from "./profile";
+
+
 
 
 function AfterService() {
@@ -13,8 +17,16 @@ function AfterService() {
     { label: "รายการคำสั่งซ่อม", icon: "/images/icon_tasklist.svg" },
     { label: "ประวัติการสั่งซ่อม", icon: "/images/icon_history.svg" },
   ];
-  const [keyword, setkeyword] = useState("ข้อมูลผู้ใช้งาน");
+
+
+  const searchParams = useSearchParams();
+  const tab = searchParams.get("tab");
+
+  const [keyword, setkeyword] = useState(tab || "ข้อมูลผู้ใช้งาน");
   const [isLoading, setIsLoading] = useState(false);
+
+  
+
   useEffect(() => {
     setIsLoading(true);
     const timer = setTimeout(() => {
@@ -22,6 +34,8 @@ function AfterService() {
     }, 1000); // รอ 1 วินาที
     return () => clearTimeout(timer);
   }, [keyword]);
+
+
 
   function RenderContent() {
     switch (keyword) {

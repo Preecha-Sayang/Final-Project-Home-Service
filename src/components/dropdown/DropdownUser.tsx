@@ -10,12 +10,13 @@ type DropdownUserProps = {
   fullname?: string;
 };
 
-export default function DropdownUser({
-  imageURL,
-}: DropdownUserProps) {
+export default function DropdownUser({ imageURL }: DropdownUserProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-
+  const handleGoToTaskList = (href: string) => {
+  setIsOpen(false);
+  router.push(href);
+};
   const { logout } = useAuth();
 
   const handleLogout = () => {
@@ -24,11 +25,23 @@ export default function DropdownUser({
     router.refresh();
   };
 
-  const menuItems = [
-    { label: "ข้อมูลผู้ใช้งาน", icon: <User size={18} />, href: "/userprofile" },
-    { label: "รายการคำสั่งซ่อม", icon: <List size={18} />, href: "#" },
-    { label: "ประวัติการซ่อม", icon: <Clock size={18} />, href: "#" },
-  ];
+const menuItems = [
+  {
+    label: "ข้อมูลผู้ใช้งาน",
+    icon: <User size={18} />,
+    href: "/afterservice?tab=ข้อมูลผู้ใช้งาน",
+  },
+  {
+    label: "รายการคำสั่งซ่อม",
+    icon: <List size={18} />,
+    href: "/afterservice?tab=รายการคำสั่งซ่อม",
+  },
+  {
+    label: "ประวัติการซ่อม",
+    icon: <Clock size={18} />,
+    href: "/afterservice?tab=ประวัติการสั่งซ่อม",
+  },
+];
 
   return (
     <div className="relative inline-block">
@@ -52,9 +65,8 @@ export default function DropdownUser({
           {menuItems.map((item, idx) => (
             <a
               key={idx}
-              href={item.href}
               className="flex items-center space-x-2 px-4 py-2 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)]"
-              onClick={() => setIsOpen(false)}
+              onClick={() => handleGoToTaskList(item.href)}
             >
               {item.icon}
               <span>{item.label}</span>
