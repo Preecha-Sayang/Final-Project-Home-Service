@@ -45,7 +45,7 @@ export default function Stepper({ currentStep = 1 }: { currentStep?: number }) {
 
           {/* Steps */}
           <div className="relative flex items-center justify-between w-full cursor-pointer">
-            {steps.map((step, index) => {
+            {steps.map((step) => {
               const isActive = step.id === currentStep;
               const isCompleted = step.id < currentStep;
 

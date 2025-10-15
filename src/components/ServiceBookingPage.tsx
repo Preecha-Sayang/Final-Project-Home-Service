@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import BookingStepper from '@/components/BookingStepper'
+import Stepper from '@/components/state_list and stepper/stepper'
 import ServiceSelection from '@/components/ServiceSelection'
 import BookingDetailsForm from '@/components/BookingForm'
 import BookingFooter from '@/components/BookingFooter'
@@ -145,11 +145,25 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
           <PaymentForm 
             ref={paymentFormRef}
             totalPrice={calculateTotal()}
-            selectedItems={selectedItems}
             onPaymentSuccess={() => {
-              alert('ชำระเงินสำเร็จ!')
-              // You can redirect or handle success here
-              // Note: PaymentForm will handle redirect with booking_id
+              // แปลง items เป็น JSON string เพื่อส่งผ่าน query parameters
+              const itemsData = selectedItems.map(item => ({
+                name: item.name,
+                quantity: item.quantity
+              }))
+              
+              // Redirect ไปหน้าสรุปใหม่แทนการเพิ่ม step
+              router.push({
+                pathname: '/payment/summary',
+                query: {
+                  serviceName: serviceName,
+                  items: JSON.stringify(itemsData),
+                  totalPrice: calculateTotal(),
+                  date: customerInfo.serviceDate?.toISOString(),
+                  time: customerInfo.serviceTime,
+                  address: formatAddress()
+                }
+              })
             }}
             onPaymentError={(error) => {
               console.error('Payment error:', error)
@@ -322,7 +336,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
 
       {/* Stepper */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <BookingStepper currentStepId={currentStep} />
+        <Stepper currentStep={currentStep === 'items' ? 1 : currentStep === 'details' ? 2 : 3} />
       </div>
 
       {/* Main Content */}
