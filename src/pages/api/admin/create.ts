@@ -10,7 +10,6 @@ export interface AdminRequest extends NextApiRequest {
 async function handler(req: AdminRequest, res: NextApiResponse) {
     if (req.method !== "POST") return res.status(405).end();
 
-    const { serviceId, name, price, unit } = req.body ?? {};
     console.log("by admin:", req.admin.email);
 
     // await client.query(

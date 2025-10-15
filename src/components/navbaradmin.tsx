@@ -36,6 +36,7 @@ function NavbarAdmin({ menuItems, activePath, loading }: NavbarProps) {
         router.push("/admin/login");
       }
     } catch (e) {
+      console.error(e)
       router.push("/admin/login");
     }
   };

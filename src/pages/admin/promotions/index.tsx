@@ -17,7 +17,6 @@ export default function AdminPromotionPage() {
     const [rows, setRows] = useState<PromotionRow[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
-    const [loading, setLoading] = useState(true);
     const [askDeleteId, setAskDeleteId] = useState<number | null>(null);
     const [askDeleteName, setAskDeleteName] = useState<string>("");
     const [doing, setDoing] = useState(false);
@@ -26,7 +25,7 @@ export default function AdminPromotionPage() {
 
     useEffect(() => {
         (async () => {
-            setLoading(true);
+            // setLoading(true);
             try {
                 const { items, total } = await listPromotions({
                     q: search.trim(),
@@ -38,7 +37,7 @@ export default function AdminPromotionPage() {
                 setRows(items);
                 setTotal(total);
             } finally {
-                setLoading(false);
+                // setLoading(false);
             }
         })();
     }, [search, page, sort]);

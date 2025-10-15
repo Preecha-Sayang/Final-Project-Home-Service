@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "lib/db";
-import type { CategoryRow, CategoryUpdatePayload, CategoryOneOk, CategoryErr } from "@/types/category";
+import type { CategoryRow, CategoryUpdatePayload } from "@/types/category";
 
-type OK= {ok: true};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const id = Number(req.query.id);

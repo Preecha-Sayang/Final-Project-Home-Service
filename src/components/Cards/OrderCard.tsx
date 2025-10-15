@@ -203,7 +203,7 @@ function OrderCard({
               รายการ:
             </span>
             <div className="mt-1 space-y-1">
-              {items.map((item, idx) => (
+              {items.map((item) => (
                 <div
                   key={`mobile-${item.name}-${item.quantity}-${item.unit}`}
                   className="text-sm text-gray-900 font-prompt"

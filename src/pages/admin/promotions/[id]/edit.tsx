@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { useRouter } from "next/router";
 import PromotionEditor from "@/components/admin/promotions/promotions_editor";
 import BackHeader from "@/components/admin/common/BackHeader";

@@ -3,7 +3,6 @@ import { sql } from "lib/db";
 import type {
     PromotionRow,
     PromotionCreatePayload,
-    PromotionListOk,
     PromotionErr,
     PromotionOneOk,
 } from "@/types/promotion";

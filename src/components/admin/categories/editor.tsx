@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import type {
   HexColor,
-  CategoryCreateInput,
   CategoryRow,
 } from "@/types/category";
 import {
@@ -57,13 +56,13 @@ export default function CategoryEditor({ mode, id }: Props) {
     }
     setSaving(true);
     try {
-      const payload: CategoryCreateInput = {
-        name: name.trim(),
-        bg_color_hex: bg,
-        text_color_hex: text,
-        ring_color_hex: ring,
-        admin_id: adminId,
-      };
+      // const payload: CategoryCreateInput = {
+      //   name: name.trim(),
+      //   bg_color_hex: bg,
+      //   text_color_hex: text,
+      //   ring_color_hex: ring,
+      //   admin_id: adminId,
+      // };
       if (mode === "create") {
         const created = await createCategory({
           name: name.trim(),

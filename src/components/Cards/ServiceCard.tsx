@@ -8,7 +8,6 @@ interface ServiceCardProps {
   title: string;
   price: string;
   serviceId?: number;
-  // description?: string;
   onCategoryClick?: (category: string) => void;
   categoryColors?: {
     bg?: string | null;

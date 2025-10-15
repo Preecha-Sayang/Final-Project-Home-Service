@@ -17,7 +17,7 @@ async function fileToDataURI(file: Blob, mime: string) {
     return `data:${mime};base64,${buf.toString("base64")}`;
 }
 
-export const config = { api: { bodyParser: false } };// ปิด bodyParser เพื่อใช้ FormData เอง
+// export const config = { api: { bodyParser: false } };// ปิด bodyParser เพื่อใช้ FormData เอง
 type RequestWithFormData = NextApiRequest & {
     formData?: () => Promise<FormData>;
 };

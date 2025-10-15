@@ -43,16 +43,16 @@ export default function App({ Component, pageProps }: AppProps) {
     return (
       <div className={fontPrompt.className}>
         <AuthProvider>
-          <ProtectedRoute 
+          {/* <ProtectedRoute 
             redirectTo="/admin/login"
             popupTitle="กรุณาเข้าสู่ระบบ"
             popupMessage="คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้า Admin"
             allowCancel={false}
-          >
+          > */}
             <AdminShell>
               <Component {...pageProps} />
             </AdminShell>
-          </ProtectedRoute>
+          {/* </ProtectedRoute> */}
         </AuthProvider>
       </div>
     );

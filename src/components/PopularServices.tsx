@@ -17,7 +17,6 @@ export default function PopularServices() {
           title={service.servicename}
           price={service.price}
           serviceId={service.service_id}
-          description={service.description}
         />
       ))}
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+
 
 interface RadioButtonProps {
   id: string;
@@ -23,7 +23,8 @@ function RadioButton({
    * ฟังก์ชันจัดการเมื่อมีการเปลี่ยนแปลงค่า
    * จะทำงานเฉพาะเมื่อปุ่มไม่ถูกปิดใช้งาน
    */
-  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+  const handleChange: React.ChangeEventHandler<HTMLInputElement> = () => {
+
     if (!disabled && onChange) {
       onChange(value);
     }

@@ -46,7 +46,7 @@ export default function AdminServicesPage() {
 
     // ลากจัดเรียง > อัปเดต state + ยิง API
     async function handleReorder(nextPageItems: ServiceItem[]) {
-        const start = (page - 1) * PAGE_SIZE;
+        // const start = (page - 1) * PAGE_SIZE;
         const merged = [...items];
         const filteredStart = (page - 1) * PAGE_SIZE;
         const filteredIdsInPage = filtered.slice(filteredStart, filteredStart + PAGE_SIZE).map(x => x.id);
@@ -84,6 +84,7 @@ export default function AdminServicesPage() {
             const maxPage = Math.max(1, Math.ceil(totalAfter / PAGE_SIZE));
             if (page > maxPage) setPage(maxPage);
         } catch (e) {
+            console.error(e)
             setItems(prev);
         }
     }
