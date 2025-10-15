@@ -1,28 +1,33 @@
 import { useState, useEffect, useMemo } from 'react'
 import { MapPin } from 'lucide-react'
 import { useBookingStore } from '@/stores/bookingStore'
-import {
-  useThailandAddress,
-  type District,
-  type Subdistrict,
-} from '@/hooks/useThailandAddress'
 import DatePicker from '@/components/input/inputDatePicker/date_picker_select'
 import TimePicker from '@/components/input/inputTimePicker/time_picker_select'
 import InputField from '@/components/input/inputField/input_state'
 import InputDropdown from '@/components/input/inputDropdown/input_dropdown'
 import { format, parseISO, isToday, parse } from 'date-fns'
 
+// Types for location data
+interface Province {
+  province_code: number
+  province_name_th: string
+  province_name_en: string
+}
+
+interface District {
+  district_code: number
+  district_name_th: string
+  district_name_en: string
+}
+
+interface Subdistrict {
+  subdistrict_code: number
+  subdistrict_name_th: string
+  subdistrict_name_en: string
+}
+
 const BookingDetailsForm: React.FC = () => {
   const { customerInfo, updateCustomerInfo } = useBookingStore()
-
-  // ใช้ Thailand Address Hook
-  const {
-    provinces,
-    getDistrictsByProvince,
-    getSubdistrictsByDistrict,
-    loading: addressLoading,
-    error: addressError,
-  } = useThailandAddress()
 
   // Form state
   const [serviceDate, setServiceDate] = useState<string>(
@@ -39,8 +44,32 @@ const BookingDetailsForm: React.FC = () => {
   const [selectedProvinceCode, setSelectedProvinceCode] = useState<string>('')
   const [selectedDistrictCode, setSelectedDistrictCode] = useState<string>('')
   const [selectedSubdistrictCode, setSelectedSubdistrictCode] = useState<string>('')
+  
+  // Location data from API
+  const [provinces, setProvinces] = useState<Province[]>([])
   const [districts, setDistricts] = useState<District[]>([])
   const [subdistricts, setSubdistricts] = useState<Subdistrict[]>([])
+  const [addressLoading, setAddressLoading] = useState(true)
+  const [addressError, setAddressError] = useState<string | null>(null)
+
+  // Load provinces on component mount
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        setAddressLoading(true)
+        const response = await fetch('/api/location/provinces')
+        if (!response.ok) throw new Error('Failed to fetch provinces')
+        const data = await response.json()
+        setProvinces(data)
+      } catch (error) {
+        console.error('Error fetching provinces:', error)
+        setAddressError('ไม่สามารถโหลดข้อมูลจังหวัดได้')
+      } finally {
+        setAddressLoading(false)
+      }
+    }
+    fetchProvinces()
+  }, [])
 
   // Update store when form values change
   useEffect(() => {
@@ -58,20 +87,29 @@ const BookingDetailsForm: React.FC = () => {
   }, [serviceDate, serviceTime, address, province, district, subDistrict, additionalInfo, updateCustomerInfo, customerInfo.latitude, customerInfo.longitude])
 
   // Handle province selection
-  const handleProvinceChange = (provinceCode: string) => {
+  const handleProvinceChange = async (provinceCode: string) => {
     const code = parseInt(provinceCode)
     setSelectedProvinceCode(provinceCode)
     setSelectedDistrictCode('')
     setSelectedSubdistrictCode('')
 
     // หาชื่อจังหวัด
-    const provinceData = provinces.find(p => p.code === code)
+    const provinceData = provinces.find(p => p.province_code === code)
     if (provinceData) {
-      setProvince(provinceData.nameTh)
-      // โหลดอำเภอ
-      const districtsList = getDistrictsByProvince(code)
-      setDistricts(districtsList)
-      setSubdistricts([])
+      setProvince(provinceData.province_name_th)
+      
+      // โหลดอำเภอจาก API
+      try {
+        const response = await fetch(`/api/location/districts?province_code=${code}`)
+        if (!response.ok) throw new Error('Failed to fetch districts')
+        const data = await response.json()
+        setDistricts(data)
+        setSubdistricts([])
+      } catch (error) {
+        console.error('Error fetching districts:', error)
+        setDistricts([])
+      }
+      
       // Reset ค่าอื่นๆ
       setDistrict('')
       setSubDistrict('')
@@ -79,18 +117,27 @@ const BookingDetailsForm: React.FC = () => {
   }
 
   // Handle district selection
-  const handleDistrictChange = (districtCode: string) => {
+  const handleDistrictChange = async (districtCode: string) => {
     const code = parseInt(districtCode)
     setSelectedDistrictCode(districtCode)
     setSelectedSubdistrictCode('')
 
     // หาชื่ออำเภอ
-    const districtData = districts.find(d => d.code === code)
+    const districtData = districts.find(d => d.district_code === code)
     if (districtData) {
-      setDistrict(districtData.nameTh)
-      // โหลดตำบล
-      const subdistrictsList = getSubdistrictsByDistrict(code)
-      setSubdistricts(subdistrictsList)
+      setDistrict(districtData.district_name_th)
+      
+      // โหลดตำบลจาก API
+      try {
+        const response = await fetch(`/api/location/subdistricts?district_code=${code}`)
+        if (!response.ok) throw new Error('Failed to fetch subdistricts')
+        const data = await response.json()
+        setSubdistricts(data)
+      } catch (error) {
+        console.error('Error fetching subdistricts:', error)
+        setSubdistricts([])
+      }
+      
       // Reset ค่าอื่นๆ
       setSubDistrict('')
     }
@@ -101,9 +148,9 @@ const BookingDetailsForm: React.FC = () => {
     const code = parseInt(subdistrictCode)
     setSelectedSubdistrictCode(subdistrictCode)
     // หาชื่อตำบล
-    const subdistrictData = subdistricts.find(s => s.code === code)
+    const subdistrictData = subdistricts.find(s => s.subdistrict_code === code)
     if (subdistrictData) {
-      setSubDistrict(subdistrictData.nameTh)
+      setSubDistrict(subdistrictData.subdistrict_name_th)
     }
   }
 
@@ -169,18 +216,18 @@ const BookingDetailsForm: React.FC = () => {
 
   // Prepare options for dropdowns
   const provinceOptions = provinces.map(p => ({
-    label: p.nameTh,
-    value: p.code.toString(),
+    label: p.province_name_th,
+    value: p.province_code.toString(),
   }))
 
   const districtOptions = districts.map(d => ({
-    label: d.nameTh,
-    value: d.code.toString(),
+    label: d.district_name_th,
+    value: d.district_code.toString(),
   }))
 
   const subdistrictOptions = subdistricts.map(s => ({
-    label: s.nameTh,
-    value: s.code.toString(),
+    label: s.subdistrict_name_th,
+    value: s.subdistrict_code.toString(),
   }))
 
   return (

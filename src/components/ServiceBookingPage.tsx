@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Image from 'next/image'
-import BookingStepper from '@/components/BookingStepper'
+import Stepper from '@/components/state_list and stepper/stepper'
 import ServiceSelection from '@/components/ServiceSelection'
 import BookingDetailsForm from '@/components/BookingForm'
 import BookingFooter from '@/components/BookingFooter'
@@ -11,6 +11,8 @@ import { useBookingStore } from '@/stores/bookingStore'
 import axios from 'axios'
 import Navbar from '@/components/navbar/navbar'
 import { isToday, isBefore, startOfDay } from 'date-fns'
+import PaymentForm, { PaymentFormRef } from '@/components/payments/PaymentForm'
+import { useAuth } from '@/context/AuthContext'
 
 type CartItem = {
   service_option_id: number
@@ -27,12 +29,21 @@ interface ServiceBookingPageProps {
 
 const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) => {
   const router = useRouter()
+  const { isLoggedIn } = useAuth()
   const [currentStep, setCurrentStep] = useState<'items' | 'details' | 'payment'>('items')
   const [selectedItems, setSelectedItems] = useState<CartItem[]>([])
   const [serviceName, setServiceName] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const { customerInfo } = useBookingStore()
+  const { customerInfo, resetForNewService } = useBookingStore()
+  const paymentFormRef = useRef<PaymentFormRef>(null)
+
+  // Reset booking store และ selected items เมื่อเข้าหน้า service ใหม่หรือ reload
+  useEffect(() => {
+    resetForNewService()
+    setSelectedItems([])
+    setCurrentStep('items')
+  }, [serviceId, resetForNewService])
 
   useEffect(() => {
     const fetchServiceName = async () => {
@@ -58,6 +69,13 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
 
   const handleNext = () => {
     if (currentStep === 'items') {
+      // ตรวจสอบว่า login แล้วหรือยัง ก่อนจะไป step 2
+      if (!isLoggedIn) {
+        // เก็บ path ปัจจุบันเพื่อให้กลับมาหลัง login
+        const currentPath = router.asPath
+        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+        return
+      }
       setCurrentStep('details')
     } else if (currentStep === 'details') {
       setCurrentStep('payment')
@@ -131,10 +149,33 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
 
       case 'payment':
         return (
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">ชำระเงิน</h2>
-            <p className="text-gray-600">หน้าชำระเงินจะอยู่ที่นี่</p>
-          </div>
+          <PaymentForm 
+            ref={paymentFormRef}
+            totalPrice={calculateTotal()}
+            onPaymentSuccess={() => {
+              // แปลง items เป็น JSON string เพื่อส่งผ่าน query parameters
+              const itemsData = selectedItems.map(item => ({
+                name: item.name,
+                quantity: item.quantity
+              }))
+              
+              // Redirect ไปหน้าสรุปใหม่แทนการเพิ่ม step
+              router.push({
+                pathname: '/payment/summary',
+                query: {
+                  serviceName: serviceName,
+                  items: JSON.stringify(itemsData),
+                  totalPrice: calculateTotal(),
+                  date: customerInfo.serviceDate?.toISOString(),
+                  time: customerInfo.serviceTime,
+                  address: formatAddress()
+                }
+              })
+            }}
+            onPaymentError={(error) => {
+              console.error('Payment error:', error)
+            }}
+          />
         )
       default:
         return null
@@ -203,12 +244,22 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
       }
     }
 
+    // กำหนดข้อความปุ่ม Next
+    const getNextButtonText = () => {
+      if (currentStep === 'payment') return 'ชำระเงิน'
+      if (currentStep === 'items' && !isLoggedIn && selectedItems.length > 0) return 'Login เพื่อดำเนินการต่อ'
+      return 'ดำเนินการต่อ'
+    }
+
     return (
       <BookingFooter
         onBack={handleBack}
-        onNext={currentStep === 'payment' ? () => alert('ชำระเงินสำเร็จ!') : handleNext}
+        onNext={currentStep === 'payment' ? () => {
+          // Call payment form's handlePayment when on payment step
+          paymentFormRef.current?.handlePayment()
+        } : handleNext}
         backText={currentStep === 'items' ? 'กลับไปหน้าบริการ' : 'ย้อนกลับ'}
-        nextText={currentStep === 'payment' ? 'ชำระเงิน' : 'ดำเนินการต่อ'}
+        nextText={getNextButtonText()}
         nextDisabled={!canProceed()}
         showBack={true}
         showNext={true}
@@ -292,7 +343,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
 
       {/* Stepper */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <BookingStepper currentStepId={currentStep} />
+        <Stepper currentStep={currentStep === 'items' ? 1 : currentStep === 'details' ? 2 : 3} />
       </div>
 
       {/* Main Content */}
