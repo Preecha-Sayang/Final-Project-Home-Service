@@ -31,7 +31,7 @@ async function parseForm(req: NextApiRequest): Promise<{ file?: formidable.File 
   return new Promise((resolve, reject) => {
     form.parse(req, (err, _fields, files) => {
       if (err) return reject(err);
-      const raw = (files as any).file;
+      const raw = (files as { file?: formidable.File | formidable.File[] }).file;
       const file = Array.isArray(raw) ? (raw[0] as formidable.File) : (raw as formidable.File | undefined);
       resolve({ file });
     });
@@ -51,7 +51,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
     const { file } = await parseForm(req);
     if (!file) return res.status(400).json({ error: "Missing file" });
 
-    const filepath = (file as any).filepath as string | undefined;
+    const filepath = (file as formidable.File).filepath;
     if (!filepath) {
       return res.status(400).json({ error: "Uploaded file has no path. Please try again." });
     }
@@ -67,7 +67,7 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         { folder: "profiles", resource_type: "image", overwrite: true },
         (err, result) => {
           if (err || !result) return reject(err || new Error("Upload failed"));
-          resolve(result as any);
+          resolve(result as { secure_url: string });
         }
       );
 

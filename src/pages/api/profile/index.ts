@@ -44,7 +44,22 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    const row = result.rows[0] as any;
+    const row = result.rows[0] as {
+      user_id: number;
+      fullname: string;
+      email: string;
+      phone_number: string;
+      create_at: string;
+      avatar: string | null;
+      address: {
+        address_id: number;
+        user_id: number;
+        address: string;
+        province_code: number;
+        district_code: number;
+        subdistrict_code: number;
+      } | null;
+    };
 
     // รักษาความเข้ากันได้ของ API: คืนค่าที่อยู่เป็น array แม้ว่าจะมีได้เพียงที่อยู่เดียว
     const addresses = row.address ? [row.address] : [];

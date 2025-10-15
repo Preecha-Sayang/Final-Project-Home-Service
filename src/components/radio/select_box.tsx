@@ -89,10 +89,10 @@ export default function SelectBox({
         flex flex-col items-center justify-center 
         rounded-[5px] border transition-all
         ${disabled 
-          ? "bg-gray-100 border-gray-200 cursor-not-allowed opacity-60" 
+          ? "bg-[var(--gray-100)] border-[var(--gray-200)] cursor-not-allowed opacity-60" 
           : isSelected 
-            ? "bg-blue-50 border-blue-500" 
-            : "bg-white border-gray-300 hover:border-blue-500"
+            ? "bg-[var(--blue-50)] border-[var(--blue-500)]" 
+            : "bg-[var(--white)] border-[var(--gray-300)] hover:border-[var(--blue-500)]"
         }
         ${className}
       `}
@@ -110,12 +110,12 @@ export default function SelectBox({
       <span
         className={`mt-2 font-medium transition-all ${
           disabled
-            ? "text-gray-400"
+            ? "text-[var(--gray-400)]"
             : isSelected
-            ? "text-blue-600"
+            ? "text-[var(--blue-600)]"
             : hovered
-            ? "text-blue-600"
-            : "text-gray-500"
+            ? "text-[var(--blue-600)]"
+            : "text-[var(--gray-500)]"
         }`}
       >
         {getDisplayText()}

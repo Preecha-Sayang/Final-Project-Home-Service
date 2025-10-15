@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
+import { Save, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 type UserData = {
@@ -52,10 +53,11 @@ type UserProfileFormProps = {
   subdistrictList: Subdistrict[];
   onSave: () => void;
   onCancel: () => void;
+  addressError: string;
 };
 
 
-function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData, onChange, provinceList, districtList, subdistrictList, onSave, onCancel }: UserProfileFormProps) {
+function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData, onChange, provinceList, districtList, subdistrictList, onSave, onCancel, addressError }: UserProfileFormProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [dragOver, setDragOver] = useState(false);
@@ -112,6 +114,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       {/* รูปโปรไฟล์ */}
       <div className="flex justify-center mb-8">
         <div className="flex flex-col items-center gap-3">
+    
           {/* รูปอวาตาร์แบบวงกลมคลิกได้พร้อมแสดงตัวอย่างและลากวางได้ */}
           <div
             className={`w-32 h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
@@ -132,7 +135,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             {/* ชั้นทับโปร่งแสงเมื่อ hover */}
             <div className="absolute inset-0 bg-[var(--black)]/0 hover:bg-[var(--black)]/10 transition-colors" />
           </div>
-
+          
           {/* ช่องเลือกไฟล์แบบซ่อน */}
           <input
             ref={inputRef}
@@ -211,9 +214,16 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             value={formData.address}
             onChange={(e) => onChange("address", e.target.value)}
             required
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
-              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            className={`w-full h-[44px] px-4 border rounded-md text-base font-medium text-[var(--gray-900)]
+              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]
+              ${addressError ? 'border-[var(--red)]' : 'border-[var(--gray-300)]'}`}
           />
+          {/* ข้อความแสดงข้อผิดพลาดของที่อยู่ */}
+          {addressError && (
+            <div className="text-xs text-[var(--red)] mt-1" role="alert" aria-live="polite">
+              {addressError}
+            </div>
+          )}
         </div>
 
         {/* จังหวัด / Province */}
@@ -264,12 +274,18 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       </div>
 
       {/* ปุ่มบันทึกและยกเลิก / Save and Cancel Buttons */}
-      <div className="flex justify-center gap-4 mt-8">
-        <ButtonPrimary onClick={onSave} className="w-[200px]">
-          บันทึก
+      <div className="grid grid-cols-2 gap-x-6 mt-8">
+        <ButtonPrimary onClick={onSave} className="w-full">
+          <span className="flex items-center justify-center gap-2">
+            <Save size={16} />
+            <span>บันทึก</span>
+          </span>
         </ButtonPrimary>
-        <ButtonSecondary onClick={onCancel} className="w-[200px]">
-          ยกเลิก
+        <ButtonSecondary onClick={onCancel} className="w-full">
+          <span className="flex items-center justify-center gap-2 text-[var(--blue-600)]">
+            <X size={16} />
+            <span>ยกเลิก</span>
+          </span>
         </ButtonSecondary>
       </div>
     </div>
@@ -284,10 +300,9 @@ function UserProfile() {
   ];
   
   const [keyword, setkeyword] = useState("ข้อมูลผู้ใช้งาน");
-  const [isLoading, setIsLoading] = useState(false);
 
   const [userData, setUserData] = useState<UserData | undefined>(undefined);
-  const { isLoggedIn, accessToken, refreshToken, login, logout } = useAuth();
+  const { accessToken } = useAuth();
 
   useEffect(() => {
     if (!accessToken) return;
@@ -356,19 +371,13 @@ function UserProfile() {
 
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string>("");
+  const [addressError, setAddressError] = useState<string>("");
 
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [keyword]);
 
   // ซิงค์ข้อมูลผู้ใช้เริ่มต้นลงฟอร์มเมื่อโหลดเสร็จ รวมถึงที่อยู่
   useEffect(() => {
     if (!userData) return;
-    const firstAddress = (userData as any)?.addresses?.[0] || undefined;
+    const firstAddress = (userData as { addresses?: Array<{ address: string; province_code: number; district_code: number; subdistrict_code: number }> })?.addresses?.[0] || undefined;
     setFormData((prev) => ({
       ...prev,
       fullname: userData.fullname ?? "",
@@ -379,11 +388,16 @@ function UserProfile() {
       district: firstAddress?.district_code ? String(firstAddress.district_code) : "",
       subdistrict: firstAddress?.subdistrict_code ? String(firstAddress.subdistrict_code) : "",
     }));
-    const avatarUrl = (userData as any)?.avatar || "";
+    const avatarUrl = (userData as { avatar?: string })?.avatar || "";
     setProfileImageUrl(avatarUrl);
   }, [userData]);
 
   const handleInputChange = (field: string, value: string) => {
+    // ล้าง error ของ address เมื่อผู้ใช้เริ่มพิมพ์
+    if (field === "address" && addressError) {
+      setAddressError("");
+    }
+    
     setFormData((prev) => {
       if (field === "province") {
         return { ...prev, province: value, district: ""};
@@ -401,10 +415,16 @@ function UserProfile() {
       console.warn("No access token");
       return;
     }
+    
+    // ตรวจสอบว่ามีที่อยู่หรือไม่
     if (!formData.address || formData.address.trim() === "") {
-      alert("กรุณากรอกที่อยู่");
+      setAddressError("กรุณากรอกที่อยู่");
       return;
     }
+    
+    // ล้าง error ก่อนบันทึก
+    setAddressError("");
+    
     try {
       // กำหนด URL ของรูปอวาตาร์ที่จะบันทึก
       let avatarUrlToSave = profileImageUrl;
@@ -430,7 +450,16 @@ function UserProfile() {
         setProfileImageFile(null);
       }
 
-      const payload: any = {
+      const payload: {
+        fullname?: string;
+        email?: string;
+        phone_number?: string;
+        address?: string;
+        province_code?: string;
+        district_code?: string;
+        subdistrict_code?: string;
+        avatar?: string;
+      } = {
         fullname: formData.fullname || undefined,
         email: formData.email || undefined,
         phone_number: formData.phone || undefined,
@@ -456,7 +485,7 @@ function UserProfile() {
       const data = await res.json();
       // ซิงค์ข้อมูลโปรไฟล์ที่ได้รับกลับมาไปยัง state ภายใน
       if (data?.profile) {
-        setUserData((prev) => ({ ...(prev as any), ...data.profile }));
+        setUserData((prev) => ({ ...prev, ...data.profile }));
       }
       
       // ส่ง event เพื่อแจ้งให้ navbar อัพเดตข้อมูล
@@ -520,34 +549,21 @@ function UserProfile() {
             </div>
           </div>
           <div className="w-[800px] min-h-[600px] bg-[var(--white)] shadow-sm">
-            {isLoading ? (
-              <div className="flex flex-col justify-center items-center w-[100%] h-[600px]">
-                <div className="w-8 h-8 border-4 border-[var(--gray-300)] border-t-[var(--blue-500)] rounded-full animate-spin"></div>
-              </div>
-            ) : (
-              <>
-                {keyword === "ข้อมูลผู้ใช้งาน" ? (
-                  <UserProfileForm
-                    profileImage={profileImageUrl}
-                    imageFile={profileImageFile}
-                    onImageFileChange={(file) => setProfileImageFile(file)}
-                    formData={formData}
-                    onChange={handleInputChange}
-                    provinceList={provinceList}
-                    districtList={districtList}
-                    subdistrictList={subdistrictList}
-                    onSave={handleSave}
-                    onCancel={handleCancel}
-                  />
-                ) : keyword === "รายการคำสั่งซ่อม" ? (
-                    <p className="p-8">OrderService</p>
-                ) : keyword === "ประวัติการสั่งซ่อม" ? (
-                  <p className="p-8">กำลังคิดค้นนวัฒกรรม</p>
-                ) : (
-                  <p className="p-8">กรุณาเลือกนวัฒกรรมใหม่</p>
-                )}
-              </>
-            )}
+            {keyword === "ข้อมูลผู้ใช้งาน" ? (
+              <UserProfileForm
+                profileImage={profileImageUrl}
+                imageFile={profileImageFile}
+                onImageFileChange={(file) => setProfileImageFile(file)}
+                formData={formData}
+                onChange={handleInputChange}
+                provinceList={provinceList}
+                districtList={districtList}
+                subdistrictList={subdistrictList}
+                onSave={handleSave}
+                onCancel={handleCancel}
+                addressError={addressError}
+              />
+            ) : null}
           </div>
         </div>
       </div>
