@@ -8,6 +8,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useAuth } from "@/context/AuthContext"; // ✅ import context
 import axios from "axios";
+import Swal from "sweetalert2";
 
 interface LoginFormInputs {
   email: string;
@@ -45,13 +46,20 @@ const onSubmit = async (data: LoginFormInputs) => {
     const { accessToken, refreshToken } = res.data;
     login(accessToken, refreshToken); // ✅ login ผ่าน context
     
-    // ตรวจสอบว่ามี redirect parameter หรือไม่
-    const redirect = router.query.redirect as string;
-    if (redirect) {
-      router.push(redirect);
-    } else {
-      router.push("/");
-    }
+
+   await Swal.fire({
+      title: "เข้าสู่ระบบสำเร็จ!",
+      text: "ยินดีต้อนรับ 😊",
+      icon: "success",
+      confirmButtonText: "ตกลง",
+    }).then(() => {
+      const redirect = router.query.redirect as string;
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        router.push("/");
+      }
+    });
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
