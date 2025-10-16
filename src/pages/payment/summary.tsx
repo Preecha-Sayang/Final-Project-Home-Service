@@ -38,20 +38,11 @@ export default function PaymentSummaryPage() {
 
   useEffect(() => {
     if (router.isReady) {
-      console.log('=== SUMMARY PAGE LOADED ===');
-      console.log('Current URL:', window.location.href);
-      console.log('Router Query:', router.query);
-      console.log('Booking ID:', bookingId);
-      console.log('Charge ID:', chargeId);
-      
       if (bookingId) {
-        console.log('📋 Fetching booking data with ID:', bookingId);
         fetchBookingData(bookingId as string)
       } else if (chargeId) {
-        console.log('💳 Verifying payment with Charge ID:', chargeId);
         verifyPayment(chargeId as string)
       } else {
-        console.log('⚠️ No bookingId or chargeId found');
         setError('ไม่พบข้อมูลการจอง กรุณาตรวจสอบ URL');
         setIsLoading(false)
       }
@@ -60,25 +51,18 @@ export default function PaymentSummaryPage() {
 
   const fetchBookingData = async (bookingId: string) => {
     try {
-      console.log('=== FETCHING BOOKING DATA ===');
-      console.log('Booking ID:', bookingId);
-      
       const response = await fetch(`/api/bookings/${bookingId}`)
       const data = await response.json()
 
-      console.log('API Response Status:', response.status);
-      console.log('API Response Data:', data);
-
       if (response.ok && data.success) {
-        console.log('✅ Booking data fetched successfully:', data.booking);
         setBookingData(data.booking)
         setPaymentVerified(data.booking.status === 'confirmed')
       } else {
-        console.error('❌ Failed to fetch booking:', data)
+        console.error('Failed to fetch booking:', data)
         setError('ไม่สามารถดึงข้อมูลการจองได้')
       }
     } catch (error) {
-      console.error('❌ Error fetching booking:', error)
+      console.error('Error fetching booking:', error)
       setError('เกิดข้อผิดพลาดในการดึงข้อมูลการจอง')
     } finally {
       setIsLoading(false)
@@ -87,24 +71,17 @@ export default function PaymentSummaryPage() {
 
   const verifyPayment = async (chargeId: string) => {
     try {
-      console.log('=== VERIFYING PAYMENT ===');
-      console.log('Charge ID:', chargeId);
-      
       const response = await fetch(`/api/verify-payment?chargeId=${chargeId}`)
       const data = await response.json()
 
-      console.log('Payment Verification Response:', response.status);
-      console.log('Payment Verification Data:', data);
-
       if (response.ok && data.status === 'success' && data.paid) {
-        console.log('✅ Payment verified successfully');
         setPaymentVerified(true)
       } else {
-        console.error('❌ Payment verification failed:', data)
+        console.error('Payment verification failed:', data)
         setError('ไม่สามารถตรวจสอบการชำระเงินได้')
       }
     } catch (error) {
-      console.error('❌ Error verifying payment:', error)
+      console.error('Error verifying payment:', error)
       setError('เกิดข้อผิดพลาดในการตรวจสอบการชำระเงิน')
     } finally {
       setIsLoading(false)

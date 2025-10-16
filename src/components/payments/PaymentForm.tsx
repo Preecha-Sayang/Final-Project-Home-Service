@@ -49,14 +49,13 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
   // ดึงข้อมูลจาก booking store
   const {
     getActiveCartItems,
-    getTotalAmount,
     getFinalAmount,
     customerInfo,
     paymentInfo,
   } = useBookingStore();
 
   // ดึงข้อมูล user จาก auth context
-  const { isLoggedIn, accessToken } = useAuth();
+  const { accessToken } = useAuth();
 
   // ฟังก์ชันดึง user_id จาก JWT token
   const getUserIdFromToken = () => {
@@ -202,193 +201,17 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
           
           // บันทึกข้อมูลการจองลง database
           try {
-            // Backup ข้อมูลก่อนชำระเงิน
             const cartItems = getActiveCartItems();
-            const totalAmount = getTotalAmount();
             const finalAmount = getFinalAmount();
             
             // ตรวจสอบว่ามีข้อมูลหรือไม่
             if (!cartItems || cartItems.length === 0) {
-              console.error('No cart items found in booking store!');
-              console.log('Trying to get items from sessionStorage...');
-              
-              // ลองดึงข้อมูลจาก sessionStorage เป็น fallback
-              const storedData = sessionStorage.getItem('booking-storage');
-              console.log('Stored booking data:', storedData);
-              
-              if (!storedData) {
-                alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
-                return;
-              }
-              
-              try {
-                const parsedData = JSON.parse(storedData);
-                console.log('Parsed booking data:', parsedData);
-                
-                if (!parsedData.state?.cart || parsedData.state.cart.length === 0) {
-                  alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
-                  return;
-                }
-                
-                // ใช้ข้อมูลจาก sessionStorage
-                const sessionCartItems = parsedData.state.cart.map((item: {
-                  id: number;
-                  title: string;
-                  price: number;
-                  quantity: number;
-                  unit: string;
-                }) => ({
-                  id: item.id,
-                  title: item.title,
-                  price: item.price,
-                  quantity: item.quantity,
-                  unit: item.unit,
-                }));
-                
-                console.log('✅ Using sessionStorage cart items:', sessionCartItems);
-                console.log('✅ Cart items found in sessionStorage, proceeding with payment...');
-                
-                // ใช้ข้อมูลจาก sessionStorage แทน
-                const bookingData = {
-                  user_id: getUserIdFromToken(), // ใช้ user_id จาก JWT token หรือ default เป็น 1
-                  items: sessionCartItems,
-                  total_price: sessionCartItems.reduce((sum: number, item: {
-                    id: number;
-                    title: string;
-                    price: number;
-                    quantity: number;
-                    unit: string;
-                  }) => sum + (item.price * item.quantity), 0),
-                  discount: paymentInfo.discount?.amount || 0,
-                  service_date: customerInfo.serviceDate?.toISOString().split('T')[0],
-                  service_time: customerInfo.serviceTime,
-                  address_data: {
-                    address: customerInfo.address,
-                    province: customerInfo.province,
-                    district: customerInfo.district,
-                    subdistrict: customerInfo.subDistrict,
-                    additional_info: customerInfo.additionalInfo,
-                    latitude: customerInfo.latitude,
-                    longitude: customerInfo.longitude,
-                  },
-                  promotion_id: null,
-                  charge_id: chargeId,
-                };
-                
-                console.log('Booking Data from sessionStorage:', bookingData);
-                console.log('User login status (sessionStorage):', isLoggedIn);
-                console.log('Access token available (sessionStorage):', !!accessToken);
-                console.log('User ID from token (sessionStorage):', getUserIdFromToken());
-                console.log('Final user_id being sent (sessionStorage):', bookingData.user_id);
-                
-                const bookingRes = await fetch("/api/bookings/create", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(bookingData),
-                });
-
-                const bookingResult = await bookingRes.json();
-
-                if (bookingResult.success) {
-                  console.log('✅ Payment successful! Booking created with ID:', bookingResult.booking_id);
-                  alert("ชำระเงินสำเร็จ!");
-                  if (onPaymentSuccess) {
-                    onPaymentSuccess(bookingResult.booking_id, chargeId);
-                  } else {
-                    const redirectUrl = `/payment/summary?bookingId=${bookingResult.booking_id}&chargeId=${chargeId}`;
-                    console.log('🔄 Redirecting to summary page:', redirectUrl);
-                    router.push(redirectUrl);
-                  }
-                } else {
-                  console.error("Failed to save booking:", bookingResult);
-                  alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-                  const redirectUrl = `/payment/summary?chargeId=${chargeId}`;
-                  console.log('🔄 Redirecting to summary page (fallback):', redirectUrl);
-                  router.push(redirectUrl);
-                }
-                return;
-                
-              } catch (e) {
-                console.error('Error parsing stored data:', e);
-                alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
-                return;
-              }
-            }
-            
-            // Debug: ตรวจสอบข้อมูล
-            console.log('=== PAYMENT DEBUG ===');
-            console.log('Cart Items from Store:', cartItems);
-            console.log('Cart Items Length:', cartItems.length);
-            console.log('Customer Info:', customerInfo);
-            console.log('Payment Info:', paymentInfo);
-            console.log('Total Amount:', totalAmount);
-            console.log('Final Amount:', finalAmount);
-            
-            // ตรวจสอบ sessionStorage
-            const storedData = sessionStorage.getItem('booking-storage');
-            console.log('SessionStorage Data:', storedData);
-            if (storedData) {
-              try {
-                const parsed = JSON.parse(storedData);
-                console.log('Parsed SessionStorage:', parsed);
-                console.log('Cart in SessionStorage:', parsed.state?.cart);
-                
-                // ถ้า cart ใน sessionStorage ว่างเปล่า แต่ bookingStore มีข้อมูล
-                if ((!parsed.state?.cart || parsed.state.cart.length === 0) && cartItems.length > 0) {
-                  console.log('Syncing cart from bookingStore to sessionStorage...');
-                  
-                  // Sync ข้อมูลจาก bookingStore ไป sessionStorage
-                  parsed.state.cart = cartItems.map(item => ({
-                    id: item.id,
-                    service_id: item.service_id || 1,
-                    service_title: "บริการ",
-                    title: item.title,
-                    price: item.price,
-                    unit: item.unit,
-                    quantity: item.quantity
-                  }));
-                  
-                  // บันทึกลง sessionStorage
-                  sessionStorage.setItem('booking-storage', JSON.stringify(parsed));
-                  console.log('Cart synced to sessionStorage:', parsed.state.cart);
-                }
-              } catch (e) {
-                console.error('Error parsing sessionStorage:', e);
-              }
-            }
-            console.log('===================');
-            
-            // ตรวจสอบว่ามี items หรือไม่
-            if (!cartItems || cartItems.length === 0) {
-              console.warn('No cart items found in booking store, trying sessionStorage...');
-              console.log('Trying to get items from sessionStorage...');
-              
-              // ลองดึงข้อมูลจาก sessionStorage เป็น fallback
-              const storedData = sessionStorage.getItem('booking-storage');
-              console.log('Stored booking data:', storedData);
-              
-              if (!storedData) {
-                alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
-                return;
-              }
-              
-              try {
-                const parsedData = JSON.parse(storedData);
-                console.log('Parsed booking data:', parsedData);
-                
-                if (!parsedData.state?.cart || parsedData.state.cart.length === 0) {
-                  alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
-                  return;
-                }
-              } catch (e) {
-                console.error('Error parsing stored data:', e);
-                alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
-                return;
-              }
+              alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
+              return;
             }
             
             const bookingData = {
-              user_id: getUserIdFromToken(), // ใช้ user_id จาก JWT token หรือ default เป็น 1
+              user_id: getUserIdFromToken(),
               items: cartItems.map(item => ({
                 id: item.id,
                 title: item.title,
@@ -398,7 +221,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
               })),
               total_price: finalAmount,
               discount: paymentInfo.discount?.amount || 0,
-              service_date: customerInfo.serviceDate?.toISOString().split('T')[0], // แปลงเป็น YYYY-MM-DD
+              service_date: customerInfo.serviceDate?.toISOString().split('T')[0],
               service_time: customerInfo.serviceTime,
               address_data: {
                 address: customerInfo.address,
@@ -409,15 +232,9 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
                 latitude: customerInfo.latitude,
                 longitude: customerInfo.longitude,
               },
-              promotion_id: null, // TODO: ดึงจาก paymentInfo.promoCode
+              promotion_id: null,
               charge_id: chargeId,
             };
-            
-            console.log('Booking Data:', bookingData);
-            console.log('User login status:', isLoggedIn);
-            console.log('Access token available:', !!accessToken);
-            console.log('User ID from token:', getUserIdFromToken());
-            console.log('Final user_id being sent:', bookingData.user_id);
 
             const bookingRes = await fetch("/api/bookings/create", {
               method: "POST",
