@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import ButtonSecondary from '@/components/button/buttonsecondary'
 import axios from 'axios'
@@ -74,10 +74,17 @@ const ServiceItem: React.FC<ServiceItemProps> = ({
           ? { ...item, quantity }
           : item
       )
-      onItemsChange(updated.filter(item => item.quantity > 0))
+      
+      // เรียก onItemsChange เมื่อผู้ใช้กดปุ่ม + หรือ -
+      const filteredItems = updated.filter(item => item.quantity > 0)
+      onItemsChange(filteredItems)
+      
       return updated
     })
   }
+
+  // หยุดการเรียก onItemsChange ใน useEffect เพื่อป้องกัน infinite loop
+  // onItemsChange จะถูกเรียกเมื่อผู้ใช้กดปุ่ม + หรือ - เท่านั้น
 
   if (loading) {
     return <div className="p-4 text-center text-gray-500">กำลังโหลดข้อมูล...</div>
