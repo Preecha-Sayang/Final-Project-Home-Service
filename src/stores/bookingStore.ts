@@ -14,6 +14,16 @@ interface CartItem extends SubService {
   quantity: number
 }
 
+// Alternative cart item structure for compatibility with ServiceItem
+interface ServiceCartItem {
+  service_option_id: number
+  service_id: number
+  name: string
+  unit_price: number
+  unit: string
+  quantity: number
+}
+
 interface CustomerInfo {
   serviceDate: Date | null
   serviceTime: string
@@ -63,6 +73,8 @@ interface BookingState {
   setServiceName: (name: string) => void
   setSubServices: (services: SubService[]) => void
   updateCartQuantity: (id: number, quantity: number) => void
+  updateServiceCartItem: (serviceOptionId: number, quantity: number) => void
+  setServiceCart: (items: ServiceCartItem[]) => void
   updateCustomerInfo: (info: Partial<CustomerInfo>) => void
   updatePaymentInfo: (info: Partial<PaymentInfo>) => void
   setCurrentStep: (step: BookingState['currentStep']) => void
@@ -129,6 +141,28 @@ export const useBookingStore = create<BookingState>()(
                 ? { ...item, quantity: Math.max(0, quantity) }
                 : item
             ),
+          })),
+        updateServiceCartItem: (serviceOptionId, quantity) =>
+          set(state => ({
+            ...state,
+            cart: state.cart.map(item =>
+              item.id === serviceOptionId
+                ? { ...item, quantity: Math.max(0, quantity) }
+                : item
+            ),
+          })),
+        setServiceCart: (items) =>
+          set(state => ({
+            ...state,
+            cart: items.map(item => ({
+              id: item.service_option_id,
+              service_id: item.service_id,
+              service_title: '',
+              title: item.name,
+              price: item.unit_price,
+              unit: item.unit,
+              quantity: item.quantity,
+            })),
           })),
         updateCustomerInfo: info =>
           set(state => ({

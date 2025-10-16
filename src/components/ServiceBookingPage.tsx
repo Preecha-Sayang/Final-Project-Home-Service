@@ -35,7 +35,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
   const [serviceName, setServiceName] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const { customerInfo, resetForNewService, updateCartQuantity } = useBookingStore()
+  const { customerInfo, resetForNewService, setServiceCart } = useBookingStore()
   const paymentFormRef = useRef<PaymentFormRef>(null)
 
   // Reset booking store และ selected items เมื่อเข้าหน้า service ใหม่หรือ reload
@@ -78,56 +78,14 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
       }
       
       // อัพเดท booking store เมื่อเปลี่ยนจาก items → details
-      console.log('=== UPDATING BOOKING STORE ===');
-      console.log('Selected Items:', selectedItems);
-      console.log('Selected Items Length:', selectedItems.length);
-      
-      selectedItems.forEach(item => {
-        console.log('Updating cart item:', item);
-        updateCartQuantity(item.service_option_id, item.quantity)
-      })
-      
-      console.log('Booking store updated');
-      console.log('========================');
+      // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
+      setServiceCart(selectedItems)
       
       setCurrentStep('details')
     } else if (currentStep === 'details') {
-      // Backup ข้อมูลก่อนไปหน้า payment
-      console.log('=== BACKING UP DATA BEFORE PAYMENT ===');
-      console.log('Selected Items:', selectedItems);
-      console.log('Customer Info:', customerInfo);
-      
-      // อัพเดท booking store อีกครั้งก่อนไปหน้า payment
-      selectedItems.forEach(item => {
-        updateCartQuantity(item.service_option_id, item.quantity)
-      })
-      
-      // Sync ข้อมูลกับ sessionStorage
-      const currentData = sessionStorage.getItem('booking-storage');
-      if (currentData) {
-        try {
-          const parsed = JSON.parse(currentData);
-          // อัพเดท cart ใน sessionStorage
-          parsed.state.cart = selectedItems.map(item => ({
-            id: item.service_option_id,
-            service_id: item.service_id,
-            service_title: "บริการ",
-            title: item.name,
-            price: item.unit_price,
-            unit: item.unit,
-            quantity: item.quantity
-          }));
-          
-          // บันทึกลง sessionStorage
-          sessionStorage.setItem('booking-storage', JSON.stringify(parsed));
-          console.log('Cart synced to sessionStorage:', parsed.state.cart);
-        } catch (e) {
-          console.error('Error syncing to sessionStorage:', e);
-        }
-      }
-      
-      console.log('Data backed up to booking store');
-      console.log('==================================');
+      // อัพเดท booking store ก่อนไปหน้า payment
+      // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
+      setServiceCart(selectedItems)
       
       setCurrentStep('payment')
     }
@@ -207,8 +165,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
             ref={paymentFormRef}
             totalPrice={calculateTotal()}
             onPaymentSuccess={(bookingId, chargeId) => {
-              // Redirect ไปหน้าสรุปใหม่พร้อม bookingId และ chargeId
-              console.log('🔄 Redirecting to summary page with bookingId:', bookingId, 'chargeId:', chargeId);
               router.push(`/payment/summary?bookingId=${bookingId}&chargeId=${chargeId}`)
             }}
             onPaymentError={(error) => {
