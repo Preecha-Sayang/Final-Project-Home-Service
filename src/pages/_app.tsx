@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ProtectedRoute, AuthRoute } from "@/components/routeprotect/ProtectedRoute";
 import { useRouter } from "next/router";
 import AdminShell from "@/pages/admin";
+import TechnicianShell from "@/components/technician/shell/TechnicianShell";
 
 const fontPrompt = Prompt({
   variable: "--font-prompt",
@@ -22,6 +23,7 @@ export default function App({ Component, pageProps }: AppProps) {
     "/admin",
     "/afterservice",
     "/payment",
+    "/technician",
     // เพิ่มหน้าอื่นๆ ที่ต้อง login ตรงนี้
   ];
 
@@ -29,7 +31,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const authRoutes = ["/login", "/register", "/admin/login"];
 
   // ตรวจสอบว่าเป็นหน้าที่ต้อง login หรือไม่
-  const isProtected = protectedRoutes.some(route => path.startsWith(route)) 
+  const isProtected = protectedRoutes.some(route => path.startsWith(route))
     && path !== "/admin/login"; // ยกเว้น /admin/login
 
   // ตรวจสอบว่าเป็นหน้า auth หรือไม่
@@ -37,6 +39,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
   // Admin pages (ยกเว้น /admin/login)
   const inAdmin = path.startsWith("/admin") && path !== "/admin/login";
+
+  // Technician page
+  const inTechnician = path.startsWith("/technician");
 
   if (inAdmin) {
     return (
@@ -48,9 +53,24 @@ export default function App({ Component, pageProps }: AppProps) {
             popupMessage="คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้า Admin"
             allowCancel={false}
           > */}
-            <AdminShell>
-              <Component {...pageProps} />
-            </AdminShell>
+          <AdminShell>
+            <Component {...pageProps} />
+          </AdminShell>
+          {/* </ProtectedRoute> */}
+        </AuthProvider>
+      </div>
+    );
+  }
+
+  if (inTechnician) {
+    return (
+      <div className={fontPrompt.className}>
+        <AuthProvider>
+          {/* สามารถเปิด ProtectedRoute ทีหลังได้เหมือน admin */}
+          {/* <ProtectedRoute redirectTo="/login"> */}
+          <TechnicianShell>
+            <Component {...pageProps} />
+          </TechnicianShell>
           {/* </ProtectedRoute> */}
         </AuthProvider>
       </div>
