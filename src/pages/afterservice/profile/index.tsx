@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import InputDropdown from "@/components/input/inputDropdown/input_dropdown";
 import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
-import { Save, X } from "lucide-react";
+import { Save, X, Camera } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 type UserData = {
@@ -67,6 +67,16 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
     };
   }, [objectUrl]);
 
+  // ฟังก์ชันสำหรับดึงตัวอักษร 2 ตัวแรกจากชื่อ
+  const getInitials = (name: string): string => {
+    if (!name || name.trim() === "") return "?";
+    const trimmedName = name.trim();
+    // ถ้าชื่อมีแค่ 1 ตัวอักษร ให้แสดงตัวนั้น
+    if (trimmedName.length === 1) return trimmedName.toUpperCase();
+    // ดึง 2 ตัวอักษรแรก
+    return trimmedName.substring(0, 2).toUpperCase();
+  };
+
   const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
   function showError(msg: string) {
     setErrorMsg(msg);
@@ -109,30 +119,43 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
   };
 
   return (
-    <div className="w-full h-full bg-[var(--white)] p-8">
+    <div className="w-full h-full bg-[var(--white)] p-4 sm:p-6 md:p-6 lg:p-8">
       {/* รูปโปรไฟล์ */}
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-6 md:mb-8">
         <div className="flex flex-col items-center gap-3">
     
           {/* รูปอวาตาร์แบบวงกลมคลิกได้พร้อมแสดงตัวอย่างและลากวางได้ */}
-          <div
-            className={`w-32 h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
-            onClick={pick}
-            onDragOver={onDragOverBox}
-            onDragLeave={onDragLeaveBox}
-            onDrop={onDropBox}
-            title="คลิกเพื่ออัปโหลดรูป"
-          >
-            {imageFile ? (
-              <Image src={objectUrl} alt="Profile preview" width={512} height={512} className="object-cover w-full h-full" />
-            ) : profileImage ? (
-              <Image src={profileImage} alt="Profile" width={512} height={512} className="object-cover w-full h-full" />
-            ) : (
-              <span className="text-4xl font-medium text-[var(--gray-600)]">Vo</span>
-            )}
+          <div className="relative">
+            <div
+              className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
+              onClick={pick}
+              onDragOver={onDragOverBox}
+              onDragLeave={onDragLeaveBox}
+              onDrop={onDropBox}
+              title="คลิกเพื่ออัปโหลดรูป"
+            >
+              {imageFile ? (
+                <Image src={objectUrl} alt="Profile preview" width={512} height={512} className="object-cover w-full h-full" />
+              ) : profileImage ? (
+                <Image src={profileImage} alt="Profile" width={512} height={512} className="object-cover w-full h-full" />
+              ) : (
+                <div className="w-full h-full  bg-[var(--gray-200)] flex items-center justify-center">
+                  <span className="text-4xl md:text-5xl  text-[var(--gray-600)]">
+                    {getInitials(formData.fullname)}
+                  </span>
+                </div>
+              )}
 
-            {/* ชั้นทับโปร่งแสงเมื่อ hover */}
-            <div className="absolute inset-0 bg-[var(--black)]/0 hover:bg-[var(--black)]/10 transition-colors" />
+              {/* ชั้นทับโปร่งแสงเมื่อ hover */}
+              <div className="absolute inset-0 bg-[var(--black)]/0 hover:bg-[var(--black)]/10 transition-colors" />
+            </div>
+            
+            {/* ไอคอนกล้อง */}
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 md:w-10 md:h-10 bg-[var(--gray-200)] rounded-full border-2 border-[var(--white)] flex items-center justify-center cursor-pointer hover:bg-[var(--gray-300)] transition-colors"
+                 onClick={pick}
+                 title="อัปโหลดรูปโปรไฟล์">
+              <Camera size={16} className="text-[var(--gray-600)]" />
+            </div>
           </div>
           
           {/* ช่องเลือกไฟล์แบบซ่อน */}
@@ -152,20 +175,21 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       </div>
 
       {/* ช่องกรอกข้อมูล / Form Fields */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-x-6 md:gap-y-6">
         {/* ชื่อ / Full Name */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Image src="/images/icon_user.svg" alt="user" width={16} height={16} className="brightness-0" />
-            <label className="text-sm font-semibold text-[var(--gray-900)]">ชื่อ</label>
+            <label className="text-sm md:text-sm font-semibold text-[var(--gray-900)]">ชื่อ</label>
           </div>
           <input
             type="text"
             placeholder="ชื่อ"
             value={formData.fullname}
             onChange={(e) => onChange("fullname", e.target.value)}
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
-              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            className="w-full h-[48px] md:h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+              hover:border-[var(--gray-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)] focus:border-transparent
+              transition-all duration-200"
           />
         </div>
 
@@ -180,8 +204,9 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             placeholder="หมายเลขโทรศัพท์"
             value={formData.phone}
             onChange={(e) => onChange("phone", e.target.value)}
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
-              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            className="w-full h-[48px] md:h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+              hover:border-[var(--gray-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)] focus:border-transparent
+              transition-all duration-200"
           />
         </div>
 
@@ -196,8 +221,9 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             placeholder="อีเมล"
             value={formData.email}
             onChange={(e) => onChange("email", e.target.value)}
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
-              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
+            className="w-full h-[48px] md:h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+              hover:border-[var(--gray-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)] focus:border-transparent
+              transition-all duration-200"
           />
         </div>
 
@@ -213,9 +239,10 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             value={formData.address}
             onChange={(e) => onChange("address", e.target.value)}
             required
-            className={`w-full h-[44px] px-4 border rounded-md text-base font-medium text-[var(--gray-900)]
-              hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]
-              ${addressError ? 'border-[var(--red)]' : 'border-[var(--gray-300)]'}`}
+            className={`w-full h-[48px] md:h-[44px] px-4 border rounded-md text-base font-medium text-[var(--gray-900)]
+              hover:border-[var(--gray-300)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-600)] focus:border-transparent
+              transition-all duration-200
+              ${addressError ? 'border-[var(--red)] focus:ring-[var(--red)]' : 'border-[var(--gray-300)]'}`}
           />
           {/* ข้อความแสดงข้อผิดพลาดของที่อยู่ */}
           {addressError && (
@@ -236,7 +263,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             onChange={(value) => onChange("province", value)}
             options={provinceList.map((province) => ({ label: province.province_name_th, value: province.province_code.toString() }))}
             placeholder="เลือกจังหวัด"
-            className="h-[44px]"
+            className="h-[48px] md:h-[44px]"
           />
         </div>
 
@@ -251,7 +278,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             onChange={(value) => onChange("district", value)}
             options={districtList.map((district) => ({ label: district.district_name_th, value: district.district_code.toString() }))}
             placeholder="เลือกแขวง/อำเภอ"
-            className="h-[44px]"
+            className="h-[48px] md:h-[44px]"
           />
         </div>
 
@@ -266,24 +293,24 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
               onChange={(value) => onChange("subdistrict", value)}
               options={subdistrictList.map((subdistrict) => ({ label: subdistrict.subdistrict_name_th, value: subdistrict.subdistrict_code.toString() }))}
               placeholder="เลือกแขวง/ตำบล"
-              className="h-[44px]"
+              className="h-[48px] md:h-[44px]"
           />
 
         </div>
       </div>
 
       {/* ปุ่มบันทึกและยกเลิก / Save and Cancel Buttons */}
-      <div className="grid grid-cols-2 gap-x-6 mt-8">
-        <ButtonPrimary onClick={onSave} className="w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-x-6 mt-6 md:mt-8">
+        <ButtonPrimary onClick={onSave} className="w-full h-[50px] md:h-[44px] text-base md:text-sm">
           <span className="flex items-center justify-center gap-2">
-            <Save size={16} />
-            <span>บันทึก</span>
+            <Save size={18} className="md:w-4 md:h-4" />
+            <span className="font-medium">บันทึก</span>
           </span>
         </ButtonPrimary>
-        <ButtonSecondary onClick={onCancel} className="w-full">
+        <ButtonSecondary onClick={onCancel} className="w-full h-[50px] md:h-[44px] text-base md:text-sm">
           <span className="flex items-center justify-center gap-2 text-[var(--blue-600)]">
-            <X size={16} />
-            <span>ยกเลิก</span>
+            <X size={18} className="md:w-4 md:h-4" />
+            <span className="font-medium">ยกเลิก</span>
           </span>
         </ButtonSecondary>
       </div>
@@ -292,9 +319,6 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
 }
 
 function UserProfile() {
-  
-  const [keyword, setkeyword] = useState("ข้อมูลผู้ใช้งาน");
-
   const [userData, setUserData] = useState<UserData | undefined>(undefined);
   const { accessToken } = useAuth();
 
@@ -504,22 +528,20 @@ function UserProfile() {
 
 
   return (
-          <div className="w-[800px] min-h-[600px] bg-[var(--white)] shadow-sm">
-            {keyword === "ข้อมูลผู้ใช้งาน" ? (
-              <UserProfileForm
-                profileImage={profileImageUrl}
-                imageFile={profileImageFile}
-                onImageFileChange={(file) => setProfileImageFile(file)}
-                formData={formData}
-                onChange={handleInputChange}
-                provinceList={provinceList}
-                districtList={districtList}
-                subdistrictList={subdistrictList}
-                onSave={handleSave}
-                onCancel={handleCancel}
-                addressError={addressError}
-              />
-            ) : null}
+          <div className="w-full max-w-[800px] min-h-[400px] md:min-h-[600px] bg-[var(--white)] shadow-sm">
+            <UserProfileForm
+              profileImage={profileImageUrl}
+              imageFile={profileImageFile}
+              onImageFileChange={(file) => setProfileImageFile(file)}
+              formData={formData}
+              onChange={handleInputChange}
+              provinceList={provinceList}
+              districtList={districtList}
+              subdistrictList={subdistrictList}
+              onSave={handleSave}
+              onCancel={handleCancel}
+              addressError={addressError}
+            />
           </div>
 
 
