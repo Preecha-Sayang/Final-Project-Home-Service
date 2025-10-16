@@ -109,14 +109,14 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
   };
 
   return (
-    <div className="w-full h-full bg-[var(--white)] p-8">
+    <div className="w-full h-full bg-[var(--white)] p-4 md:p-6 lg:p-8">
       {/* รูปโปรไฟล์ */}
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-6 md:mb-8">
         <div className="flex flex-col items-center gap-3">
     
           {/* รูปอวาตาร์แบบวงกลมคลิกได้พร้อมแสดงตัวอย่างและลากวางได้ */}
           <div
-            className={`w-32 h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
+            className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-2 ${dragOver ? 'border-[var(--blue-400)] bg-[var(--blue-100)]' : 'border-[var(--gray-300)]'} overflow-hidden flex items-center justify-center cursor-pointer relative`}
             onClick={pick}
             onDragOver={onDragOverBox}
             onDragLeave={onDragLeaveBox}
@@ -128,7 +128,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             ) : profileImage ? (
               <Image src={profileImage} alt="Profile" width={512} height={512} className="object-cover w-full h-full" />
             ) : (
-              <span className="text-4xl font-medium text-[var(--gray-600)]">Vo</span>
+              <span className="text-3xl md:text-4xl font-medium text-[var(--gray-600)]">Vo</span>
             )}
 
             {/* ชั้นทับโปร่งแสงเมื่อ hover */}
@@ -152,7 +152,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       </div>
 
       {/* ช่องกรอกข้อมูล / Form Fields */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-x-6 md:gap-y-6">
         {/* ชื่อ / Full Name */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             placeholder="ชื่อ"
             value={formData.fullname}
             onChange={(e) => onChange("fullname", e.target.value)}
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+            className="w-full h-[44px] md:h-[44px] px-3 md:px-4 border border-[var(--gray-300)] rounded-md text-sm md:text-base font-medium text-[var(--gray-900)]
               hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
           />
         </div>
@@ -180,7 +180,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             placeholder="หมายเลขโทรศัพท์"
             value={formData.phone}
             onChange={(e) => onChange("phone", e.target.value)}
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+            className="w-full h-[44px] md:h-[44px] px-3 md:px-4 border border-[var(--gray-300)] rounded-md text-sm md:text-base font-medium text-[var(--gray-900)]
               hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
           />
         </div>
@@ -196,7 +196,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             placeholder="อีเมล"
             value={formData.email}
             onChange={(e) => onChange("email", e.target.value)}
-            className="w-full h-[44px] px-4 border border-[var(--gray-300)] rounded-md text-base font-medium text-[var(--gray-900)]
+            className="w-full h-[44px] md:h-[44px] px-3 md:px-4 border border-[var(--gray-300)] rounded-md text-sm md:text-base font-medium text-[var(--gray-900)]
               hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]"
           />
         </div>
@@ -213,7 +213,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
             value={formData.address}
             onChange={(e) => onChange("address", e.target.value)}
             required
-            className={`w-full h-[44px] px-4 border rounded-md text-base font-medium text-[var(--gray-900)]
+            className={`w-full h-[44px] md:h-[44px] px-3 md:px-4 border rounded-md text-sm md:text-base font-medium text-[var(--gray-900)]
               hover:border-[var(--gray-300)] focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]
               ${addressError ? 'border-[var(--red)]' : 'border-[var(--gray-300)]'}`}
           />
@@ -273,7 +273,7 @@ function UserProfileForm({ profileImage, imageFile, onImageFileChange, formData,
       </div>
 
       {/* ปุ่มบันทึกและยกเลิก / Save and Cancel Buttons */}
-      <div className="grid grid-cols-2 gap-x-6 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-x-6 mt-6 md:mt-8">
         <ButtonPrimary onClick={onSave} className="w-full">
           <span className="flex items-center justify-center gap-2">
             <Save size={16} />
