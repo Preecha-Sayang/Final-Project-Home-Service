@@ -125,11 +125,11 @@ export default async function handler(
         return res.status(400).json({ error: "No fields to update" });
       }
 
-      updates.push(`updated_at = NOW()`);
+      updates.push(`update_at = NOW()`);
       values.push(id);
 
       const result = await query(
-        `UPDATE bookings 
+        `UPDATE booking 
          SET ${updates.join(", ")} 
          WHERE booking_id = $${paramCount}
          RETURNING *`,
