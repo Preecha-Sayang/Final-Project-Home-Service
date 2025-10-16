@@ -18,15 +18,6 @@ function dateToHHMM(d?: Date | null) {
   return `${h}:${m}`;
 }
 
-// ปัดนาทีให้เป็น step ที่ต้องการ (หน่วยเป็น "นาที")
-function roundToStep(d: Date, stepMin: number): Date {
-  const copy = new Date(d);
-  const m = copy.getMinutes();
-  const rounded = Math.round(m / stepMin) * stepMin;
-  copy.setMinutes(rounded, 0, 0);
-  return copy;
-}
-
 // ไอคอนนาฬิกา
 const ClockIcon: React.FC = () => (
   <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -50,7 +41,6 @@ export default function TimePickerSelect({
   label,
   value,
   onChange,
-  step = 5,               // ดีฟอลต์ 5 นาที
   name,
   className,
   placeholder = "กรุณาเลือกเวลา",
@@ -88,8 +78,7 @@ export default function TimePickerSelect({
         value={dateValue ?? undefined}
         onChange={(d) => {
           if (!d) return onChange("");
-          const rounded = roundToStep(d, Math.max(1, step));
-          onChange(dateToHHMM(rounded));
+          onChange(dateToHHMM(d));
         }}
         oneTap={false}
         className={cn("rsuite-timepicker", className)}
