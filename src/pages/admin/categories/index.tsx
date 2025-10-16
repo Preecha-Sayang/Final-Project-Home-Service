@@ -5,17 +5,22 @@ import ConfirmDialog from "@/components/dialog/confirm_dialog";
 import { useRouter } from "next/router";
 import { Plus } from "lucide-react";
 
+type confirmDel = {
+          open: boolean;
+          item?: CategoryRow | null;
+          loading?: boolean;
+};
+
 export default function CategoriesPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState<CategoryRow[]>([]);
   const [search, setSearch] = useState("");
-  const [askDeleteId, setAskDeleteId] = useState<number | null>(null);
-  const [confirmDel, setConfirmDel] = useState<{
-    open: boolean;
-    item?: CategoryRow;
-    loading?: boolean;
-  }>({ open: false });
+  const [confirmDel, setConfirmDel] = useState<confirmDel>({
+    open: false,
+    item: null,
+    loading: false,
+  })
 
   async function fetchList(): Promise<void> {
     setLoading(true);
@@ -94,7 +99,7 @@ export default function CategoriesPage() {
           loading={loading}
           search={search}
           onEdit={(c) => router.push(`/admin/categories/${c.category_id}/edit`)}
-          onDelete={(c) => setAskDeleteId(c.category_id)}
+          onDelete={(c) => setConfirmDel({open: true, item: c, loading: false})}
           onReorder={handleReorder}
           onView={(c) => router.push(`/admin/categories/${c.category_id}`)}
         />
@@ -117,12 +122,15 @@ export default function CategoriesPage() {
           </>
         }
         loading={!!confirmDel.loading}
-        onCancel={() => setConfirmDel({ open: false })}
+        onCancel={() => setConfirmDel((s) => ({...s, open: false, item: null }))}
         onConfirm={async () => {
           if (!confirmDel.item) return;
           setConfirmDel((s) => ({ ...s, loading: true }));
-          await handleDelete(confirmDel.item);
-          setConfirmDel({ open: false, item: undefined, loading: false });
+          try {
+            await handleDelete(confirmDel.item);
+          } finally {
+            setConfirmDel({ open: false, item: undefined, loading: false });
+          }
         }}
       />
     </>
