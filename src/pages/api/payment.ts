@@ -1,12 +1,15 @@
 // src/pages/api/payment.ts
+import { sql } from "lib/db";
+import { result } from "lodash";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 // CHANGED: ใช้ Secret Key ทำ Basic Auth
 const SECRET = process.env.OMISE_SECRET_KEY!;
 const authHeader = "Basic " + Buffer.from(`${SECRET}:`).toString("base64");
 
-// CHANGED: helper แปลงบาท -> สตางค์
-const toSatang = (baht: number) => Math.round(baht * 100);
+// CHANGED: helper แปลงสตางค์ -> บาท
+const toBath = (baht: number) => Math.round(baht * 100);
+const toBathfromOmise = (baht: number) => Math.round(baht / 100);
 
 // CHANGED: helper form-encode ตามที่ Omise API ต้องการ (x-www-form-urlencoded)
 const encode = (obj: Record<string, string | number | null | undefined>) =>
@@ -35,7 +38,7 @@ export default async function handler(
         .status(400)
         .json({ status: "error", message: "Invalid amount" });
 
-    const amountSatang = toSatang(amount);
+    const amountSatang = toBath(amount);
 
     if (method === "credit_card") {
       if (!tokenId)
@@ -59,18 +62,36 @@ export default async function handler(
       });
 
       const charge = await resp.json();
+      // console.log("RESPONSE FROM OMISE :", charge);
 
-      // REMOVED: 3DS — ไม่รองรับ
+      // insert DB
       if (resp.ok && charge?.paid === true) {
-        return res.status(200).json({ status: "success", chargeId: charge.id });
+        const curBath = toBathfromOmise(charge.amount);
+        const result = await sql`
+                INSERT INTO payment (transaction_id,total_amount,status,payment_method,currency,paid_at)
+                VALUES (${charge.id},${curBath},${charge.status},${method},${charge.currency},${charge.paid_at})
+                RETURNING payment_id;`;
+
+        // REMOVED: 3DS — ไม่รองรับ
+        if (resp.ok && charge?.paid === true && result.length > 0) {
+          return res
+            .status(200)
+            .json({ status: "success", chargeId: charge.id });
+        }
+      } else {
+        const curBath = toBathfromOmise(charge.amount);
+        await sql`
+              INSERT INTO payment (transaction_id,total_amount,status,payment_method,currency,failure_message)
+              VALUES (${charge.id},${curBath},${charge.status},${method},${charge.currency},${charge.failure_message})
+              RETURNING payment_id;`;
       }
-      return res
-        .status(400)
-        .json({
-          status: "error",
-          message:
-            charge?.failure_message || charge?.message || "Payment failed",
-        });
+
+      // end insert DB
+
+      return res.status(400).json({
+        status: "error",
+        message: charge?.failure_message || charge?.message || "Payment failed",
+      });
     }
 
     if (method === "qr") {
@@ -89,12 +110,10 @@ export default async function handler(
       });
       const source = await sourceResp.json();
       if (!sourceResp.ok) {
-        return res
-          .status(400)
-          .json({
-            status: "error",
-            message: source?.message || "Create source failed",
-          });
+        return res.status(400).json({
+          status: "error",
+          message: source?.message || "Create source failed",
+        });
       }
 
       // CHANGED: 2) ผูก source เข้ากับ charge
@@ -108,18 +127,16 @@ export default async function handler(
           amount: amountSatang,
           currency: "thb",
           source: source.id,
-          description: "บริการล้างแอร์- PromptPay",
+          description: "HomeServices - QR code payment",
         }),
       });
 
       const charge = await chargeResp.json();
       if (!chargeResp.ok) {
-        return res
-          .status(400)
-          .json({
-            status: "error",
-            message: charge?.message || "Create charge failed",
-          });
+        return res.status(400).json({
+          status: "error",
+          message: charge?.message || "Create charge failed",
+        });
       }
 
       const qrUrl =
@@ -137,12 +154,11 @@ export default async function handler(
     return res.status(400).json({ status: "error", message: "Invalid method" });
   } catch (error) {
     console.error("Payment error:", error);
-    const errorMessage = error instanceof Error ? error.message : "Payment API error";
-    return res
-      .status(500)
-      .json({
-        status: "error",
-        message: errorMessage,
-      });
+    const errorMessage =
+      error instanceof Error ? error.message : "Payment API error";
+    return res.status(500).json({
+      status: "error",
+      message: errorMessage,
+    });
   }
 }

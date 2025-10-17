@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Payment from "@/components/payments/Payment";
 import InputField from "@/components/input/inputField/input_state";
 import ButtonPrimary from "@/components/button/buttonprimary";
+import { usePaymentStore } from "@/stores/paymentMethodStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useAuth } from "@/context/AuthContext";
 
@@ -71,129 +72,135 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
     }
   };
 
-  // ---------- ฟอร์มข้อมูลบัตรเครดิต ------------//
-  const [form, setForm] = useState({
-    credit_card_number: "",
-    card_fullname: "",
-    expired_date: "",
-    ccv: "",
-    promotion: "",
-  });
+    // ---------- ฟอร์มข้อมูลบัตรเครดิต ------------//
+    const [form, setForm] = useState({
+      credit_card_number: "",
+      card_fullname: "",
+      expired_date: "",
+      ccv: "",
+      promotion: "",
+    });
 
-  // ป้องกันกดชำระเงินซ้ำ/แสดงสถานะระหว่างรอ
-  const [processing, setProcessing] = useState(false);
+    // ป้องกันกดชำระเงินซ้ำ/แสดงสถานะระหว่างรอ
+    const [processing, setProcessing] = useState(false);
 
-  const handleChange = (name: string, value: string) => {
-    setForm({ ...form, [name]: value });
-  };
+    const { payment } = usePaymentStore();
 
-  // โหลด Omise.js ฝั่ง client เท่านั้น
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (document.getElementById("omise-js")) return; // กันโหลดซ้ำ
-
-    const s = document.createElement("script");
-    s.id = "omise-js";
-    s.src = "https://cdn.omise.co/omise.js";
-    s.async = true;
-    s.onload = () => {
-      const omiseWindow = window as OmiseWindow;
-      if (omiseWindow.Omise) {
-        omiseWindow.Omise.setPublicKey(process.env.NEXT_PUBLIC_OMISE_PUBLIC_KEY || "");
-      }
+    const handleChange = (name: string, value: string) => {
+      setForm({ ...form, [name]: value });
     };
-    document.body.appendChild(s);
-  }, []);
 
-  // แปลง MM/YY -> month/year พร้อม validate เบื้องต้น
-  const parseExpiry = (mmYY: string) => {
-    const [mm, yy] = (mmYY || "").split("/");
-    const month = Number(mm);
-    const year = Number("20" + String(yy || "").padStart(2, "0"));
-    if (!month || month < 1 || month > 12 || !year) return null;
-    return { month, year };
-  };
+    // โหลด Omise.js ฝั่ง client เท่านั้น
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      if (document.getElementById("omise-js")) return; // กันโหลดซ้ำ
 
-  // ---------- ฟังก์ชันหลัก: ยืนยันการชำระเงิน -----------//
-  const handlePayment = async () => {
-    try {
-      if (processing) return;
-      setProcessing(true);
-
-      // ดึงวิธีชำระเงินที่ผู้ใช้เลือกจาก localStorage
-      const selectedPayment =
-        localStorage.getItem("selectedPayment") || "credit_card";
-
-      const amountBaht = totalPrice && totalPrice > 0 ? totalPrice : 500;
-
-      if (form.credit_card_number === "") {
-        alert("กรุณากรอกหมายเลขบัตรเครดิต");
-        setProcessing(false);
-        return;
-      }
-
-      if (form.card_fullname === "") {
-        alert("กรุณากรอกชื่อบนบัตรเครดิต");
-        setProcessing(false);
-        return;
-      }
-
-      // ตรวจวันหมดอายุ
-      const exp = parseExpiry(form.expired_date);
-      if (!exp) {
-        alert("กรุณากรอกวันหมดอายุรูปแบบ MM/YY (เช่น 08/27)");
-        setProcessing(false);
-        return;
-      }
-
-      if (form.ccv === "") {
-        alert("กรุณากรอกรหัส CVC / CCV");
-        setProcessing(false);
-        return;
-      }
-
-      if (selectedPayment === "credit_card") {
+      const s = document.createElement("script");
+      s.id = "omise-js";
+      s.src = "https://cdn.omise.co/omise.js";
+      s.async = true;
+      s.onload = () => {
         const omiseWindow = window as OmiseWindow;
-        const Omise = omiseWindow.Omise;
-        if (!Omise) {
-          alert("โหลดไม่สำเสร็จ กรุณาลองใหม่");
+        if (omiseWindow.Omise) {
+          omiseWindow.Omise.setPublicKey(
+            process.env.NEXT_PUBLIC_OMISE_PUBLIC_KEY || ""
+          );
+        }
+      };
+      document.body.appendChild(s);
+    }, []);
+
+    // แปลง MM/YY -> month/year พร้อม validate เบื้องต้น
+    const parseExpiry = (mmYY: string) => {
+      const [mm, yy] = (mmYY || "").split("/");
+      const month = Number(mm);
+      const year = Number("20" + String(yy || "").padStart(2, "0"));
+      if (!month || month < 1 || month > 12 || !year) return null;
+      return { month, year };
+    };
+
+    // ---------- ฟังก์ชันหลัก: ยืนยันการชำระเงิน -----------//
+    const handlePayment = async () => {
+      try {
+        if (processing) return;
+        setProcessing(true);
+
+        // ดึงวิธีชำระเงินที่ผู้ใช้เลือกจาก localStorage
+        const selectedPayment =
+          localStorage.getItem("selectedPayment") || "credit_card";
+
+        const amountBaht = totalPrice && totalPrice > 0 ? totalPrice : 0;
+
+        if (form.credit_card_number === "") {
+          alert("กรุณากรอกหมายเลขบัตรเครดิต");
           setProcessing(false);
           return;
         }
 
-        // เตรียมข้อมูลสำหรับ API
-        const tokenRes = await new Promise<{ id: string }>(
-          (resolve, reject) => {
-            Omise.createToken(
-              "card",
-              {
-                name: form.card_fullname,
-                number: form.credit_card_number.replace(/\s+/g, ""),
-                expiration_month: exp.month,
-                expiration_year: exp.year,
-                security_code: form.ccv,
-              },
-              (status: number, response: OmiseTokenResponse) => {
-                if (status === 200) resolve({ id: response.id });
-                else
-                  reject(new Error(response.message || "Create token failed"));
-              }
-            );
+        if (form.card_fullname === "") {
+          alert("กรุณากรอกชื่อบนบัตรเครดิต");
+          setProcessing(false);
+          return;
+        }
+
+        // ตรวจวันหมดอายุ
+        const exp = parseExpiry(form.expired_date);
+        if (!exp) {
+          alert("กรุณากรอกวันหมดอายุรูปแบบ MM/YY (เช่น 08/27)");
+          setProcessing(false);
+          return;
+        }
+
+        if (form.ccv === "") {
+          alert("กรุณากรอกรหัส CVC / CCV");
+          setProcessing(false);
+          return;
+        }
+
+        if (selectedPayment === "credit_card") {
+          const omiseWindow = window as OmiseWindow;
+          const Omise = omiseWindow.Omise;
+          if (!Omise) {
+            alert("โหลดไม่สำเสร็จ กรุณาลองใหม่");
+            setProcessing(false);
+            return;
           }
-        );
 
-        // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
-        const res = await fetch("/api/payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount: amountBaht,
-            method: "credit_card",
-            tokenId: tokenRes.id,
-          }),
-        });
+          // เตรียมข้อมูลสำหรับ API
+          const tokenRes = await new Promise<{ id: string }>(
+            (resolve, reject) => {
+              Omise.createToken(
+                "card",
+                {
+                  name: form.card_fullname,
+                  number: form.credit_card_number.replace(/\s+/g, ""),
+                  expiration_month: exp.month,
+                  expiration_year: exp.year,
+                  security_code: form.ccv,
+                },
+                (status: number, response: OmiseTokenResponse) => {
+                  if (status === 200) resolve({ id: response.id });
+                  else
+                    reject(
+                      new Error(response.message || "Create token failed")
+                    );
+                }
+              );
+            }
+          );
 
-        const result = await res.json();
+          // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
+          const res = await fetch("/api/payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount: amountBaht,
+              method: "credit_card",
+              tokenId: tokenRes.id,
+            }),
+          });
+
+          const result = await res.json();
 
         // ตรวจผลลัพธ์
         if (result.status === "success") {
@@ -279,7 +286,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
           body: JSON.stringify({ amount: amountBaht, method: "qr" }),
         });
 
-        const result = await res.json();
+          const result = await res.json();
 
         if (result.status === "pending" && result.qr_url) {
           // แสดง QR Code และเริ่มตรวจสอบสถานะ
@@ -306,97 +313,109 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
     }
   };
 
-  const submitDiscountCode = () => {
-    // TODO: Implement discount code logic
-  };
+    const submitDiscountCode = () => {
+      // TODO: Implement discount code logic
+    };
 
-  // Expose handlePayment to parent component via ref
-  useImperativeHandle(ref, () => ({
-    handlePayment
-  }));
+    // Expose handlePayment to parent component via ref
+    useImperativeHandle(ref, () => ({
+      handlePayment,
+    }));
 
-  return (
-    <div className="bg-white border border-[var(--gray-border)] rounded-xl w-full">
-      <div className="p-8 flex flex-col gap-4">
-        <p className="text-2xl font-bold text-[var(--gray-700)]">ชำระเงิน</p>
+    return (
+      <div className="bg-white border border-[var(--gray-border)] rounded-xl w-full">
+        <div className="p-8 flex flex-col gap-4">
+          <p className="text-2xl font-bold text-[var(--gray-700)]">ชำระเงิน</p>
 
-        {/* แถบเลือกวิธีชำระเงิน */}
-        <Payment />
-        
-        <div className="mt-4 flex flex-col gap-8">
-          <InputField
-            label="หมายเลขบัตรเครดิต *"
-            type="text"
-            required
-            value={form.credit_card_number}
-            placeholder="กรุณากรอกหมายเลขบัตรเครดิต"
-            onChange={(e) => handleChange("credit_card_number", e.target.value)}
-          />
-          
-          <InputField
-            label="ชื่อบนบัตร *"
-            type="text"
-            required
-            value={form.card_fullname}
-            placeholder="กรุณากรอกชื่อบนบัตร"
-            onChange={(e) => handleChange("card_fullname", e.target.value)}
-          />
-          
-          <div className="flex flex-row gap-6">
-            <div className="w-1/2">
-              <InputField
-                label="วันหมดอายุ *"
-                type="text"
-                required
-                value={form.expired_date}
-                placeholder="MM/YY"
-                onChange={(e) => handleChange("expired_date", e.target.value)}
-                maxLength={5}
-              />
-            </div>
-            <div className="w-1/2">
-              <InputField
-                label="รหัส CVC / CCV *"
-                type="password"
-                required
-                value={form.ccv}
-                placeholder="xxx"
-                onChange={(e) => handleChange("ccv", e.target.value)}
-                maxLength={3}
-              />
-            </div>
-          </div>
-          
-          <hr className="mt-6" />
-          
-          <div className="flex flex-row items-center gap-6">
-            <div className="w-1/2">
-              <InputField
-                label="Promotion Code"
-                type="text"
-                required
-                value={form.promotion}
-                placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)"
-                onChange={(e) => handleChange("promotion", e.target.value)}
-              />
-            </div>
-            <div className="w-1/2">
-              <ButtonPrimary
-                className="mt-6"
-                onClick={() => submitDiscountCode()}
-                type="button"
-              >
-                ใช้โค้ด
-              </ButtonPrimary>
+          {/* แถบเลือกวิธีชำระเงิน */}
+          <Payment />
+          <div className="mt-4 flex flex-col">
+            {payment === "credit_card" ? (
+              <div className="flex flex-col gap-8 min-h-[270px]">
+                <InputField
+                  label="หมายเลขบัตรเครดิต *"
+                  type="text"
+                  required
+                  value={form.credit_card_number}
+                  placeholder="กรุณากรอกหมายเลขบัตรเครดิต"
+                  onChange={(e) =>
+                    handleChange("credit_card_number", e.target.value)
+                  }
+                />
+
+                <InputField
+                  label="ชื่อบนบัตร *"
+                  type="text"
+                  required
+                  value={form.card_fullname}
+                  placeholder="กรุณากรอกชื่อบนบัตร"
+                  onChange={(e) =>
+                    handleChange("card_fullname", e.target.value)
+                  }
+                />
+
+                <div className="flex flex-row gap-6">
+                  <div className="w-1/2">
+                    <InputField
+                      label="วันหมดอายุ *"
+                      type="text"
+                      required
+                      value={form.expired_date}
+                      placeholder="MM/YY"
+                      onChange={(e) =>
+                        handleChange("expired_date", e.target.value)
+                      }
+                      maxLength={5}
+                    />
+                  </div>
+                  <div className="w-1/2">
+                    <InputField
+                      label="รหัส CVC / CCV *"
+                      type="password"
+                      required
+                      value={form.ccv}
+                      placeholder="xxx"
+                      onChange={(e) => handleChange("ccv", e.target.value)}
+                      maxLength={3}
+                    />
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-8 mb-4 min-h-[270px]">
+                <span>QR Code are commimg.</span>
+              </div>
+            )}
+
+            <hr className="mt-6 mb-4" />
+            <div className="flex flex-row items-center gap-6">
+              <div className="w-1/2">
+                <InputField
+                  label="Promotion Code"
+                  type="text"
+                  required
+                  value={form.promotion}
+                  placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)"
+                  onChange={(e) => handleChange("promotion", e.target.value)}
+                />
+              </div>
+              <div className="w-1/2">
+                <ButtonPrimary
+                  className="mt-6"
+                  onClick={() => submitDiscountCode()}
+                  type="button"
+                >
+                  ใช้โค้ด
+                </ButtonPrimary>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
-PaymentForm.displayName = 'PaymentForm';
+PaymentForm.displayName = "PaymentForm";
 
 export default PaymentForm;
-

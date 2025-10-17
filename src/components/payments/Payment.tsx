@@ -1,18 +1,23 @@
+"use client";
 import Image from "next/image";
 import qr_code from "../../../public/images/icon_qr.svg";
 import credit_card from "../../../public/images/icon_card.svg";
 import selected_qr from "../../../public/images/selected_qr.png";
 import selected_card from "../../../public/images/selected_card.png";
 import { useState } from "react";
+import { usePaymentStore } from "@/stores/paymentMethodStore";
 
 export default function Payment() {
   const [selectedPayment, setSelectedPayment] = useState("");
+  const { setCreditCard, setQRCode } = usePaymentStore();
 
   const setSelectPayment = (val: string) => {
     if (val === "QR_CODE") {
       setSelectedPayment(val);
+      setQRCode();
     } else {
       setSelectedPayment(val);
+      setCreditCard();
     }
   };
 
