@@ -35,7 +35,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
   const [serviceName, setServiceName] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
-  const { customerInfo, resetForNewService } = useBookingStore()
+  const { customerInfo, resetForNewService, setServiceCart } = useBookingStore()
   const paymentFormRef = useRef<PaymentFormRef>(null)
 
   // Reset booking store และ selected items เมื่อเข้าหน้า service ใหม่หรือ reload
@@ -76,8 +76,17 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
         router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
         return
       }
+      
+      // อัพเดท booking store เมื่อเปลี่ยนจาก items → details
+      // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
+      setServiceCart(selectedItems)
+      
       setCurrentStep('details')
     } else if (currentStep === 'details') {
+      // อัพเดท booking store ก่อนไปหน้า payment
+      // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
+      setServiceCart(selectedItems)
+      
       setCurrentStep('payment')
     }
   }
@@ -94,6 +103,9 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
 
   const handleItemsChange = (items: CartItem[]) => {
     setSelectedItems(items)
+    
+    // ไม่ต้องอัพเดท booking store ที่นี่ เพราะจะทำให้เกิด infinite loop
+    // booking store จะถูกอัพเดทเมื่อผู้ใช้กดปุ่ม "ถัดไป" แทน
   }
 
   const calculateTotal = () => {
@@ -152,25 +164,8 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
           <PaymentForm 
             ref={paymentFormRef}
             totalPrice={calculateTotal()}
-            onPaymentSuccess={() => {
-              // แปลง items เป็น JSON string เพื่อส่งผ่าน query parameters
-              const itemsData = selectedItems.map(item => ({
-                name: item.name,
-                quantity: item.quantity
-              }))
-              
-              // Redirect ไปหน้าสรุปใหม่แทนการเพิ่ม step
-              router.push({
-                pathname: '/payment/summary',
-                query: {
-                  serviceName: serviceName,
-                  items: JSON.stringify(itemsData),
-                  totalPrice: calculateTotal(),
-                  date: customerInfo.serviceDate?.toISOString(),
-                  time: customerInfo.serviceTime,
-                  address: formatAddress()
-                }
-              })
+            onPaymentSuccess={(bookingId, chargeId) => {
+              router.push(`/payment/summary?bookingId=${bookingId}&chargeId=${chargeId}`)
             }}
             onPaymentError={(error) => {
               console.error('Payment error:', error)
@@ -322,6 +317,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
             className="w-full h-full object-cover"
             width={1920}
             height={250}
+            style={{ width: "auto", height: "auto" }}
             priority
           />
         </div>

@@ -1,12 +1,14 @@
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import Payment from "@/components/payments/Payment";
 import InputField from "@/components/input/inputField/input_state";
 import ButtonPrimary from "@/components/button/buttonprimary";
+import { useBookingStore } from "@/stores/bookingStore";
+import { useAuth } from "@/context/AuthContext";
 
 interface PaymentFormProps {
   totalPrice: number;
-  onPaymentSuccess?: () => void;
+  onPaymentSuccess?: (bookingId: number, chargeId: string) => void;
   onPaymentError?: (error: string) => void;
 }
 
@@ -43,6 +45,31 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
   onPaymentError 
 }, ref) => {
   const router = useRouter();
+  
+  // ดึงข้อมูลจาก booking store
+  const {
+    getActiveCartItems,
+    getFinalAmount,
+    customerInfo,
+    paymentInfo,
+  } = useBookingStore();
+
+  // ดึงข้อมูล user จาก auth context
+  const { accessToken } = useAuth();
+
+  // ฟังก์ชันดึง user_id จาก JWT token
+  const getUserIdFromToken = () => {
+    if (!accessToken) return 1; // default user_id
+    
+    try {
+      // Decode JWT token (base64)
+      const payload = JSON.parse(atob(accessToken.split('.')[1]));
+      return payload.userId || payload.user_id || payload.id || 1;
+    } catch (error) {
+      console.error('Error decoding JWT token:', error);
+      return 1; // default user_id
+    }
+  };
 
   // ---------- ฟอร์มข้อมูลบัตรเครดิต ------------//
   const [form, setForm] = useState({
@@ -170,15 +197,73 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
 
         // ตรวจผลลัพธ์
         if (result.status === "success") {
-          alert("ชำระเงินสำเร็จ!");
-          if (onPaymentSuccess) {
-            onPaymentSuccess();
-          } else {
-            // Redirect to booking success page with booking_id if available
-            const successUrl = result.booking_id 
-              ? `/booking/success?booking_id=${result.booking_id}`
-              : "/booking/success";
-            router.push(successUrl);
+          const chargeId = result.chargeId || result.charge_id || "";
+          
+          // บันทึกข้อมูลการจองลง database
+          try {
+            const cartItems = getActiveCartItems();
+            const finalAmount = getFinalAmount();
+            
+            // ตรวจสอบว่ามีข้อมูลหรือไม่
+            if (!cartItems || cartItems.length === 0) {
+              alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
+              return;
+            }
+            
+            const bookingData = {
+              user_id: getUserIdFromToken(),
+              items: cartItems.map(item => ({
+                id: item.id,
+                title: item.title,
+                price: item.price,
+                quantity: item.quantity,
+                unit: item.unit,
+              })),
+              total_price: finalAmount,
+              discount: paymentInfo.discount?.amount || 0,
+              service_date: customerInfo.serviceDate?.toISOString().split('T')[0],
+              service_time: customerInfo.serviceTime,
+              address_data: {
+                address: customerInfo.address,
+                province: customerInfo.province,
+                district: customerInfo.district,
+                subdistrict: customerInfo.subDistrict,
+                additional_info: customerInfo.additionalInfo,
+                latitude: customerInfo.latitude,
+                longitude: customerInfo.longitude,
+              },
+              promotion_id: null,
+              charge_id: chargeId,
+            };
+
+            const bookingRes = await fetch("/api/bookings/create", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(bookingData),
+            });
+
+            const bookingResult = await bookingRes.json();
+
+            if (bookingResult.success) {
+              alert("ชำระเงินสำเร็จ!");
+              if (onPaymentSuccess) {
+                onPaymentSuccess(bookingResult.booking_id, chargeId);
+              } else {
+                // Redirect พร้อม bookingId และ chargeId
+              router.push(
+                `/payment/summary?bookingId=${bookingResult.booking_id}&chargeId=${chargeId}`
+              );
+              }
+            } else {
+              // ถ้าบันทึกไม่สำเร็จ แต่ชำระเงินสำเร็จแล้ว
+              console.error("Failed to save booking:", bookingResult);
+              alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+              router.push(`/payment/summary?chargeId=${chargeId}`);
+            }
+          } catch (bookingError) {
+            console.error("Booking creation error:", bookingError);
+            alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+            router.push(`/payment/summary?chargeId=${chargeId}`);
           }
         } else if (result.status === "pending" && result.redirect_url) {
           // Handle redirect if needed
@@ -197,7 +282,14 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
         const result = await res.json();
 
         if (result.status === "pending" && result.qr_url) {
+          // แสดง QR Code และเริ่มตรวจสอบสถานะ
           window.open(result.qr_url, "_blank");
+          
+          // TODO: Implement polling to check payment status
+          // เมื่อชำระเงินสำเร็จ ให้ redirect ไป:
+          // router.push(`/payment/summary?chargeId=${result.chargeId}`);
+          
+          alert("กรุณาสแกน QR Code เพื่อชำระเงิน\nระบบจะตรวจสอบสถานะการชำระเงินอัตโนมัติ");
         } else {
           const errorMsg = "สร้าง PromptPay QR ไม่สำเร็จ: " + (result.message || "");
           alert(errorMsg);

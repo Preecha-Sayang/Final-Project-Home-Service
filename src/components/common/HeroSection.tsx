@@ -10,6 +10,7 @@ const HeroSection: React.FC = () => (
         className="w-full h-full object-cover filter blur-xs"
         width={144}
         height={240}
+        style={{ width: "auto", height: "auto" }}
       />
     </div>
     
