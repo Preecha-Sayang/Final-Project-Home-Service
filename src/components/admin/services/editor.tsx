@@ -101,9 +101,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                 const r = await fetch("/api/service-options/units");
                 const d: UnitsResponse = await r.json();
                 if (d?.ok) setUnits(d.units.map((u) => ({ label: u, value: u })));
-            } catch {
-                /* ignore */
-            }
+            } catch { }
         })();
     }, []);
 
@@ -555,8 +553,8 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                         }}
                                                         disabled={deletingId === localKey || !canDeleteOption}
                                                         className={`h-[44px] rounded-md px-4 mt-6 text-base font-semibold underline ${canDeleteOption
-                                                                ? "text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
-                                                                : "text-[var(--gray-300)] cursor-not-allowed"
+                                                            ? "text-[var(--blue-600)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
+                                                            : "text-[var(--gray-300)] cursor-not-allowed"
                                                             } disabled:opacity-60`}
                                                         title={canDeleteOption ? "ลบรายการ" : "ต้องมีอย่างน้อย 1 รายการ"}
                                                     >
@@ -739,8 +737,8 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                         }}
                                                         disabled={!canDeleteSubItem}
                                                         className={`h-[44px] rounded-md px-4 mt-1 underline ${canDeleteSubItem
-                                                                ? "text-[var(--gray-400)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
-                                                                : "text-[var(--gray-300)] cursor-not-allowed"
+                                                            ? "text-[var(--gray-400)] hover:bg-[var(--gray-100)] hover:text-[var(--red)] cursor-pointer"
+                                                            : "text-[var(--gray-300)] cursor-not-allowed"
                                                             }`}
                                                         title={canDeleteSubItem ? "ลบรายการ" : "ต้องมีอย่างน้อย 1 รายการ"}
                                                     >

@@ -10,11 +10,26 @@ export interface AdminRequest extends NextApiRequest {
 async function handler(req: AdminRequest, res: NextApiResponse) {
     if (req.method !== "POST") return res.status(405).end();
 
+    // draft: เก็บโครง payload ไว้ก่อน (ยังไม่ใช้จริง)
+    const {
+        serviceId: _serviceId,
+        name: _name,
+        price: _price,
+        unit: _unit,
+    } = req.body ?? {};
+
     console.log("by admin:", req.admin.email);
+    // ช่วยให้ไม่ unused + ดูโครง payload ตอน dev
+    console.log("draft payload:", {
+        serviceId: _serviceId,
+        name: _name,
+        price: _price,
+        unit: _unit,
+    });
 
     // await client.query(
     //   `INSERT INTO service_options (service_id, name, price, unit) VALUES ($1,$2,$3,$4)`,
-    //   [serviceId, String(name).trim(), Number(price), String(unit).trim()]
+    //   [_serviceId, String(_name).trim(), Number(_price), String(_unit).trim()]
     // );
 
     return res.json({ ok: true });

@@ -6,6 +6,7 @@ import type { PromotionRow } from "@/types/promotion";
 import { listPromotions, deletePromotion } from "lib/client/promotionsApi";
 import { Plus } from "lucide-react";
 import { Pagination } from "rsuite";
+import LoadingTable from "@/components/common/LoadingTable";
 
 type SortState = { sortBy: keyof PromotionRow; order: "ASC" | "DESC" };
 
@@ -20,12 +21,13 @@ export default function AdminPromotionPage() {
     const [askDeleteId, setAskDeleteId] = useState<number | null>(null);
     const [askDeleteName, setAskDeleteName] = useState<string>("");
     const [doing, setDoing] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [sort, setSort] = useState<SortState>({ sortBy: "create_at", order: "DESC" });
 
     useEffect(() => {
         (async () => {
-            // setLoading(true);
+            setLoading(true);
             try {
                 const { items, total } = await listPromotions({
                     q: search.trim(),
@@ -37,7 +39,7 @@ export default function AdminPromotionPage() {
                 setRows(items);
                 setTotal(total);
             } finally {
-                // setLoading(false);
+                setLoading(false);
             }
         })();
     }, [search, page, sort]);
@@ -99,22 +101,28 @@ export default function AdminPromotionPage() {
             </div>
 
             <div className="p-8">
-                <PromotionsTable
-                    rows={rows ?? []}
-                    sort={sort}
-                    onSort={(s) => { setPage(1); setSort(s); }}
-                    onDelete={remove}
-                />
-                <div className="mt-4 px-4 flex justify-between items-center">
-                    <div className="text-sm text-[var(--gray-500)]">รวม {total} รายการ</div>
-                    <Pagination
-                        prev next ellipsis boundaryLinks
-                        total={total}
-                        limit={PAGE_SIZE}
-                        activePage={page}
-                        onChangePage={(p) => setPage(p)}
-                    />
-                </div>
+                {loading ? (
+                    <LoadingTable />
+                ) : (
+                    <>
+                        <PromotionsTable
+                            rows={rows ?? []}
+                            sort={sort}
+                            onSort={(s) => { setPage(1); setSort(s); }}
+                            onDelete={remove}
+                        />
+                        <div className="mt-4 px-4 flex justify-between items-center">
+                            <div className="text-sm text-[var(--gray-500)]">รวม {total} รายการ</div>
+                            <Pagination
+                                prev next ellipsis boundaryLinks
+                                total={total}
+                                limit={PAGE_SIZE}
+                                activePage={page}
+                                onChangePage={(p) => setPage(p)}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
 
             <ConfirmDialog
@@ -124,7 +132,7 @@ export default function AdminPromotionPage() {
                     <>
                         {askDeleteName && (
                             <div className="mt-2 text-base">
-                                คุณต้องการลบโค้ด <br/><strong className="font-semibold text-xl text-[var(--red)]">‘{askDeleteName}’</strong><br/> ใช่หรือไม่
+                                คุณต้องการลบโค้ด <br /><strong className="font-semibold text-xl text-[var(--red)]">‘{askDeleteName}’</strong><br /> ใช่หรือไม่
                             </div>
                         )}
                     </>
