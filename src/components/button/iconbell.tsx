@@ -28,8 +28,8 @@ function IconBell() {
       <Image
         src={
           isLoading
-            ? "./images/icon_bell_gray.svg"
-            : "./images/icon_bell_blue.svg"
+            ? "/images/icon_bell_gray.svg"
+            : "/images/icon_bell_blue.svg"
         }
         alt="bell_alert"
         width={13}

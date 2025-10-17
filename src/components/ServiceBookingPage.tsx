@@ -317,6 +317,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
             className="w-full h-full object-cover"
             width={1920}
             height={250}
+            style={{ width: "auto", height: "auto" }}
             priority
           />
         </div>
