@@ -23,7 +23,7 @@ cloudinary.config({
 async function parseForm(req: NextApiRequest): Promise<{ file?: formidable.File }> {
   const form = formidable({
     multiples: false,
-    maxFileSize: 10 * 1024 * 1024, // 10MB
+    maxFileSize: 2 * 1024 * 1024, // 2MB
     uploadDir: os.tmpdir(),
     keepExtensions: true,
   });
