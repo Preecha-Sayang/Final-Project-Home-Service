@@ -142,6 +142,8 @@ export default function ServiceDetailPage() {
                                                 src={item.imageUrl}
                                                 alt={item.name || "image"}
                                                 fill
+                                                sizes="(max-width: 768px) 100vw, 400px"
+                                                priority
                                                 className="object-cover rounded-md"
                                             />
                                             <ImageLightbox

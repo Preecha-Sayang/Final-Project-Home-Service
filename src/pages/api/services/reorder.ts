@@ -1,4 +1,3 @@
-// src/pages/api/services/reorder.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "lib/db";
 

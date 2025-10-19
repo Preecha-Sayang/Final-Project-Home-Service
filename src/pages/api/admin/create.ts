@@ -35,10 +35,10 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
     return res.json({ ok: true });
 }
 
-export default withAdminAuth<AdminRequest>(handler, ["superadmin", "manager", "staff"]);
+export default withAdminAuth<AdminRequest>(handler, ["superadmin", "manager", "admin"]);
 
 //เดี่ยวมาทำต่อ Draft เอาไว้ก่อน**
 // หน้าที่หลัก: วางโครงสำหรับเพิ่ม ตัวเลือกบริการ (service_options) แต่ยังไม่เชื่อม DB จริง
 // ตอนนี้แค่ console.log ข้อมูล และ return { ok: true }
-// จำกัดสิทธิ์: ["superadmin", "manager", "staff"]
+// จำกัดสิทธิ์: ["superadmin", "manager", "admin"]
 // อยู่ในสถานะ Draft
