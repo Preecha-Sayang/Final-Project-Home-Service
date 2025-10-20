@@ -1,18 +1,16 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
-/** baseURL สำหรับเรียก API (ใช้ /api ของ Next เป็นดีฟอลต์) */
 function getBaseURL(): string {
     const env = process.env.NEXT_PUBLIC_API_BASE;
-    if (env && env.trim() !== "") return env; // เช่น "http://localhost:4000" หรือ "/api"
+    if (env && env.trim() !== "") return env; // เช่น "localhost" หรือ "/api"
     return "/api";
 }
 
-/** รายชื่อ key ที่จะลองดึงโทเค็นจากฝั่ง client (กันเคสหลายทีมตั้งชื่อไม่เหมือนกัน) */
 const TOKEN_KEYS = [
-    "admin_jwt",       // ที่เราใช้กันในโปรเจกต์
-    "jwt_admin",       // กันเคสใครใช้ชื่อนี้
-    "access_token",    // กันเคสใช้ generic
-    "token"            // กันเคสสั้นๆ
+    "admin_jwt",
+    "jwt_admin",
+    "access_token",
+    "token"
 ];
 
 function getAuthToken(): string | null {
@@ -26,9 +24,9 @@ function getAuthToken(): string | null {
         }
     } catch { }
 
-    // 2) cookie (อ่านแค่ชื่อที่เรารู้จัก)
+    // 2) cookie
     try {
-        const all = document.cookie; // "k1=v1; k2=v2"
+        const all = document.cookie;
         for (const k of TOKEN_KEYS) {
             const m = all.match(new RegExp(`(?:^|;\\s*)${k}=([^;]+)`));
             if (m && m[1]) return decodeURIComponent(m[1]);
@@ -44,13 +42,10 @@ export const http: AxiosInstance = axios.create({
     withCredentials: true,
 });
 
-/** แทรก Authorization header อัตโนมัติถ้ามีโทเค็น */
 http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const token = getAuthToken();
     if (token) {
-        // สร้าง headers ถ้ายังไม่มี
         config.headers = config.headers ?? {};
-        // ถ้ายังไม่มี Authorization ค่อยเติม (จะไม่ไปทับของเดิม)
         if (!("Authorization" in config.headers)) {
             (config.headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
         }

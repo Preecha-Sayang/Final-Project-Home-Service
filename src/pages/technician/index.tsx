@@ -5,23 +5,16 @@ import { useTechnicianLocation } from "@/stores/techLocationStore";
 
 export default function TechnicianInboxPage() {
     const [q, setQ] = React.useState("");
-
-    // store กลาง: ลากใช้ข้ามหน้าได้
-    const { addressText, loading, loadFromServer, reverseAndSave } =
-        useTechnicianLocation();
-
-    // hook ขอพิกัดจาก browser (ใช้ getPositionOnce แบบ Promise)
+    const { addressText, loading, loadFromServer, reverseAndSave } = useTechnicianLocation();
     const { getPositionOnce, permission, error } = useGeolocation();
 
     // โหลดจาก DB ครั้งแรก (ดึง address ล่าสุดจากเซิร์ฟเวอร์มาโชว์)
     useEffect(() => {
         void loadFromServer();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onRefresh = async () => {
         try {
-            // ส่งฟังก์ชัน promise ที่จะคืน coords ให้ reverseAndSave ใช้
             await reverseAndSave(getPositionOnce);
         } catch (e) {
             alert(e instanceof Error ? e.message : String(e));

@@ -7,24 +7,18 @@ import { useTechnicianLocation } from "@/stores/techLocationStore";
 export default function TechnicianSettingsPage() {
     const [open, setOpen] = React.useState(false);
 
-    // store กลาง (ตัวเดียวกับที่หน้า Inbox ใช้) -> ข้ามหน้า/รีโหลดแล้วยังอยู่
     const {
-        addressText,       // ที่อยู่ข้อความ (ดึงจาก DB หรือ reverse มาใหม่)
-        loading,           // สถานะโหลด/บันทึก
-        error,             // error ล่าสุด (ถ้ามี)
-        loadFromServer,    // GET /api/technician/location
-        reverseAndSave,    // รับฟังก์ชันคืนพิกัด -> reverse geocode -> POST บันทึก
+        addressText,
+        loading,
+        error,
+        loadFromServer,
+        reverseAndSave,
     } = useTechnicianLocation();
 
-    // โหลดค่า "ตำแหน่งล่าสุด" จาก DB เมื่อเข้าหน้านี้ครั้งแรก
     useEffect(() => {
         void loadFromServer();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    /** เมื่อผู้ใช้กดยืนยันตำแหน่งจาก Dialog
-     *  - เราจะส่งฟังก์ชันคืนพิกัดเข้า reverseAndSave เพื่อให้ store ทำ reverse + POST ให้ครบ
-     */
     const saveLocation = async (c: LatLng) => {
         try {
             await reverseAndSave(async () => c);

@@ -1,16 +1,11 @@
-// ใช้ Mapbox Geocoding API (language=th) แปลง ที่อยู่ <-> พิกัด
-// หมายเหตุ: ความครบของ "บ้านเลขที่" อยู่ที่ dataset ของ Mapbox ในพื้นที่นั้น ๆ
-
 const TOKEN = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "").toString();
 
-/** ยืนยันว่ามี token และเป็น string จริง ๆ */
 function ensureToken(token: unknown): asserts token is string {
     if (!token || typeof token !== "string") {
         throw new Error("Mapbox token missing. ใส่ NEXT_PUBLIC_MAPBOX_TOKEN ใน .env.local แล้ว restart dev server");
     }
 }
 
-/** โครง metadata ที่อยากเก็บลง DB */
 export type AddressMeta = {
     houseNumber?: string; // บ้านเลขที่
     road?: string;        // ถนน/ซอย/ชื่อสถานที่
@@ -22,11 +17,10 @@ export type AddressMeta = {
 };
 
 export type ReverseResult = {
-    fullText: string; // ที่อยู่ยาว ๆ ภาษาไทย (fallback)
-    meta: AddressMeta; // แยกรายช่องไว้ใช้งาน
+    fullText: string;
+    meta: AddressMeta;
 };
 
-/** ดึง context.* ตาม prefix id ของ Mapbox เช่น "place" | "district" | "region" | "postcode" */
 function findContextText(
     ctx: Array<{ id: string; text: string }> | undefined,
     prefix: string
@@ -36,7 +30,6 @@ function findContextText(
     return item?.text;
 }
 
-/** map properties/context ของ Mapbox -> AddressMeta (ไทย) */
 function toAddressMeta(
     placeName: string,
     feature: {
@@ -46,12 +39,6 @@ function toAddressMeta(
     }
 ): AddressMeta {
     const ctx = feature.context ?? [];
-
-    // Mapbox id semantics (ไทย):
-    // - place/district : เขต/อำเภอ (ขึ้นกับ dataset พื้นที่นั้น)
-    // - region         : จังหวัด
-    // - locality/neighborhood : ตำบล/แขวง
-    // - postcode       : รหัสไปรษณีย์
     const postcode = findContextText(ctx, "postcode");
     const province = findContextText(ctx, "region") ?? undefined;
 
@@ -65,8 +52,8 @@ function toAddressMeta(
         findContextText(ctx, "place") ??
         undefined;
 
-    const houseNumber = feature.address; // บ้านเลขที่ (ถ้ามี)
-    const road = feature.text;           // ส่วนใหญ่คือชื่อถนน/ซอย หรือชื่อ POI
+    const houseNumber = feature.address;
+    const road = feature.text;
 
     const country =
         findContextText(ctx, "country") ??
@@ -75,7 +62,7 @@ function toAddressMeta(
     return { houseNumber, road, subdistrict, district, province, postcode, country };
 }
 
-/** address (ข้อความ) -> lat/lng + fullText */
+/** address > lat/lng + fullText */
 export async function geocodeAddress(
     query: string
 ): Promise<{ lat: number; lng: number; fullText: string } | null> {
@@ -101,13 +88,11 @@ export async function geocodeAddress(
     return { lat: f.center[1], lng: f.center[0], fullText: f.place_name };
 }
 
-/** lat/lng -> full address (ภาษาไทย) + meta (พยายามดึงบ้านเลขที่) */
 export async function reverseGeocode(lat: number, lng: number): Promise<ReverseResult | null> {
     ensureToken(TOKEN);
 
     const url =
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json` +
-        // ใส่ types=address ก่อน เพื่อเพิ่มโอกาสได้เลขบ้าน
         `?language=th&limit=1&types=address,place,locality,neighborhood,region,postcode&access_token=${TOKEN}`;
 
     const r = await fetch(url);
@@ -132,7 +117,6 @@ export async function reverseGeocode(lat: number, lng: number): Promise<ReverseR
     return { fullText: f.place_name, meta };
 }
 
-/** รวมข้อความที่อยู่ไทยแบบอ่านง่าย (ถ้ามี meta ก็ประกอบเอง; ถ้าไม่พอ fallback เป็น fullText) */
 export function formatThaiAddress(fullText: string, meta?: AddressMeta | null): string {
     if (!meta) return fullText;
 

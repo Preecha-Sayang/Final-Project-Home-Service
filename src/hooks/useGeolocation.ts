@@ -16,7 +16,6 @@ export function useGeolocation() {
             try {
                 if ("permissions" in navigator) {
                     const status = await navigator.permissions.query({
-                        // cast เพื่อให้ TypeScript พอใจบนบาง tsconfig
                         name: "geolocation" as PermissionName,
                     });
                     if (!active) return;
@@ -49,7 +48,7 @@ export function useGeolocation() {
         };
     }, []);
 
-    /** trigger ให้ state coords อัปเดต (เผื่อจุดอื่นต้องการ) */
+    /** trigger ให้ state coords อัปเดต */
     const getCurrentPosition = useCallback(() => {
         if (!isSupported) {
             setError("เบราว์เซอร์ไม่รองรับ Geolocation");
@@ -70,7 +69,7 @@ export function useGeolocation() {
         );
     }, [isSupported]);
 
-    /** รอพิกัดแบบ Promise (แนะนำให้หน้า UI ใช้อันนี้) */
+    /** รอพิกัดแบบ Promise*/
     const getPositionOnce = useCallback(async (): Promise<LatLng> => {
         if (!isSupported) {
             throw new Error("เบราว์เซอร์ไม่รองรับ Geolocation");
