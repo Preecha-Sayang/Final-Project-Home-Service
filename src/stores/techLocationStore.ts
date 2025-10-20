@@ -25,7 +25,7 @@ type State = {
     reverseAndSave: (getBrowserCoords: () => Promise<Coords>) => Promise<void>;
 };
 
-export const useTechnicianLocation = create<State>((set, get) => ({
+export const useTechnicianLocation = create<State>((set) => ({
     coords: null,
     addressText: "",
     meta: null,
@@ -48,8 +48,7 @@ export const useTechnicianLocation = create<State>((set, get) => ({
             } else {
                 set({ loading: false });
             }
-        } catch (e) {
-            // เงียบ ๆ ไว้ ไม่ popup รบกวนหน้าแรก (เผื่อยังไม่ login)
+        } catch {
             set({ loading: false });
         }
     },

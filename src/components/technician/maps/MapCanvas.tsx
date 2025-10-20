@@ -1,5 +1,5 @@
 // กล่องแผนที่
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import mapboxgl, { Map, Marker } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { GeoPoint } from "@/types/location";
@@ -13,38 +13,47 @@ type Props = {
 };
 
 export default function MapCanvas({ center, onMarkerDragEnd, className }: Props) {
-    const ref = React.useRef<HTMLDivElement | null>(null);
-    const mapRef = React.useRef<Map | null>(null);
-    const markerRef = React.useRef<Marker | null>(null);
+    const ref = useRef<HTMLDivElement | null>(null);
+    const mapRef = useRef<Map | null>(null);
+    const markerRef = useRef<Marker | null>(null);
 
-    React.useEffect(() => {
+    // เก็บค่าเริ่มต้นของ center ใช้ตอน mount เท่านั้น
+    const initialCenter = useRef(center);
+
+    // เก็บ handler เป็น ref เพื่อไม่ให้เป็น dependency
+    const dragEndRef = useRef<((p: GeoPoint) => void) | null>(null);
+
+    useEffect(() => {
+        dragEndRef.current = onMarkerDragEnd ?? null;
+    }, [onMarkerDragEnd]);
+
+    // สร้างแผนที่ครั้งเดียว
+    useEffect(() => {
         if (!ref.current) return;
         const map = new mapboxgl.Map({
             container: ref.current,
             style: "mapbox://styles/mapbox/streets-v12",
-            center: [center.lng, center.lat],
+            center: [initialCenter.current.lng, initialCenter.current.lat],
             zoom: 14,
         });
         mapRef.current = map;
 
         const mk = new mapboxgl.Marker({ draggable: true })
-            .setLngLat([center.lng, center.lat])
+            .setLngLat([initialCenter.current.lng, initialCenter.current.lat])
             .addTo(map);
-
         markerRef.current = mk;
 
         mk.on("dragend", () => {
             const p = mk.getLngLat();
-            onMarkerDragEnd?.({ lat: p.lat, lng: p.lng });
+            dragEndRef.current?.({ lat: p.lat, lng: p.lng });
         });
 
         return () => { mk.remove(); map.remove(); };
-    }, []); // สร้างครั้งเดียว
+    }, []);
 
-    React.useEffect(() => {
-        // อัปเดตตำแหน่งเมื่อ center เปลี่ยน
-        const map = mapRef.current;
-        const mk = markerRef.current;
+    // อัปเดตตำแหน่งเมื่อ center เปลี่ยน
+    useEffect(() => {
+        const map = mapRef.current, mk = markerRef.current;
         if (!map || !mk) return;
         mk.setLngLat([center.lng, center.lat]);
         map.flyTo({ center: [center.lng, center.lat], zoom: 14 });

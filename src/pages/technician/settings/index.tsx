@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PageToolbar from "@/components/technician/common/PageToolbar";
 import LocationDialog from "@/components/technician/common/LocationDialog";
 import type { LatLng } from "@/types/geo";
 import { useTechnicianLocation } from "@/stores/techLocationStore";
 
 export default function TechnicianSettingsPage() {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
 
     const {
         addressText,
@@ -15,9 +15,9 @@ export default function TechnicianSettingsPage() {
         reverseAndSave,
     } = useTechnicianLocation();
 
-    useEffect(() => {
-        void loadFromServer();
-    }, []);
+    const loadRef = useRef(loadFromServer);
+    useEffect(() => { loadRef.current = loadFromServer; }, [loadFromServer]);
+    useEffect(() => { void loadRef.current(); }, []);
 
     const saveLocation = async (c: LatLng) => {
         try {

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import PageToolbar from "@/components/technician/common/PageToolbar";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useTechnicianLocation } from "@/stores/techLocationStore";
@@ -9,9 +9,9 @@ export default function TechnicianInboxPage() {
     const { getPositionOnce, permission, error } = useGeolocation();
 
     // โหลดจาก DB ครั้งแรก (ดึง address ล่าสุดจากเซิร์ฟเวอร์มาโชว์)
-    useEffect(() => {
-        void loadFromServer();
-    }, []);
+    const loadRef = useRef(loadFromServer);
+    useEffect(() => { loadRef.current = loadFromServer; }, [loadFromServer]);
+    useEffect(() => { void loadRef.current(); }, []);
 
     const onRefresh = async () => {
         try {
