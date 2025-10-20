@@ -48,6 +48,7 @@ export default function ImageLightbox({
                     src={src}
                     alt={alt}
                     fill
+                    sizes="(max-width: 768px) 100vw, 400px"
                     className="object-cover rounded-xl shadow-2xl transition"
                     priority
                 />

@@ -469,7 +469,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 onDragStart={(e) => onOptDragStart(e, localKey)}
                                                 onDragOver={onOptDragOver}
                                                 onDrop={(e) => onOptDrop(e, localKey)}
-                                                className="flex items-center gap-3 rounded-xl bg-white p-3"
+                                                className="flex items-start gap-3 rounded-xl bg-white p-3"
                                             >
                                                 {/* ตัวลาก */}
                                                 <div
@@ -570,7 +570,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                     <button
                                         type="button"
                                         onClick={addOptionInline}
-                                        className="flex items-center gap-2 rounded-lg border border-[var(--blue-600)] px-3 py-2 text-sm font-medium text-[var(--blue-600)] hover:text-white hover:bg-[var(--blue-600)] cursor-pointer"
+                                        className="flex justify-center items-center w-[185px] h-[44px] mt-1 gap-2 rounded-lg border border-[var(--blue-600)] px-3 py-2 text-base font-medium text-[var(--blue-600)] hover:text-[var(--gray-100)] hover:bg-[var(--blue-600)] cursor-pointer"
                                     >
                                         เพิ่มรายการ <Plus className="h-4 w-4" />
                                     </button>
@@ -658,7 +658,7 @@ export default function ServiceEditor({ mode, id }: Props) {
                                                 onDragStart={(e) => onDragStart(e, it.id)}
                                                 onDragOver={onDragOver}
                                                 onDrop={(e) => onDrop(e, it.id)}
-                                                className="flex items-center gap-3 rounded-xl bg-white py-3 cursor-pointer"
+                                                className="flex items-start gap-3 rounded-xl bg-white py-3 cursor-pointer"
                                             >
                                                 <div className="basis-[4.10%] flex justify-center  text-[var(--gray-400)]">
                                                     <GripVertical className="mt-2" />

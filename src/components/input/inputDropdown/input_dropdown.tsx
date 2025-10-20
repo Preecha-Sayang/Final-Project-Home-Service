@@ -57,7 +57,7 @@ export default function InputDropdown({
                 <div className={cn("relative", className)}>
                     <Listbox.Button
                         className={cn(
-                            "w-full h-[40px] text-left text-base font-medium text-[var(--gray-900)]",
+                            "w-full h-full text-left text-base font-medium text-[var(--gray-900)]",
                             "border border-[var(--gray-300)]",
                             "hover:border-[var(--gray-300)]",
                             "focus:outline-none focus:ring-1 focus:ring-[var(--blue-600)]",
