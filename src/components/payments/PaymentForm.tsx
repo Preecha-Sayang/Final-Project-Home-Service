@@ -90,6 +90,25 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
       setForm({ ...form, [name]: value });
     };
 
+
+    // ฟังก์ชัน auto เว้นวรรคเลขบัตรเครดิต
+    const formatCreditCardNumber = (value: string) => {
+      return value
+        .replace(/\D/g, "") // ลบตัวอักษรที่ไม่ใช่ตัวเลข
+        .replace(/(.{4})/g, "$1 ") // เว้นวรรคทุก 4 ตัว
+        .trim(); // ลบช่องว่างส่วนเกิน
+    };
+
+    // ฟังก์ชัน auto เพิ่ม "/" ในวันหมดอายุ (MM/YY)
+    const formatExpiryDate = (value: string) => {
+      const cleaned = value.replace(/\D/g, ""); // เอาเฉพาะตัวเลข
+      if (cleaned.length === 0) return "";
+      if (cleaned.length <= 2) return cleaned;
+      return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`;
+    };
+
+
+
     // โหลด Omise.js ฝั่ง client เท่านั้น
     useEffect(() => {
       if (typeof window === "undefined") return;
@@ -339,7 +358,10 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
                   value={form.credit_card_number}
                   placeholder="กรุณากรอกหมายเลขบัตรเครดิต"
                   onChange={(e) =>
-                    handleChange("credit_card_number", e.target.value)
+                    handleChange(
+                      "credit_card_number",
+                      formatCreditCardNumber(e.target.value)
+                    )
                   }
                 />
 
@@ -363,7 +385,10 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
                       value={form.expired_date}
                       placeholder="MM/YY"
                       onChange={(e) =>
-                        handleChange("expired_date", e.target.value)
+                        handleChange(
+                          "expired_date", 
+                          formatExpiryDate(e.target.value)
+                        )
                       }
                       maxLength={5}
                     />
