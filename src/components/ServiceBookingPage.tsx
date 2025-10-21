@@ -362,6 +362,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({ serviceId }) =>
               date={formatDate(customerInfo.serviceDate)}
               time={formatTime(customerInfo.serviceTime)}
               address={formatAddress()}
+              promotion={100}
               fallbackText="ยังไม่ได้เลือก"
             />
           </div>

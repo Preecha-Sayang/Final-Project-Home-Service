@@ -334,6 +334,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
 
     const submitDiscountCode = () => {
       // TODO: Implement discount code logic
+      
     };
 
     // Expose handlePayment to parent component via ref
