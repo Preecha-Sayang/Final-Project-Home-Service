@@ -4,11 +4,10 @@ export function useReverseGeocode(lat?: number, lng?: number) {
     const [text, setText] = useState<string>("");
     useEffect(() => {
         if (typeof lat !== "number" || typeof lng !== "number") return;
-        const url = `/api/geocode/reverse?lat=${lat}&lng=${lng}`;
-        fetch(url).then(r => r.json()).then(json => {
-            const name = json?.features?.[0]?.place_name ?? "";
-            setText(name);
-        }).catch(() => { });
+        fetch(`/api/geocode/google-reverse?lat=${lat}&lng=${lng}`)
+            .then(r => r.json())
+            .then(json => setText(json?.results?.[0]?.formatted_address ?? ""))
+            .catch(() => { });
     }, [lat, lng]);
     return text;
 }

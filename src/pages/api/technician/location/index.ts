@@ -19,7 +19,8 @@ async function q<T>(sql: string, params?: unknown[]): Promise<T[]> {
 }
 
 async function handler(req: MyReq, res: NextApiResponse) {
-    const techId = (req.admin as unknown as { adminId: number }).adminId;
+    const techId = Number((req.admin as { adminId: string | number }).adminId);
+    if (!Number.isFinite(techId)) return res.status(401).json({ message: "invalid token" });
 
     if (req.method === "GET") {
         const sql = `
@@ -33,7 +34,8 @@ async function handler(req: MyReq, res: NextApiResponse) {
     }
 
     if (req.method === "POST") {
-        const { lat, lng, address_text, meta } = req.body as {
+        const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+        const { lat, lng, address_text, meta } = body as {
             lat: number; lng: number; address_text: string; meta?: unknown;
         };
 

@@ -15,7 +15,14 @@ export default function TechnicianInboxPage() {
 
     const onRefresh = async () => {
         try {
-            await reverseAndSave(getPositionOnce);
+            await reverseAndSave(async () => {
+                const p = await getPositionOnce(); // { lat, lng }
+                return {
+                    coords: { latitude: p.lat, longitude: p.lng, accuracy: 5 },
+                    timestamp: Date.now(),
+                    toJSON() { return this; },
+                } as GeolocationPosition;
+            });
         } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
         }

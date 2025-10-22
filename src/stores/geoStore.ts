@@ -1,91 +1,172 @@
 import { create } from "zustand";
-import { http } from "lib/client/http";
-import { reverseGeocode, AddressMeta } from "lib/client/maps/mapboxProvider";
 
-export type Coords = { lat: number; lng: number };
-
-type LocationRow = {
+export type LatLng = { lat: number; lng: number };
+export type TechnicianLocationRow = {
     lat: number;
     lng: number;
     address_text: string;
-    address_meta?: AddressMeta | null;
     updated_at: string;
 };
 
-type LocationResp = { ok: boolean; location: LocationRow | null };
+type LocationApiResponse =
+    | { ok: true; location: TechnicianLocationRow | null }
+    | { ok: false; message?: string };
 
-type State = {
-    coords: Coords | null;
-    addressText: string;
-    meta: AddressMeta | null;
-    loading: boolean;
-    error: string | null;
-
-    loadFromServer: () => Promise<void>;
-    reverseAndSave: (getBrowserCoords: () => Promise<Coords>) => Promise<void>;
+type GoogleReverseResponse = {
+    results: Array<{ formatted_address?: string }>;
+    status?: string;
 };
 
-export const useTechnicianLocation = create<State>((set) => ({
-    coords: null,
-    addressText: "",
-    meta: null,
-    loading: false,
-    error: null,
+type GeoState = {
+    addressText: string;
+    coords: LatLng | null;
+    loading: boolean;
+    error?: string;
+    loadFromServer: () => Promise<void>;
+    reverseAndSave: (
+        getPositionOnce: () => Promise<GeolocationPosition | LatLng>
+    ) => Promise<void>;
+};
 
-    // ดึงจาก DB ครั้งแรก (มี token ถึงจะได้)
+/** type guard: เช็คว่าเป็น response รูปแบบที่เรารับได้ */
+function isLocationApiResponse(x: unknown): x is LocationApiResponse {
+    if (typeof x !== "object" || x === null) return false;
+    const obj = x as Record<string, unknown>;
+    if (typeof obj.ok !== "boolean") return false;
+    if (obj.ok === false) return true;
+
+    if (!("location" in obj)) return false;
+    const loc = (obj as { location: unknown }).location;
+    if (loc === null) return true;
+    if (typeof loc !== "object" || loc === null) return false;
+    const r = loc as Record<string, unknown>;
+    return (
+        typeof r.lat === "number" &&
+        typeof r.lng === "number" &&
+        typeof r.address_text === "string" &&
+        typeof r.updated_at === "string"
+    );
+}
+
+/** แปลงตำแหน่งจาก union ให้เป็น LatLng */
+function coerceToLatLng(
+    p: GeolocationPosition | LatLng
+): LatLng {
+    if ("coords" in p) {
+        return { lat: p.coords.latitude, lng: p.coords.longitude };
+    }
+    return { lat: p.lat, lng: p.lng };
+}
+
+/** ดึงตำแหน่งล่าสุดของช่างจากเซิร์ฟเวอร์ */
+async function fetchLatestLocation(): Promise<TechnicianLocationRow | null> {
+    const r = await fetch("/api/technician/location", {
+        credentials: "include",
+    });
+    const data: unknown = await r.json();
+
+    if (!isLocationApiResponse(data)) {
+        throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+    }
+    if (data.ok === false) {
+        throw new Error(data.message ?? "โหลดตำแหน่งไม่สำเร็จ");
+    }
+    return data.location;
+}
+
+/** เรียก reverse geocode ผ่าน proxy server */
+async function reverseAddress(lat: number, lng: number): Promise<string> {
+    const r = await fetch(`/api/geocode/google-reverse?lat=${lat}&lng=${lng}`);
+    const data: unknown = await r.json();
+
+    const ok =
+        typeof data === "object" &&
+        data !== null &&
+        Array.isArray((data as { results?: unknown }).results);
+
+    if (!ok) return `${lat}, ${lng}`;
+
+    const results = (data as GoogleReverseResponse).results;
+    const full = results[0]?.formatted_address;
+    return typeof full === "string" && full.trim() ? full : `${lat}, ${lng}`;
+}
+
+/** POST บันทึกตำแหน่งใหม่ */
+async function postLocation(payload: {
+    lat: number;
+    lng: number;
+    address_text: string;
+}): Promise<TechnicianLocationRow> {
+    const r = await fetch("/api/technician/location", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    });
+    const data: unknown = await r.json();
+
+    if (!isLocationApiResponse(data)) {
+        throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+    }
+    if (data.ok === false || !data.location) {
+        throw new Error(
+            ("message" in data && typeof data.message === "string"
+                ? data.message
+                : "บันทึกตำแหน่งไม่สำเร็จ")
+        );
+    }
+    return data.location;
+}
+
+/** Zustand store */
+export const useGeoStore = create<GeoState>((set, get) => ({
+    addressText: "",
+    coords: null,
+    loading: false,
+    error: undefined,
+
     async loadFromServer() {
+        set({ loading: true, error: undefined });
         try {
-            set({ loading: true, error: null });
-            const { data } = await http.get<LocationResp>("/technician/location");
-            const loc = data.location ?? null;
-            if (loc) {
-                set({
-                    coords: { lat: loc.lat, lng: loc.lng },
-                    addressText: loc.address_text,
-                    meta: (loc.address_meta as AddressMeta) ?? null,
-                    loading: false,
-                });
-            } else {
-                set({ loading: false });
-            }
-        } catch {
-            set({ loading: false });
+            const loc = await fetchLatestLocation();
+            set({
+                addressText: loc?.address_text ?? "",
+                coords: loc ? { lat: loc.lat, lng: loc.lng } : null,
+                loading: false,
+            });
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ";
+            set({ loading: false, error: message });
         }
     },
 
-    // ขอพิกัดจากเบราว์เซอร์ -> reverse geocode -> บันทึก -> อัปเดต state
-    async reverseAndSave(getBrowserCoords) {
+    async reverseAndSave(getPositionOnce) {
+        set({ loading: true, error: undefined });
         try {
-            set({ loading: true, error: null });
+            // 1) รับพิกัดจากเบราว์เซอร์หรือ mock
+            const raw = await getPositionOnce();
+            const { lat, lng } = coerceToLatLng(raw);
 
-            // 1) ขอพิกัดจากเบราว์เซอร์
-            const c = await getBrowserCoords();
+            // 2) reverse geocode เป็นที่อยู่
+            const fullText = await reverseAddress(lat, lng);
 
-            // 2) แปลงเป็นที่อยู่ไทย
-            const rev = await reverseGeocode(c.lat, c.lng);
-            if (!rev) throw new Error("แปลงพิกัดเป็นที่อยู่ไม่สำเร็จ");
-
-            // 3) POST เก็บใน DB
-            const payload = {
-                lat: c.lat,
-                lng: c.lng,
-                address_text: rev.fullText,
-                meta: rev.meta,
-            };
-            const { data } = await http.post<LocationResp>("/technician/location", payload);
+            // 3) บันทึก DB
+            const saved = await postLocation({ lat, lng, address_text: fullText });
 
             // 4) อัปเดต state
             set({
-                coords: { lat: data.location?.lat ?? c.lat, lng: data.location?.lng ?? c.lng },
-                addressText: data.location?.address_text ?? rev.fullText,
-                meta: (data.location?.address_meta as AddressMeta) ?? rev.meta,
+                addressText: saved.address_text,
+                coords: { lat: saved.lat, lng: saved.lng },
                 loading: false,
             });
-        } catch (e) {
-            set({ loading: false, error: e instanceof Error ? e.message : String(e) });
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : "เกิดข้อผิดพลาด";
+            set({ loading: false, error: message });
             throw e;
         }
     },
 }));
+
+export const useTechnicianLocation = useGeoStore;
 
 //# Zustand สำหรับตำแหน่งปัจจุบัน/ที่เลือก

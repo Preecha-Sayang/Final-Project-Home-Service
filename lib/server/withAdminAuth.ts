@@ -19,13 +19,22 @@ if (!JWT_SECRET) throw new Error("JWT_SECRET is not defined");
 
 /** ดึง token จาก Authorization หรือคุกกี้ชื่อ admin_jwt */
 function extractToken(req: NextApiRequest): string | null {
+    // 1) Authorization: Bearer <token>
     const auth = req.headers.authorization || "";
-    if (auth.startsWith("Bearer ")) {
-        return auth.slice(7);
+    if (auth.startsWith("Bearer ")) return auth.slice(7).trim();
+
+    // 2) สำรองเฮดเดอร์ custom
+    const xtoken = (req.headers["x-admin-token"] as string | undefined)?.trim();
+    if (xtoken) return xtoken;
+
+    // 3) คุกกี้หลายชื่อที่ระบบอาจใช้
+    const c = req.cookies || {};
+    const candidates = ["admin_jwt", "accessToken", "admin_token", "token"];
+    for (const name of candidates) {
+        const v = (c[name] || "").trim();
+        if (v) return v;
     }
-    // สำรอง: อ่านจากคุกกี้ชื่อ admin_jwt
-    const cookie = (req.cookies && req.cookies["admin_jwt"]) || null;
-    return cookie && cookie.trim() !== "" ? cookie.trim() : null;
+    return null;
 }
 
 export function withAdminAuth<TReq extends NextApiRequest = NextApiRequest>(
