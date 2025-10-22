@@ -47,3 +47,4 @@ export default function NewAddressPage() {
 }
 
 // ไม่ได้ใช้ : เก็บไว้ LocationPicker เดี๋ยวสลับมาใช้ GoogleLocationPicker แล้ว
+//# ใช้ GoogleLocationPicker

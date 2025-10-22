@@ -31,9 +31,18 @@ export type AddressRecord = {
     country: string | null;
     lat: number;
     lng: number;
-    created_at: string; // ISO
-    updated_at: string; // ISO
+    created_at: string;
+    updated_at: string;
+};
+
+export type TechnicianLocation = {
+    user_id: number;
+    lat: number;
+    lng: number;
+    updated_at: string;
 };
 
 export type LatLng = { lat: number; lng: number };
 export type GeoPermission = "granted" | "denied" | "prompt" | "unknown";
+
+//# GeoPoint, AddressRecord, TechnicianLocation ฯลฯ

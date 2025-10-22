@@ -68,3 +68,6 @@ async function handler(req: MyReq, res: NextApiResponse) {
 }
 
 export default withAdminAuth<MyReq>(handler, ["technician", "admin", "manager", "superadmin"]);
+
+
+//# GET/PUT สถานะ/พิกัดช่าง

@@ -87,3 +87,5 @@ export const useTechnicianLocation = create<State>((set) => ({
         }
     },
 }));
+
+//# Zustand สำหรับตำแหน่งปัจจุบัน/ที่เลือก

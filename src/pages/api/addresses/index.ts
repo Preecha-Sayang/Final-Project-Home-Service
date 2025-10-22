@@ -52,3 +52,5 @@ SELECT * FROM addresses ORDER BY address_id DESC LIMIT 100
         return res.status(500).json({ ok: false, message: "Server error" });
     }
 }
+
+//# GET/POST
