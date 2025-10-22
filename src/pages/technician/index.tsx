@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import PageToolbar from "@/components/technician/common/PageToolbar";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { useTechnicianLocation } from "@/stores/techLocationStore";
+import { useTechnicianLocation } from "@/stores/geoStore";
 
 export default function TechnicianInboxPage() {
     const [q, setQ] = React.useState("");

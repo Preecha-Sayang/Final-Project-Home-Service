@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import type { LatLng, GeoPermission } from "@/types/geo";
+import type { LatLng, GeoPermission } from "@/types/location";
 
 export function useGeolocation() {
     const [coords, setCoords] = useState<LatLng | null>(null);
@@ -111,3 +111,6 @@ export function useGeolocation() {
         getPositionOnce,
     };
 }
+
+
+// ไม่ได้ใช้งาน : เก็บไว้ (ใช้ navigator.geolocation ของเบราว์เซอร์)
