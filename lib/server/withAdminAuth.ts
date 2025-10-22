@@ -1,16 +1,17 @@
 import type { NextApiRequest, NextApiResponse, NextApiHandler } from "next";
 import jwt from "jsonwebtoken";
+import cookie from "cookie";
 
-export type Role = "superadmin" | "manager" | "admin" | "technician";
+export type Role = "superadmin" | "manager" | "admin"|"technician";
 
 export type AdminJwt = {
-    adminId: string;
-    role: Role;
-    email: string;
+  adminId: string;
+  role: Role;
+  email: string;
 };
 
 export interface AdminRequest extends NextApiRequest {
-    admin: AdminJwt;
+  admin: AdminJwt;
 }
 
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -62,18 +63,23 @@ function extractToken(req: NextApiRequest): string | null {
 }
 
 export function withAdminAuth<TReq extends NextApiRequest = NextApiRequest>(
-    handler: (req: TReq, res: NextApiResponse) => unknown | Promise<unknown>,
-    roles: Role[] = []
+  handler: (req: TReq, res: NextApiResponse) => unknown | Promise<unknown>,
+  roles: Role[] = []
 ): NextApiHandler {
-    return async (req, res) => {
-        try {
-            const token = extractToken(req);
-            if (!token) {
-                if (process.env.NODE_ENV !== "production") {
-                    return res.status(401).json({ ok: false, message: "missing token" });
-                }
-                return res.status(401).end();
-            }
+  return async (req, res) => {
+    try {
+      // 1️⃣ อ่าน token จาก header
+      let token = req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.slice(7)
+        : undefined;
+
+      // 2️⃣ ถ้าไม่มี header, อ่านจาก cookie
+      if (!token && req.headers.cookie) {
+        const cookies = cookie.parse(req.headers.cookie);
+        token = cookies.accessToken;
+      }
+
+      if (!token) return res.status(401).json({ message: "missing token" });
 
             const decoded = jwt.verify(token, JWT_SECRET) as AdminJwt;
             if (!decoded?.adminId || !decoded?.role) {

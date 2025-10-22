@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/router";
 
-interface MenuItem {
+export interface MenuItem {
   label: string;
   path: string;
   icon: string;
@@ -73,7 +73,7 @@ function NavbarTechnician({ menuItems }: NavbarProps) {
           >
             <div className="px-[15px] py-[15px] flex items-center">
               <Image src={item.icon} alt={`${item.label}_icon`} width={24} height={24} />
-              <span className="body5 text-[var(--gray-100)] ml-[10px] max-w-[140px] break-words">{item.label}</span>
+              <span className="body5 text-[var(--gray-100)] ml-[10px] max-w-[170px] break-words">{item.label}</span>
               {Number(item.count) > 0 && (
                 <div className="inline-flex h-[20px] min-w-[20px] rounded-full bg-[var(--red)] items-center justify-center ml-[15px] px-[6px]">
                   <span className="body5 text-[var(--gray-100)] text-center">
@@ -128,7 +128,7 @@ function NavbarTechnician({ menuItems }: NavbarProps) {
               >
                 <div className="px-[15px] py-[15px] flex items-center ">
                   <Image src={item.icon} alt={`${item.label}_icon`} width={24} height={24} />
-                  <span className="body5 text-[var(--gray-100)] ml-[10px] break-words max-w-[140px]">{item.label}</span>
+                  <span className="body5 text-[var(--gray-100)] ml-[10px] break-words max-w-[170px]">{item.label}</span>
                   {Number(item.count) > 0 && (
                     <div className="inline-flex h-[20px] min-w-[20px] rounded-full bg-[var(--red)] items-center justify-center ml-[15px] px-[6px]">
                       <span className="body5 text-[var(--gray-100)] text-center  ">
@@ -159,6 +159,12 @@ function NavbarTechnician({ menuItems }: NavbarProps) {
 }
 
 export default NavbarTechnician;
+
+
+
+
+
+
 
 
 // const res = await datatable.query(
