@@ -1,22 +1,19 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 type AuthContextType = {
   isLoggedIn: boolean;
   accessToken: string | null;
   refreshToken: string | null;
+  loading: boolean; // ✅ เพิ่ม
   login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
+  isLoggingOut: boolean; 
 };
 
-// Define the expected JWT payload structure
 interface JwtPayload {
   exp: number;
-  // Add other JWT fields you expect here
-  // iat?: number;
-  // userId?: string;
-  // etc.
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,12 +21,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // ✅ เพิ่ม
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // โหลด token จาก localStorage ตอน mount
   useEffect(() => {
     const storedAccess = localStorage.getItem("accessToken");
     const storedRefresh = localStorage.getItem("refreshToken");
+
     if (storedAccess) setAccessToken(storedAccess);
     if (storedRefresh) setRefreshToken(storedRefresh);
+
+    // ✅ ให้เวลาอ่าน localStorage เสร็จค่อย mark ว่าโหลดเสร็จ
+    setLoading(false);
   }, []);
 
   const login = (newAccessToken: string, newRefreshToken: string) => {
@@ -40,18 +44,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = useCallback(() => {
-    setAccessToken(null);
-    setRefreshToken(null);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-  }, []);
+  setIsLoggingOut(true);
+  setAccessToken(null);
+  setRefreshToken(null);
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+  setTimeout(() => setIsLoggingOut(false), 1000); // ปล่อยให้ redirect เสร็จก่อน
+}, []);
 
   const refreshAccessToken = useCallback(async () => {
     try {
-      const res = await axios.post("/api/auth/refresh", {
-        refreshToken,
-      });
-
+      const res = await axios.post("/api/auth/refresh", { refreshToken });
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
 
       login(newAccessToken, newRefreshToken ?? refreshToken);
@@ -69,7 +72,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const decoded = jwtDecode<JwtPayload>(accessToken);
       const exp = decoded.exp * 1000;
       const now = Date.now();
-
       const timeout = exp - now - 10_000;
 
       if (timeout <= 0) {
@@ -78,7 +80,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const timer = setTimeout(() => {
           refreshAccessToken();
         }, timeout);
-
         return () => clearTimeout(timer);
       }
     } catch (err) {
@@ -88,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn: !!accessToken, accessToken, refreshToken, login, logout }}
+      value={{ isLoggedIn: !!accessToken, accessToken, refreshToken, loading, login, logout, isLoggingOut }}
     >
       {children}
     </AuthContext.Provider>

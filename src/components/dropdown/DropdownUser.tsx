@@ -19,11 +19,10 @@ export default function DropdownUser({ imageURL }: DropdownUserProps) {
 };
   const { logout } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-    router.refresh();
-  };
+const handleLogout = () => {
+  logout();
+  router.replace("/"); // replace ดีกว่า push สำหรับ logout
+};
 
 const menuItems = [
   {

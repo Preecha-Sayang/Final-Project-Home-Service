@@ -1,6 +1,7 @@
 import OrderCard from "@/components/Cards/OrderCard";
 import { useEffect, useState, useCallback } from "react";
 import { useFetchWithToken } from "@/hooks/useAuth";
+import PaymentSummary from "@/components/payments/Payment_summary";
 
 type BookingItem = {
   name: string;
@@ -57,6 +58,7 @@ function ServiceListProcess({ onLoadDone }: { onLoadDone: () => void }) {
     return <p className="text-center text-gray-600 mt-4">{message}</p>;
   }
 
+
   return (
     <div className="flex flex-col gap-6">
       {bookings
@@ -76,6 +78,7 @@ function ServiceListProcess({ onLoadDone }: { onLoadDone: () => void }) {
             items={order.items}
             status={order.status_name}
             totalPrice={order.total_price}
+
           />
         ))}
     </div>
