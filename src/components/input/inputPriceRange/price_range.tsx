@@ -96,7 +96,7 @@ export default function PriceRange({
         <div className={cn("grid gap-3", className)}>
             {label && <span className="text-sm font-medium text-[var(--gray-800)]">{label}</span>}
 
-            <div className="rounded-2xl border border-[var(--gray-100)] bg-[var(--white)] p-4 shadow-[0_10px_24px_rgba(0,0,0,.06)]">
+            <div className="rounded-2xl border border-[var(--gray-100)] bg-[var(--white)] p-4 shadow-[0_10px_24px_rgba(0,0,0,.06)] ">
                 <div className="mb-3 text-sm text-[var(--gray-700)]">{min}-{max}฿</div>
 
                 {/* กล่องครอบเพื่ออิงตำแหน่ง badge */}
@@ -108,7 +108,7 @@ export default function PriceRange({
                         value={[internalValue.min, internalValue.max]}
                         onValueChange={handleValueChange}
                         onValueCommit={handleValueCommit}
-                        className="relative mx-2 flex w-[calc(100%-1rem)] select-none touch-none items-center"
+                        className="relative mx-2 flex w-[calc(100%-1rem)] select-none touch-none items-center  "
                     >
                         <Slider.Track className="relative h-2 w-full rounded-full bg-[var(--gray-300)]">
                             <Slider.Range className="absolute h-2 rounded-full bg-[var(--blue-500)]" />
