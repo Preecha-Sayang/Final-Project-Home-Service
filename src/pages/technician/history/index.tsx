@@ -3,31 +3,43 @@ import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dr
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const options: Option[] = [
-  { label: "บริการทั้งหมด", value: "" },
-  { label: "ล้างแอร์", value: "ล้างแอร์" },
-  { label: "ติดตั้งเครื่องทำน้ำอุ่น", value: "ติดตั้งเครื่องทำน้ำอุ่น" },
-  { label: "ติดตั้งปั๊มน้ำ", value: "ติดตั้งปั๊มน้ำ" },
-];
+
+
+type Booking = {
+  booking_id: number;
+  servicename: string;
+  service_date: string;
+  service_time: string;
+  order_code: string;
+  total_price: number;
+};
+
+interface FetchParams {
+  page: number;
+  servicename?: string;
+  search?: string;
+  status: number;
+}
 
 function TecnicianProfile() {
     const router = useRouter();
   const [SelectCategory, setSelectedCategory] = useState("");
   const [search, setSearch] = useState("");
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);;
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 6;
+  const [services, setServices] = useState<Option[]>([]);
+
 
   useEffect(() => {
     const fetchBookings = async () => {
       setLoading(true);
       try {
-        const params: any = { page };
+        const params: FetchParams = { page, status: 4 };
         if (SelectCategory && SelectCategory !== "") params.servicename = SelectCategory;
         if (search.trim()) params.search = search.trim();
-        params.status = 3;
 
         const token = localStorage.getItem("accessToken");
 
@@ -47,9 +59,31 @@ function TecnicianProfile() {
         setLoading(false);
       }
     };
-
     fetchBookings();
   }, [SelectCategory, search, page]);
+
+    useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await axios.get("/api/technician/history/allservice");
+        // สมมติ API คืน { services: [{ servicename: "ล้างแอร์" }, ...] }
+        const options: Option[] = [
+          { label: "บริการทั้งหมด", value: "" },
+          ...res.data.services.map((s: { servicename: string }) => ({
+            label: s.servicename,
+            value: s.servicename,
+          })),
+        ];
+        setServices(options);
+        console.log(options)
+      } catch (err) {
+        console.error("Error fetching service names:", err);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
 
   const totalPages = Math.ceil(total / limit);
 
@@ -96,7 +130,7 @@ function TecnicianProfile() {
           <p>บริการ</p>
           <InputDropdown
             className="w-[100%] md:!w-[300px]"
-            options={options}
+            options={services}
             value={SelectCategory}
             onChange={(value) => {
               setSelectedCategory(value);

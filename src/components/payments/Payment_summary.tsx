@@ -17,15 +17,14 @@ interface PaymentSummaryProps {
   address?: string;
   totalPrice?: string | number;
   type?: "button" | "submit" | "reset";
+  clickevent?:() => Promise<void> | void;
+  eventname: string;
 }
 
-const PaymentSummary: React.FC<PaymentSummaryProps> = ({ status, items = [], date, time, address, totalPrice}:PaymentSummaryProps) => {
+const PaymentSummary: React.FC<PaymentSummaryProps> = ({ status, items = [], date, time, address, totalPrice, clickevent, eventname}:PaymentSummaryProps) => {
   const router = useRouter();
 
-  const handleCheckRepairList = () => {
-    // นำไปหน้าเช็ครายการซ่อม หรือหน้าอื่นๆ ตามต้องการ
-    router.push('/afterservice');
-  };
+
 
   return (
     <div className="flex flex-col gap-4 pt-10 mx-auto max-w-lg border border-bg-[var(--white)] px-10 py-10 rounded-xl bg-white">
@@ -81,10 +80,10 @@ const PaymentSummary: React.FC<PaymentSummaryProps> = ({ status, items = [], dat
 
       <div className="mb-12 items-center justify-center mt-6">
         <button 
-          onClick={handleCheckRepairList}
+          onClick={clickevent}
           className="text-[var(--white)] bg-[var(--blue-600)] w-full py-4 rounded-2xl cursor-pointer hover:bg-[var(--blue-700)] transition-colors"
         >
-          เช็ครายการซ่อม
+          {eventname}
         </button>
       </div>
     </div>

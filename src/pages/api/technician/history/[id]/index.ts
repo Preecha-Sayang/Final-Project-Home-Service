@@ -27,6 +27,8 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
         ) AS items,
         TO_CHAR(b.service_date, 'DD/MM/YYYY') AS service_date,
         b.service_time,
+        b.comment_rate,
+        b.comment_text,
         COALESCE(b.address_data->>'address', '') || ' ' ||
         COALESCE(b.address_data->>'subDistrict', '') || ' ' ||
         COALESCE(b.address_data->>'district', '') || ' ' ||
@@ -57,11 +59,9 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
     // เพิ่ม rating และ comment เป็น default values
     const booking = {
       ...result[0],
-      rating: 0,
-      comment: ''
     };
 
-    return res.json({ booking });
+    return res.status(200).json({ booking });
   } catch (error) {
     console.error("Error fetching booking detail:", error);
     return res.status(500).json({ message: "Internal Server Error" });
