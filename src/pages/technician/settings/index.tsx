@@ -1,68 +1,71 @@
-import React, { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import PageToolbar from "@/components/technician/common/PageToolbar";
-import LocationDialog from "@/components/technician/common/LocationDialog";
-import type { LatLng } from "@/types/geo";
-import { useTechnicianLocation } from "@/stores/techLocationStore";
+import { reverseGeocode, formatThaiAddress } from "lib/client/maps/googleProvider";
+import { useTechnicianLocation } from "@/stores/geoStore";
+import GoogleLocationPickerModal from "@/components/location/GoogleLocationPickerModal";
+
+type SelectedLocation = {
+    point: { lat: number; lng: number };
+    place_name?: string;
+};
 
 export default function TechnicianSettingsPage() {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
+    const { addressText, coords, loading, loadFromServer } = useTechnicianLocation();
 
-    const {
-        addressText,
-        loading,
-        error,
-        loadFromServer,
-        reverseAndSave,
-    } = useTechnicianLocation();
+    useEffect(() => { void loadFromServer(); }, [loadFromServer]);
 
-    useEffect(() => {
-        void loadFromServer();
-    }, []);
+    const saveSelected = async (v: SelectedLocation) => {
+        const { lat, lng } = v.point;
+        const rev = await reverseGeocode(lat, lng);
+        const pretty = formatThaiAddress(rev?.fullText || v.place_name || `${lat}, ${lng}`, rev?.meta);
 
-    const saveLocation = async (c: LatLng) => {
-        try {
-            await reverseAndSave(async () => c);
-            setOpen(false);
-        } catch (e) {
-            alert(e instanceof Error ? e.message : String(e));
+        const r = await fetch("/api/technician/location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ lat, lng, address_text: pretty, meta: rev?.meta }),
+        });
+        const js: { ok: boolean } = await r.json();
+        if (!js?.ok) {
+            alert("บันทึกตำแหน่งไม่สำเร็จ");
+            return;
         }
+        await loadFromServer();
     };
+
+    const initial = useMemo(() => {
+        return coords ? { point: coords, place_name: addressText || undefined } : undefined;
+    }, [coords?.lat, coords?.lng, addressText]);
 
     return (
         <>
             <PageToolbar title="ตั้งค่าบัญชีผู้ใช้" />
+
             <div className="p-8">
                 <div className="rounded-xl border p-6 bg-white space-y-3">
                     <div className="text-sm text-[var(--gray-700)]">ตำแหน่งที่อยู่ปัจจุบัน</div>
-
-                    {/* แสดงที่อยู่ล่าสุดจาก store (โหลดจาก DB หรือเพิ่งบันทึก) */}
                     <div className="text-sm">
-                        {loading ? "กำลังดึงข้อมูล…" : (addressText || "ยังไม่ได้ตั้งค่า")}
+                        {loading ? "กำลังโหลด…" : addressText || "ยังไม่ได้ตั้งค่า"}
                     </div>
 
-                    {/* แจ้ง error (ถ้ามี) */}
-                    {error && (
-                        <div className="text-sm text-[var(--red-600)]">{error}</div>
-                    )}
-
-                    <div className="pt-2">
+                    <div className="flex gap-8">
                         <button
                             type="button"
                             onClick={() => setOpen(true)}
-                            disabled={loading}
-                            className="w-[160px] h-[40px] rounded-lg border bg-[var(--gray-100)] hover:bg-[var(--gray-200)] text-sm disabled:opacity-60"
+                            className="w-[200px] h-[40px] rounded-lg border bg-[var(--gray-100)] hover:bg-[var(--gray-200)] text-sm cursor-pointer"
                         >
-                            รีเฟรชตำแหน่ง
+                            เลือกตำแหน่งบนแผนที่
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Popup ขอพิกัด/แสดงตัวอย่างค่า ก่อนบันทึกจริง */}
-            <LocationDialog
+            <GoogleLocationPickerModal
                 open={open}
                 onClose={() => setOpen(false)}
-                onConfirm={saveLocation}
+                initial={initial}
+                onConfirm={(v) => { void saveSelected(v); }}
             />
         </>
     );

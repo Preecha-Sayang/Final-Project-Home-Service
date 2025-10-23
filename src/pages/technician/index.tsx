@@ -1,21 +1,49 @@
-import React, { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import PageToolbar from "@/components/technician/common/PageToolbar";
 import { useGeolocation } from "@/hooks/useGeolocation";
-import { useTechnicianLocation } from "@/stores/techLocationStore";
+import { useTechnicianLocation } from "@/stores/geoStore";
+import { useTechJobs } from "@/stores/techJobsStore";
+import JobTable from "@/components/technician/jobs/JobTable";
 
 export default function TechnicianInboxPage() {
-    const [q, setQ] = React.useState("");
-    const { addressText, loading, loadFromServer, reverseAndSave } = useTechnicianLocation();
+    const [q, setQ] = useState("");
+    const { addressText, loading, loadFromServer, reverseAndSave, coords } =
+        useTechnicianLocation();
     const { getPositionOnce, permission, error } = useGeolocation();
+    const { jobs, loadNearby, accept, decline } = useTechJobs();
 
-    // โหลดจาก DB ครั้งแรก (ดึง address ล่าสุดจากเซิร์ฟเวอร์มาโชว์)
+    // โหลดตำแหน่งครั้งแรก
+    const loadRef = useRef(loadFromServer);
     useEffect(() => {
-        void loadFromServer();
+        loadRef.current = loadFromServer;
+    }, [loadFromServer]);
+    useEffect(() => {
+        void loadRef.current();
     }, []);
+
+    // มีพิกัดแล้วค่อยโหลดงาน
+    useEffect(() => {
+        if (coords) void loadNearby({ lat: coords.lat, lng: coords.lng });
+    }, [coords, loadNearby]);
 
     const onRefresh = async () => {
         try {
-            await reverseAndSave(getPositionOnce);
+            await reverseAndSave(async () => {
+                const p = await getPositionOnce();
+                return {
+                    coords: { latitude: p.lat, longitude: p.lng, accuracy: 5 },
+                    timestamp: Date.now(),
+                    toJSON() {
+                        return this;
+                    },
+                } as GeolocationPosition;
+            });
+
+            // ใช้ค่าจาก store หลังอัปเดต
+            const latest = useTechnicianLocation.getState().coords;
+            if (latest) {
+                void loadNearby({ lat: latest.lat, lng: latest.lng });
+            }
         } catch (e) {
             alert(e instanceof Error ? e.message : String(e));
         }
@@ -67,7 +95,15 @@ export default function TechnicianInboxPage() {
             </div>
 
             <div className="p-8">
-                <div className="rounded-xl border p-6 bg-white">รายการงานใกล้คุณ…</div>
+                <div className="rounded-xl border p-6 bg-white">
+                    <JobTable
+                        jobs={jobs.filter((j) =>
+                            q ? (j.address_text ?? "").includes(q) : true
+                        )}
+                        onAccept={(id) => void accept(id)}
+                        onDecline={(id) => void decline(id)}
+                    />
+                </div>
             </div>
         </>
     );

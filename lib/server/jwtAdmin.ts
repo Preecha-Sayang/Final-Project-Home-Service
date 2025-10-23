@@ -24,12 +24,12 @@ type Blocked = "iat" | "exp" | "jti" | "iss" | "aud";
 type Signable<T> = Omit<Partial<T>, Blocked>;
 
 ///สร้าง Access Token สำหรับฝั่ง admin/technician
-///exp: 1 ชั่วโมง
+///exp: 30วัน
 ///ระบุ issuer / audience ชัดเจน
 export function signAdminAccess(payload: Signable<AdminJwt>) {
   const jti = uuidv4();
   const token = jwt.sign({ ...payload, jti }, SECRET, {
-    expiresIn: "1h",
+    expiresIn: "30d",
     issuer: ISSUER,
     audience: AUDIENCE,
     algorithm: "HS256",
