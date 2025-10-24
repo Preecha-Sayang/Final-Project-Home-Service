@@ -361,6 +361,14 @@ const BookingDetailsForm: React.FC = () => {
   }))
 
   // ฟังก์ชันสำหรับ format ที่อยู่แสดง
+  const formatDefaultAddress = () => {
+    if (!defaultAddress) return ''
+    
+    const provinceData = provinces.find(p => p.province_code === defaultAddress.province_code)
+    const provinceName = provinceData?.province_name_th || ''
+    
+    return `${defaultAddress.address}${provinceName ? `, ${provinceName}` : ''}`
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-4 md:p-6 space-y-6">
@@ -440,13 +448,13 @@ const BookingDetailsForm: React.FC = () => {
             />
             <label
               htmlFor="useDefaultAddress"
-              className="text-sm font-medium cursor-pointer select-none flex-1"
+              className="text-sm font-medium text-gray-700 cursor-pointer select-none flex-1"
             >
-              <span className="text-gray-500">ใช้ที่อยู่เริ่มต้น</span>
+              <span className="text-gray-400 ">ใช้ที่อยู่เริ่มต้น</span>
             </label>
           </div>
       )}
-
+      
       {/* ข้อมูลเพิ่มเติม */}
       <InputField
         label="ระบุข้อมูลเพิ่มเติม"
