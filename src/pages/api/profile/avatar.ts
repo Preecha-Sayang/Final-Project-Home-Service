@@ -6,11 +6,11 @@ import os from "os";
 import { withAuth, AuthenticatedNextApiRequest } from "@/middlewere/auth";
 
 // ปิด bodyParser ของ Next.js เพื่อให้ formidable จัดการไฟล์ได้
-// export const config = {
-//   api: {
-//     bodyParser: false,
-//   },
-// };
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 // ตั้งค่า Cloudinary สำหรับอัพโหลดรูปภาพ
 cloudinary.config({
@@ -23,7 +23,7 @@ cloudinary.config({
 async function parseForm(req: NextApiRequest): Promise<{ file?: formidable.File }> {
   const form = formidable({
     multiples: false,
-    maxFileSize: 10 * 1024 * 1024, // 10MB
+    maxFileSize: 2 * 1024 * 1024, // 2MB
     uploadDir: os.tmpdir(),
     keepExtensions: true,
   });
