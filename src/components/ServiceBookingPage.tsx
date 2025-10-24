@@ -8,6 +8,7 @@ import BookingDetailsForm from "@/components/BookingForm";
 import BookingFooter from "@/components/BookingFooter";
 import OrderSummary from "@/components/ordersummary/order_summary";
 import Breadcrumb from "@/components/breadcrump/bread_crump";
+import BookingTimer from '@/components/BookingTimer'
 import { useBookingStore } from "@/stores/bookingStore";
 import axios from "axios";
 import Navbar from "@/components/navbar/navbar";
@@ -46,11 +47,15 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
   const paymentFormRef = useRef<PaymentFormRef>(null);
   const { discount } = usePromotionStore();
 
+  // Timer state
+  const [isTimerActive, setIsTimerActive] = useState(false)
+
   // Reset booking store และ selected items เมื่อเข้าหน้า service ใหม่หรือ reload
   useEffect(() => {
     resetForNewService();
     setSelectedItems([]);
     setCurrentStep("items");
+    setIsTimerActive(false)
   }, [serviceId, resetForNewService]);
 
   useEffect(() => {
@@ -73,7 +78,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
         setLoading(false);
       }
     };
-
     fetchServiceName();
   }, [serviceId]);
 
@@ -93,6 +97,12 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
 
       setCurrentStep("details");
     } else if (currentStep === "details") {
+      setServiceCart(selectedItems)
+
+      // เริ่ม timer เมื่อเข้า step 2
+      setIsTimerActive(true)
+      setCurrentStep('details')
+    } else if (currentStep === 'details') {
       // อัพเดท booking store ก่อนไปหน้า payment
       // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
       setServiceCart(selectedItems);
@@ -102,10 +112,12 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
   };
 
   const handleBack = () => {
-    if (currentStep === "details") {
-      setCurrentStep("items");
-    } else if (currentStep === "payment") {
-      setCurrentStep("details");
+    if (currentStep === 'details') {
+      // หยุด timer เมื่อกลับไป step 1
+      setIsTimerActive(false)
+      setCurrentStep('items')
+    } else if (currentStep === 'payment') {
+      setCurrentStep('details')
     } else {
       router.push("/services");
     }
@@ -123,6 +135,19 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
       (total, item) => total + item.unit_price * item.quantity,
       0
     );
+  };
+    return selectedItems.reduce((total, item) => total + item.unit_price * item.quantity, 0)
+  }
+
+  // Handle timeout from timer
+  const handleTimeout = () => {
+    // หยุด timer
+    setIsTimerActive(false)
+
+    // Reset ทุกอย่าง
+    setCurrentStep('items')
+    setSelectedItems([])
+    resetForNewService()
   };
 
   // Helper functions for formatting data
@@ -175,9 +200,12 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
       case "payment":
         return (
           <PaymentForm
+          <PaymentForm
             ref={paymentFormRef}
             totalPrice={calculateTotal()}
             onPaymentSuccess={(bookingId, chargeId) => {
+              // หยุด timer เมื่อชำระเงินสำเร็จ
+              setIsTimerActive(false)
               router.push(
                 `/payment/summary?bookingId=${bookingId}&chargeId=${chargeId}`
               );
@@ -266,7 +294,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
       }
     };
 
-    // กำหนดข้อความปุ่ม Next
     const getNextButtonText = () => {
       if (currentStep === "payment") return "ชำระเงิน";
       if (currentStep === "items" && !isLoggedIn && selectedItems.length > 0)
@@ -294,7 +321,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
     );
   };
 
-  // Show loading state
   if (loading) {
     return (
       <>
@@ -309,7 +335,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <>
@@ -384,14 +409,14 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
           </div>
         </div>
 
-        {/* Stepper */}
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <Stepper
+          {/* Stepper */}
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <Stepper
             currentStep={
               currentStep === "items" ? 1 : currentStep === "details" ? 2 : 3
             }
           />
-        </div>
+          </div>
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto px-4 pb-32">
@@ -399,26 +424,35 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2">{renderStepContent()}</div>
 
-            {/* Right Column - Order Summary */}
-            <div className="lg:col-span-1">
-              <OrderSummary
-                items={selectedItems.map((item) => ({
-                  name: item.name,
-                  quantity: item.quantity,
-                }))}
-                total={calculateTotal()}
-                date={formatDate(customerInfo.serviceDate)}
-                time={formatTime(customerInfo.serviceTime)}
-                address={formatAddress()}
-                promotion={discount | 0}
-                fallbackText="ยังไม่ได้เลือก"
+              {/* Right Column - Timer + Order Summary */}
+              <div className="lg:col-span-1">
+                {/* Timer - แสดงเฉพาะเมื่อ step 2 และ 3 */}
+              <BookingTimer
+                isActive={isTimerActive}
+                onTimeout={handleTimeout}
+                onStop={() => setIsTimerActive(false)}
               />
+
+              {/* Order Summary */}
+              <OrderSummary
+                  items={selectedItems.map(((item)) => ({
+                    name: item.name,
+                    quantity: item.quantity,,
+                  }))}
+                  total={calculateTotal()}
+                  date={formatDate(customerInfo.serviceDate)}
+                  time={formatTime(customerInfo.serviceTime)}
+                  address={formatAddress()}
+                promotion={discount | 0}
+                  fallbackText="ยังไม่ได้เลือก"
+                />
+              </div>
             </div>
           </div>
-        </div>
+  
         {/* Fixed Footer */}
-        {renderFooter()}
-      </div>
+          {renderFooter()}
+        </div>
     </>
   );
 };
