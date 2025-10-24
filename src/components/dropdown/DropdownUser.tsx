@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState , useRef, useEffect} from "react";
 import { User, List, Clock, LogOut } from "lucide-react";
 import Image, { StaticImageData } from "next/image";
 import { useAuth } from "@/context/AuthContext"; // ✅ import context
@@ -13,6 +13,7 @@ type DropdownUserProps = {
 export default function DropdownUser({ imageURL }: DropdownUserProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null); 
   const handleGoToTaskList = (href: string) => {
   setIsOpen(false);
   router.push(href);
@@ -42,8 +43,26 @@ const menuItems = [
   },
 ];
 
+
+  // ปิด dropdown เมื่อคลิกนอก
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+
+
+
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block"  ref={dropdownRef}>
       {/* User Image Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -64,7 +83,7 @@ const menuItems = [
           {menuItems.map((item, idx) => (
             <a
               key={idx}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)]"
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer"
               onClick={() => handleGoToTaskList(item.href)}
             >
               {item.icon}
@@ -73,7 +92,7 @@ const menuItems = [
           ))}
           <a
             href="#"
-            className="flex items-center space-x-2 px-4 py-2 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)]"
+            className="flex items-center space-x-2 px-4 py-2 rounded-lg text-[var(--gray-700)] hover:bg-[var(--gray-100)] cursor-pointer"
             onClick={handleLogout}
           >
             <LogOut size={18} />

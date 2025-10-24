@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import { toast } from "react-hot-toast";
+
+
 
 type AuthContextType = {
   isLoggedIn: boolean;
@@ -49,7 +52,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   setRefreshToken(null);
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+
+
+  toast.success("ออกจากระบบเรียบร้อยแล้ว", {
+  style: {
+    background: "#1e40af", // สีฟ้า
+    color: "#fff",
+    fontWeight: "bold",
+  },
+});
+
   setTimeout(() => setIsLoggingOut(false), 1000); // ปล่อยให้ redirect เสร็จก่อน
+  
 }, []);
 
   const refreshAccessToken = useCallback(async () => {
