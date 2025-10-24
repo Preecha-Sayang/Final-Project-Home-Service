@@ -9,6 +9,7 @@ interface OrderCardProps {
   status: string;
   totalPrice: string;
   onViewDetails?: () => Promise<void> | void;
+  detail: string;
 }
 
 type BookingItem = {
@@ -25,6 +26,7 @@ function OrderCard({
   status,
   totalPrice,
   onViewDetails,
+  detail
 }: OrderCardProps) {
   return (
     <div className="w-full max-w-[831px] bg-white rounded-lg border border-gray-300 p-4 shadow-sm">
@@ -81,8 +83,7 @@ function OrderCard({
                     className="text-sm text-gray-900 flex items-center gap-2 font-prompt"
                   >
                     <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                    {item.name} {item.quantity}
-                    {item.unit}
+                    {item.name} {item.quantity}  {item.unit}
                   </li>
                 ))}
               </ul>
@@ -100,9 +101,9 @@ function OrderCard({
                 className={`px-2 py-1 rounded-full text-sm font-prompt ${
                   status === "รอดำเนินการ"
                     ? "bg-gray-200 text-gray-800"
-                    : status === "กำลังดำเนินการ"
+                    : status === "ดำเนินการอยู่"
                     ? "bg-yellow-100 text-yellow-900"
-                    : status === "ดำเนินการสำเร็จ"
+                    : status === "เสร็จสิ้น"
                     ? "bg-green-100 text-green-900"
                     : "bg-gray-200 text-gray-600"
                 }`}
@@ -121,12 +122,12 @@ function OrderCard({
         {/* Action Button */}
 
         <div className={`flex justify-end mt-4 `}>
-          <div className={`${status === "ดำเนินการสำเร็จ" ? "hidden" : ""}`}>
+          <div >
             <ButtonPrimary
               onClick={onViewDetails}
-              disabled={status === "ดำเนินการสำเร็จ"}
+              disabled={!onViewDetails}
             >
-              ดูรายละเอียด
+              {detail}
             </ButtonPrimary>
           </div>
         </div>
@@ -219,12 +220,12 @@ function OrderCard({
         {/* Action Button */}
 
         <div className="w-full">
-          <div className={`${status === "ดำเนินการสำเร็จ" ? "hidden" : ""}`}>
+          <div >
             <ButtonPrimary
               onClick={onViewDetails}
-              disabled={status === "ดำเนินการสำเร็จ"}
+              disabled={!onViewDetails}
             >
-              ดูรายละเอียด
+              {detail}
             </ButtonPrimary>
           </div>
         </div>

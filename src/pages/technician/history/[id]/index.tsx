@@ -15,8 +15,8 @@ interface Booking {
   total_price: number;
   customer_name: string;
   customer_phone: string;
-  rating: number;
-  comment: string;
+  comment_rate: number;
+  comment_text: string;
 }
 
 function Hisrotyimformation() {
@@ -36,9 +36,9 @@ function Hisrotyimformation() {
       try {
         const res = await axios.get(`/api/technician/history/${id}`);
         setBooking(res.data.booking);
-      } catch (err: any) {
+      } catch (err) {
         console.error(err);
-        setError(err.response?.data?.message || "เกิดข้อผิดพลาด");
+        console.error("Error fetching bookings:", err);
       } finally {
         setLoading(false);
       }
@@ -158,11 +158,12 @@ function Hisrotyimformation() {
             </p>
             <div className="flex flex-row gap-[5px]">
               {[1, 2, 3, 4, 5].map((i) =>
-                i <= (booking.rating || 0) ? (
+                i <= (booking.comment_rate || 0) ? (
                   <AiFillStar key={i} size={24} className="text-[var(--blue-600)]" />
                 ) : (
                   <AiOutlineStar key={i} size={24} className="text-[var(--blue-600)]" />
-                )
+                ) 
+
               )}
             </div>
           </div>
@@ -171,7 +172,7 @@ function Hisrotyimformation() {
             <p className="w-[120px] md:w-[250px] mr-[15px] md:mr-[25px] flex-shrink-0 text-[16px] font-medium text-[var(--gray-700)]">
               ความคิดเห็นจากผู้รับบริการ
             </p>
-            <p className="text-[16px] font-medium">{booking.comment || "-"}</p>
+            <p className="text-[16px] font-medium">{booking.comment_text || "-"}</p>
           </div>
         </div>
       </div>

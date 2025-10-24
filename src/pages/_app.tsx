@@ -7,6 +7,8 @@ import { ProtectedRoute, AuthRoute } from "@/components/routeprotect/ProtectedRo
 import { useRouter } from "next/router";
 import AdminShell from "@/pages/admin";
 import TechnicianShell from "@/components/technician/shell/TechnicianShell";
+import { Toaster } from 'react-hot-toast';
+
 
 const fontPrompt = Prompt({
   variable: "--font-prompt",
@@ -81,6 +83,10 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={fontPrompt.className}>
       <AuthProvider>
+        
+        {/* ข้อความแจ้งเตือนให้อยู่ล่างขวา */}
+        <Toaster position="bottom-right" /> 
+
         {isProtected ? (
           // หน้าที่ต้อง login
           <ProtectedRoute>

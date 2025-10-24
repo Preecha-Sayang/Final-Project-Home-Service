@@ -30,30 +30,43 @@ export const ProtectedRoute = ({
   const { isLoggedIn, loading , isLoggingOut } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (loading || isLoggingOut) return;
-    if (!loading && !isLoggedIn) {
-      if (showPopup) {
-        Swal.fire({
-          title: popupTitle,
-          text: popupMessage,
-          icon: popupIcon,
-          showCancelButton: allowCancel,
-          confirmButtonText,
-          cancelButtonText,
-          confirmButtonColor: "#3b82f6",
-          cancelButtonColor: "#6b7280",
-          allowOutsideClick: false,
-          allowEscapeKey: false,
-        }).then((result) => {
-          if (result.isConfirmed) router.replace(redirectTo);
-          else if (result.isDismissed) router.back();
-        });
-      } else {
-        router.replace(redirectTo);
-      }
+useEffect(() => {
+  if (loading || isLoggingOut) return;
+  if (!loading && !isLoggedIn) {
+    if (showPopup) {
+      Swal.fire({
+        title: popupTitle,
+        text: popupMessage,
+        icon: popupIcon,
+        showCancelButton: allowCancel,
+        confirmButtonText,
+        cancelButtonText,
+        confirmButtonColor: "#3b82f6",
+        cancelButtonColor: "#6b7280",
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+      }).then((result) => {
+        if (result.isConfirmed) router.replace(redirectTo);
+        else if (result.isDismissed) router.back();
+      });
+    } else {
+      router.replace(redirectTo);
     }
-  }, [loading, isLoggedIn, router, redirectTo,isLoggingOut]);
+  }
+}, [
+  loading,
+  isLoggingOut,
+  isLoggedIn,
+  router,
+  redirectTo,
+  showPopup,
+  popupTitle,
+  popupMessage,
+  popupIcon,
+  allowCancel,
+  confirmButtonText,
+  cancelButtonText,
+]);
 
   if (loading) {
     return (
@@ -83,25 +96,25 @@ export const AuthRoute = ({
   const { isLoggedIn, loading,isLoggingOut } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (loading || isLoggingOut) return;
-    if (!loading && isLoggedIn) {
-      if (showPopup) {
-        Swal.fire({
-          title: popupTitle,
-          text: popupMessage,
-          icon: popupIcon,
-          timer: 2000,
-          showConfirmButton: false,
-          timerProgressBar: true,
-        }).then(() => {
-          router.replace(redirectTo);
-        });
-      } else {
+useEffect(() => {
+  if (loading || isLoggingOut) return;
+  if (!loading && isLoggedIn) {
+    if (showPopup) {
+      Swal.fire({
+        title: popupTitle,
+        text: popupMessage,
+        icon: popupIcon,
+        timer: 2000,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      }).then(() => {
         router.replace(redirectTo);
-      }
+      });
+    } else {
+      router.replace(redirectTo);
     }
-  }, [loading, isLoggedIn, router, redirectTo,isLoggingOut]);
+  }
+}, [loading, isLoggingOut, isLoggedIn, router, redirectTo, showPopup, popupTitle, popupMessage, popupIcon]);
 
   if (loading) {
     return (

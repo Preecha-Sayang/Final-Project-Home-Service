@@ -88,6 +88,12 @@ export default function PaymentSummaryPage() {
     }
   }
 
+    const handleCheckRepairList = () => {
+    // นำไปหน้าเช็ครายการซ่อม หรือหน้าอื่นๆ ตามต้องการ
+    router.push('/afterservice');
+  };
+
+
   if (isLoading) {
     return (
       <>
@@ -235,6 +241,8 @@ export default function PaymentSummaryPage() {
           time={bookingData.service_time}
           address={fullAddress}
           totalPrice={bookingData.final_amount}
+          clickevent={()=>handleCheckRepairList()}
+          eventname={"เช็ครายการซ่อม"}
         />
       </div>
       <Footer />

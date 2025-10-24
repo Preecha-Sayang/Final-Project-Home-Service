@@ -24,13 +24,14 @@ function ButtonPrimary({ onClick, disabled,className, children, type = "button" 
   const baseClass = `
     w-[160px] h-[45px] px-[24px] py-[10px] text-[16px] font-medium rounded-xl
     box-border border-none flex items-center justify-center gap-2
-    cursor-pointer transition-colors duration-200
+     transition-colors duration-200
   `;
 
   // 
   const normalClass = `
     bg-[var(--blue-600)] text-[var(--white)]
     hover:bg-[var(--blue-500)] active:bg-[var(--blue-800)]
+    cursor-pointer
   `;
 
   // 
