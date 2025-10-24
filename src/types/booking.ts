@@ -39,4 +39,6 @@ export type BookingNearby = {
     service_date: string | null;  // ISO หรือ null
     service_time: string | null;  // HH:mm หรือ null
     status_id: BookingStatusId;
+    total_price?: number | null;
+    item_names?: string[];
 };

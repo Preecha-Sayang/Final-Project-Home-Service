@@ -1,41 +1,72 @@
 import type { NextApiResponse } from "next";
-import { withAdminAuth, AdminRequest } from "lib/server/withAdminAuth";
-import { query } from "lib/db";
-import { BookingStatusId } from "@/types/booking";
+import type { NextApiRequest } from "next";
+import { withAdminAuth, type AdminRequest } from "lib/server/withAdminAuth";
+import pool from "lib/db";
+
+/** ดึงเลข booking_id จาก URL */
+function parseId(v: string | string[] | undefined): number | null {
+    if (!v || Array.isArray(v)) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+}
+
+/** meta ที่บันทึกลง booking_actions */
+type ActionMeta = {
+    ip?: string;
+    ua?: string;
+};
 
 async function handler(req: AdminRequest, res: NextApiResponse) {
     if (req.method !== "POST") return res.status(405).end();
 
-    const bookingId = Number(req.query.id);
-    if (!Number.isInteger(bookingId)) return res.status(400).json({ ok: false, message: "bad id" });
+    const bookingId = parseId((req.query as NextApiRequest["query"]).id);
+    if (bookingId == null) {
+        return res.status(400).json({ ok: false, message: "invalid id" });
+    }
 
     const adminId = Number(req.admin.adminId);
+    const meta: ActionMeta = {
+        ip: (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() || req.socket.remoteAddress || undefined,
+        ua: req.headers["user-agent"],
+    };
 
+    const client = await pool.connect();
     try {
-        await query("BEGIN");
-        const { rows } = await query(
-            "SELECT booking_id, status_id, admin_id FROM booking WHERE booking_id = $1 FOR UPDATE",
-            [bookingId]
+        await client.query("BEGIN");
+
+        // อัปเดตเฉพาะงานที่ยังว่างอยู่ (กันแข่งกันรับ)
+        const up = await client.query<
+            { booking_id: number }
+        >(`
+            UPDATE booking
+                SET admin_id = $2,
+                    status_id = 2,  -- รอดำเนินการ (ช่างรับงานแล้ว)
+                    update_at = now()
+                WHERE booking_id = $1
+                    AND admin_id IS NULL
+                    AND status_id = 1
+                RETURNING booking_id`, [bookingId, adminId]
         );
-        const row = rows[0] as { booking_id: number; status_id: number; admin_id: number | null } | undefined;
-        if (!row) { await query("ROLLBACK"); return res.status(404).json({ ok: false, message: "not found" }); }
-        if (row.status_id !== BookingStatusId.WaitingAccept || row.admin_id !== null) {
-            await query("ROLLBACK"); return res.status(409).json({ ok: false, message: "cannot accept" });
+
+        if (up.rowCount !== 1) {
+            await client.query("ROLLBACK");
+            return res.json({ ok: false, message: "already taken or not available" });
         }
 
-        await query(
-            "UPDATE booking SET status_id = $2, admin_id = $3, update_at = now() WHERE booking_id = $1",
-            [bookingId, BookingStatusId.WaitingProcess, adminId]
+        // log การกระทำ
+        await client.query(
+        `INSERT INTO booking_actions (booking_id, actor_admin_id, action, meta)
+        VALUES ($1, $2, 'accept', $3::jsonb)`,
+                [bookingId, adminId, JSON.stringify(meta)]
         );
-        await query(
-            "INSERT INTO booking_actions (booking_id, actor_admin_id, action, meta) VALUES ($1,$2,'TECH_ACCEPT','{}'::jsonb)",
-            [bookingId, adminId]
-        );
-        await query("COMMIT");
+
+        await client.query("COMMIT");
         return res.json({ ok: true });
-    } catch {
-        await query("ROLLBACK");
+    } catch (e) {
+        await client.query("ROLLBACK");
         return res.status(500).json({ ok: false, message: "server error" });
+    } finally {
+        client.release();
     }
 }
 

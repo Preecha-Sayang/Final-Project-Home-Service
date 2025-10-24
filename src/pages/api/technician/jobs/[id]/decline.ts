@@ -1,36 +1,47 @@
 import type { NextApiResponse } from "next";
-import { withAdminAuth, AdminRequest } from "lib/server/withAdminAuth";
+import type { NextApiRequest } from "next";
+import { withAdminAuth, type AdminRequest } from "lib/server/withAdminAuth";
 import { query } from "lib/db";
-import { BookingStatusId } from "@/types/booking";
+
+/** ดึงเลข booking_id จาก URL */
+function parseId(v: string | string[] | undefined): number | null {
+    if (!v || Array.isArray(v)) return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+}
+
+/** meta ที่บันทึกลง booking_actions */
+type ActionMeta = {
+    ip?: string;
+    ua?: string;
+    reason?: string;
+};
 
 async function handler(req: AdminRequest, res: NextApiResponse) {
     if (req.method !== "POST") return res.status(405).end();
-    const bookingId = Number(req.query.id);
-    if (!Number.isInteger(bookingId)) return res.status(400).json({ ok: false, message: "bad id" });
+
+    const bookingId = parseId((req.query as NextApiRequest["query"]).id);
+    if (bookingId == null) {
+        return res.status(400).json({ ok: false, message: "invalid id" });
+    }
 
     const adminId = Number(req.admin.adminId);
-    const { reason } = (req.body ?? {}) as { reason?: string };
+    const body = (req.body ?? {}) as { reason?: string };
+    const meta: ActionMeta = {
+        ip: (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() || req.socket.remoteAddress || undefined,
+        ua: req.headers["user-agent"],
+        reason: body.reason,
+    };
 
+    // แค่บันทึก log การปฏิเสธ ไม่เปลี่ยนสถานะ/เจ้าของงาน
     try {
-        await query("BEGIN");
-        const { rows } = await query(
-            "SELECT booking_id, status_id, admin_id FROM booking WHERE booking_id = $1 FOR UPDATE",
-            [bookingId]
-        );
-        const row = rows[0] as { booking_id: number; status_id: number; admin_id: number | null } | undefined;
-        if (!row) { await query("ROLLBACK"); return res.status(404).json({ ok: false, message: "not found" }); }
-        if (row.status_id !== BookingStatusId.WaitingAccept) {
-            await query("ROLLBACK"); return res.status(409).json({ ok: false, message: "cannot decline" });
-        }
-
         await query(
-            "INSERT INTO booking_actions (booking_id, actor_admin_id, action, meta) VALUES ($1,$2,'TECH_DECLINE',$3::jsonb)",
-            [bookingId, adminId, JSON.stringify({ reason: reason ?? null })]
+            `INSERT INTO booking_actions (booking_id, actor_admin_id, action, meta)
+       VALUES ($1, $2, 'decline', $3::jsonb)`,
+            [bookingId, adminId, JSON.stringify(meta)]
         );
-        await query("COMMIT");
         return res.json({ ok: true });
     } catch {
-        await query("ROLLBACK");
         return res.status(500).json({ ok: false, message: "server error" });
     }
 }
