@@ -103,7 +103,7 @@ function OrderCard({
                     ? "bg-gray-200 text-gray-800"
                     : status === "ดำเนินการอยู่"
                     ? "bg-yellow-100 text-yellow-900"
-                    : status === "เสร็จสิ้น"
+                    : status === "ดำเนินการสำเร็จ"
                     ? "bg-green-100 text-green-900"
                     : "bg-gray-200 text-gray-600"
                 }`}
