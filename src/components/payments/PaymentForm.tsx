@@ -6,11 +6,21 @@ import ButtonPrimary from "@/components/button/buttonprimary";
 import { usePaymentStore } from "@/stores/paymentMethodStore";
 import { useBookingStore } from "@/stores/bookingStore";
 import { useAuth } from "@/context/AuthContext";
+import { PromotionUse } from "@/types/promotion";
+import { usePromotionStore } from "@/stores/promotionStore";
+import { result } from "lodash";
+import { ref } from "yup";
 
 interface PaymentFormProps {
   totalPrice: number;
   onPaymentSuccess?: (bookingId: number, chargeId: string) => void;
   onPaymentError?: (error: string) => void;
+}
+
+interface PromotionResponse {
+  ok: boolean;
+  message: string;
+  promotion?: PromotionUse;
 }
 
 export interface PaymentFormRef {
@@ -40,37 +50,30 @@ interface OmiseTokenResponse {
   message?: string;
 }
 
-const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({ 
-  totalPrice, 
-  onPaymentSuccess,
-  onPaymentError 
-}, ref) => {
-  const router = useRouter();
-  
-  // ดึงข้อมูลจาก booking store
-  const {
-    getActiveCartItems,
-    getFinalAmount,
-    customerInfo,
-    paymentInfo,
-  } = useBookingStore();
+const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
+  ({ totalPrice, onPaymentSuccess, onPaymentError }, ref) => {
+    const router = useRouter();
 
-  // ดึงข้อมูล user จาก auth context
-  const { accessToken } = useAuth();
+    // ดึงข้อมูลจาก booking store
+    const { getActiveCartItems, getFinalAmount, customerInfo, paymentInfo } =
+      useBookingStore();
 
-  // ฟังก์ชันดึง user_id จาก JWT token
-  const getUserIdFromToken = () => {
-    if (!accessToken) return 1; // default user_id
-    
-    try {
-      // Decode JWT token (base64)
-      const payload = JSON.parse(atob(accessToken.split('.')[1]));
-      return payload.userId || payload.user_id || payload.id || 1;
-    } catch (error) {
-      console.error('Error decoding JWT token:', error);
-      return 1; // default user_id
-    }
-  };
+    // ดึงข้อมูล user จาก auth context
+    const { accessToken } = useAuth();
+
+    // ฟังก์ชันดึง user_id จาก JWT token
+    const getUserIdFromToken = () => {
+      if (!accessToken) return 1; // default user_id
+
+      try {
+        // Decode JWT token (base64)
+        const payload = JSON.parse(atob(accessToken.split(".")[1]));
+        return payload.userId || payload.user_id || payload.id || 1;
+      } catch (error) {
+        console.error("Error decoding JWT token:", error);
+        return 1; // default user_id
+      }
+    };
 
     // ---------- ฟอร์มข้อมูลบัตรเครดิต ------------//
     const [form, setForm] = useState({
@@ -85,11 +88,11 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
     const [processing, setProcessing] = useState(false);
 
     const { payment } = usePaymentStore();
+    const { discount, setDiscount } = usePromotionStore();
 
     const handleChange = (name: string, value: string) => {
       setForm({ ...form, [name]: value });
     };
-
 
     // ฟังก์ชัน auto เว้นวรรคเลขบัตรเครดิต
     const formatCreditCardNumber = (value: string) => {
@@ -106,8 +109,6 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
       if (cleaned.length <= 2) return cleaned;
       return `${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`;
     };
-
-
 
     // โหลด Omise.js ฝั่ง client เท่านั้น
     useEffect(() => {
@@ -207,38 +208,21 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
               );
             }
           );
-
-          // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
-          const res = await fetch("/api/payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              amount: amountBaht,
-              method: "credit_card",
-              tokenId: tokenRes.id,
-            }),
-          });
-
-          const result = await res.json();
-
-        // ตรวจผลลัพธ์
-        if (result.status === "success") {
-          const chargeId = result.chargeId || result.charge_id || "";
-          
           // บันทึกข้อมูลการจองลง database
+          let chargeId = "";
           try {
             const cartItems = getActiveCartItems();
             const finalAmount = getFinalAmount();
-            
+
             // ตรวจสอบว่ามีข้อมูลหรือไม่
             if (!cartItems || cartItems.length === 0) {
               alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
               return;
             }
-            
+
             const bookingData = {
               user_id: getUserIdFromToken(),
-              items: cartItems.map(item => ({
+              items: cartItems.map((item) => ({
                 id: item.id,
                 title: item.title,
                 price: item.price,
@@ -247,7 +231,9 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
               })),
               total_price: finalAmount,
               discount: paymentInfo.discount?.amount || 0,
-              service_date: customerInfo.serviceDate?.toISOString().split('T')[0],
+              service_date: customerInfo.serviceDate
+                ?.toISOString()
+                .split("T")[0],
               service_time: customerInfo.serviceTime,
               address_data: {
                 address: customerInfo.address,
@@ -259,7 +245,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
                 longitude: customerInfo.longitude,
               },
               promotion_id: null,
-              charge_id: chargeId,
+              charge_id: null,
             };
 
             const bookingRes = await fetch("/api/bookings/create", {
@@ -271,70 +257,140 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
             const bookingResult = await bookingRes.json();
 
             if (bookingResult.success) {
-              alert("ชำระเงินสำเร็จ!");
-              if (onPaymentSuccess) {
-                onPaymentSuccess(bookingResult.booking_id, chargeId);
+              // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
+              const res = await fetch("/api/payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  amount: discount > 0 ? amountBaht - discount : amountBaht,
+                  method: "credit_card",
+                  tokenId: tokenRes.id,
+                  booking_id: bookingResult.booking_id,
+                }),
+              });
+
+              const result = await res.json();
+              chargeId = result.chargeId || result.charge_id || "";
+              if (result.status === "success") {
+                setDiscount(0);
+                alert("ชำระเงินสำเร็จ!");
+
+                // จ่ายเงินเสร็จ จะยิง api ลง code ส่วนลด database ตรงนี้
+                // const resPromotionUsage = await fetch("/api/payment", {
+                //   method: "POST",
+                //   headers: { "Content-Type": "application/json" },
+                //   body: JSON.stringify({
+                //     amount: discount > 0 ? amountBaht - discount : amountBaht,
+                //     method: "credit_card",
+                //     tokenId: tokenRes.id,
+                //     booking_id: bookingResult.booking_id,
+                //   }),
+                // });
+
+                if (onPaymentSuccess) {
+                  onPaymentSuccess(bookingResult.booking_id, chargeId);
+                } else {
+                  // Redirect พร้อม bookingId และ chargeId
+                  router.push(
+                    `/payment/summary?bookingId=${bookingResult.booking_id}&chargeId=${chargeId}`
+                  );
+                }
               } else {
-                // Redirect พร้อม bookingId และ chargeId
-              router.push(
-                `/payment/summary?bookingId=${bookingResult.booking_id}&chargeId=${chargeId}`
-              );
+                // ถ้าบันทึกไม่สำเร็จ แต่ชำระเงินสำเร็จแล้ว
+                setDiscount(0);
+                console.error("Failed to save booking:", bookingResult);
+                alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+                router.push(`/payment/summary?chargeId=${chargeId}`);
               }
             } else {
-              // ถ้าบันทึกไม่สำเร็จ แต่ชำระเงินสำเร็จแล้ว
-              console.error("Failed to save booking:", bookingResult);
-              alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-              router.push(`/payment/summary?chargeId=${chargeId}`);
+              setDiscount(0);
+              const errorMsg =
+                "การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ");
+              alert(errorMsg);
+              if (onPaymentError) onPaymentError(errorMsg);
             }
           } catch (bookingError) {
+            setDiscount(0);
             console.error("Booking creation error:", bookingError);
             alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
             router.push(`/payment/summary?chargeId=${chargeId}`);
           }
-        } else if (result.status === "pending" && result.redirect_url) {
-          // Handle redirect if needed
-        } else {
-          const errorMsg = "การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ");
-          alert(errorMsg);
-          if (onPaymentError) onPaymentError(errorMsg);
-        }
-      } else if (selectedPayment === "qr") {
-        const res = await fetch("/api/payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: amountBaht, method: "qr" }),
-        });
+          // } else if (result.status === "pending" && result.redirect_url) {
+          //   // Handle redirect if needed
+          // }
+        } else if (selectedPayment === "qr") {
+          const res = await fetch("/api/payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: amountBaht, method: "qr" }),
+          });
 
           const result = await res.json();
 
-        if (result.status === "pending" && result.qr_url) {
-          // แสดง QR Code และเริ่มตรวจสอบสถานะ
-          window.open(result.qr_url, "_blank");
-          
-          // TODO: Implement polling to check payment status
-          // เมื่อชำระเงินสำเร็จ ให้ redirect ไป:
-          // router.push(`/payment/summary?chargeId=${result.chargeId}`);
-          
-          alert("กรุณาสแกน QR Code เพื่อชำระเงิน\nระบบจะตรวจสอบสถานะการชำระเงินอัตโนมัติ");
-        } else {
-          const errorMsg = "สร้าง PromptPay QR ไม่สำเร็จ: " + (result.message || "");
-          alert(errorMsg);
-          if (onPaymentError) onPaymentError(errorMsg);
-        }
-      }
-    } catch (error) {
-      console.error(error);
-      const errorMsg = "เกิดข้อผิดพลาดในการชำระเงิน";
-      alert(errorMsg);
-      if (onPaymentError) onPaymentError(errorMsg);
-    } finally {
-      setProcessing(false);
-    }
-  };
+          if (result.status === "pending" && result.qr_url) {
+            // แสดง QR Code และเริ่มตรวจสอบสถานะ
+            window.open(result.qr_url, "_blank");
 
-    const submitDiscountCode = () => {
-      // TODO: Implement discount code logic
-      
+            // TODO: Implement polling to check payment status
+            // เมื่อชำระเงินสำเร็จ ให้ redirect ไป:
+            // router.push(`/payment/summary?chargeId=${result.chargeId}`);
+
+            alert(
+              "กรุณาสแกน QR Code เพื่อชำระเงิน\nระบบจะตรวจสอบสถานะการชำระเงินอัตโนมัติ"
+            );
+          } else {
+            const errorMsg =
+              "สร้าง PromptPay QR ไม่สำเร็จ: " + (result.message || "");
+            alert(errorMsg);
+            if (onPaymentError) onPaymentError(errorMsg);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+        const errorMsg = "เกิดข้อผิดพลาดในการชำระเงิน";
+        alert(errorMsg);
+        if (onPaymentError) onPaymentError(errorMsg);
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    const submitDiscountCode = async (): Promise<void> => {
+      try {
+        if (!form.promotion) {
+          alert("กรุณากรอกรหัสส่วนลด");
+          setDiscount(0);
+          return;
+        }
+
+        const res = await fetch(`/api/promotionsusage/${form.promotion}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        const data: PromotionResponse = await res.json();
+        //console.log("DATA:", data);
+
+        if (data.ok) {
+          alert(data.message);
+
+          if (data.promotion?.discount_type === "fixed") {
+            setDiscount(Number(data.promotion.discount_value));
+          } else if (data.promotion?.discount_type == "percent") {
+            const discountCalulate =
+              (totalPrice / 100) * Number(data.promotion.discount_value);
+            const currentDiscount = totalPrice - discountCalulate;
+            setDiscount(Number(currentDiscount));
+          }
+        } else {
+          alert(data.message || "ไม่สามารถใช้โค้ดส่วนลดได้");
+          setDiscount(0);
+        }
+      } catch (error) {
+        setDiscount(0);
+        console.error("Error:", error);
+        alert("เกิดข้อผิดพลาดในการตรวจสอบรหัสส่วนลด");
+      }
     };
 
     // Expose handlePayment to parent component via ref
@@ -387,7 +443,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(({
                       placeholder="MM/YY"
                       onChange={(e) =>
                         handleChange(
-                          "expired_date", 
+                          "expired_date",
                           formatExpiryDate(e.target.value)
                         )
                       }

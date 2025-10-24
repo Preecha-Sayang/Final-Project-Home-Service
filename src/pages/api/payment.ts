@@ -1,6 +1,5 @@
 // src/pages/api/payment.ts
 import { sql } from "lib/db";
-import { result } from "lodash";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 // CHANGED: ใช้ Secret Key ทำ Basic Auth
@@ -27,10 +26,11 @@ export default async function handler(
       .json({ status: "error", message: "Method not allowed" });
 
   try {
-    const { amount, method, tokenId } = req.body as {
+    const { amount, method, tokenId, booking_id } = req.body as {
       amount: number;
       method: "credit_card" | "qr";
       tokenId?: string;
+      booking_id: number;
     };
 
     if (!amount || amount <= 0)
@@ -68,8 +68,8 @@ export default async function handler(
       if (resp.ok && charge?.paid === true) {
         const curBath = toBathfromOmise(charge.amount);
         const result = await sql`
-                INSERT INTO payment (transaction_id,total_amount,status,payment_method,currency,paid_at)
-                VALUES (${charge.id},${curBath},${charge.status},${method},${charge.currency},${charge.paid_at})
+                INSERT INTO payment (booking_id,transaction_id,total_amount,status,payment_method,currency,paid_at)
+                VALUES (${booking_id},${charge.id},${curBath},${charge.status},${method},${charge.currency},${charge.paid_at})
                 RETURNING payment_id;`;
 
         // REMOVED: 3DS — ไม่รองรับ
@@ -81,8 +81,8 @@ export default async function handler(
       } else {
         const curBath = toBathfromOmise(charge.amount);
         await sql`
-              INSERT INTO payment (transaction_id,total_amount,status,payment_method,currency,failure_message)
-              VALUES (${charge.id},${curBath},${charge.status},${method},${charge.currency},${charge.failure_message})
+              INSERT INTO payment (booking_id,transaction_id,total_amount,status,payment_method,currency,failure_message)
+              VALUES (${booking_id},${charge.id},${curBath},${charge.status},${method},${charge.currency},${charge.failure_message})
               RETURNING payment_id;`;
       }
 
