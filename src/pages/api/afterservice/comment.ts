@@ -34,9 +34,9 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       `;
 
       return res.status(200).json({ ok: true, message: "Comment saved" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Error saving comment:", error);
-      return res.status(500).json({ ok: false, message: error.message });
+      return res.status(500).json({ ok: false, message: (error as Error).message });
     }
   }
 

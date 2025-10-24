@@ -3,16 +3,14 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-
-
 type AuthContextType = {
   isLoggedIn: boolean;
   accessToken: string | null;
   refreshToken: string | null;
-  loading: boolean; // ✅ เพิ่ม
+  loading: boolean;
   login: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
-  isLoggingOut: boolean; 
+  isLoggingOut: boolean;
 };
 
 interface JwtPayload {
@@ -24,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // ✅ เพิ่ม
+  const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // โหลด token จาก localStorage ตอน mount
@@ -35,43 +33,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (storedAccess) setAccessToken(storedAccess);
     if (storedRefresh) setRefreshToken(storedRefresh);
 
-    // ✅ ให้เวลาอ่าน localStorage เสร็จค่อย mark ว่าโหลดเสร็จ
     setLoading(false);
   }, []);
 
-  const login = (newAccessToken: string, newRefreshToken: string) => {
+  // ✅ Memoize login function
+  const login = useCallback((newAccessToken: string, newRefreshToken: string) => {
     setAccessToken(newAccessToken);
     setRefreshToken(newRefreshToken);
     localStorage.setItem("accessToken", newAccessToken);
     localStorage.setItem("refreshToken", newRefreshToken);
-  };
+  }, []);
 
+  // ✅ Memoize logout function
   const logout = useCallback(() => {
-  setIsLoggingOut(true);
-  setAccessToken(null);
-  setRefreshToken(null);
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+    setIsLoggingOut(true);
+    setAccessToken(null);
+    setRefreshToken(null);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
 
+    toast.success("ออกจากระบบเรียบร้อยแล้ว", {
+      style: {
+        background: "#1e40af",
+        color: "#fff",
+        fontWeight: "bold",
+      },
+    });
 
-  toast.success("ออกจากระบบเรียบร้อยแล้ว", {
-  style: {
-    background: "#1e40af", // สีฟ้า
-    color: "#fff",
-    fontWeight: "bold",
-  },
-});
+    setTimeout(() => setIsLoggingOut(false), 1000);
+  }, []);
 
-  setTimeout(() => setIsLoggingOut(false), 1000); // ปล่อยให้ redirect เสร็จก่อน
-  
-}, []);
-
+  // ✅ Memoize refreshAccessToken และใช้ dependencies ที่ถูกต้อง
   const refreshAccessToken = useCallback(async () => {
+    if (!refreshToken) return;
+
     try {
       const res = await axios.post("/api/auth/refresh", { refreshToken });
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } = res.data;
 
-      login(newAccessToken, newRefreshToken ?? refreshToken);
+      // ใช้ setters แทน login() เพื่อหลีกเลี่ยง circular dependency
+      setAccessToken(newAccessToken);
+      setRefreshToken(newRefreshToken ?? refreshToken);
+      localStorage.setItem("accessToken", newAccessToken);
+      localStorage.setItem("refreshToken", newRefreshToken ?? refreshToken);
+
       console.log("✅ Access token refreshed");
     } catch (err) {
       console.error("❌ Failed to refresh token", err);
@@ -79,6 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [refreshToken, logout]);
 
+  // Auto-refresh token before expiry
   useEffect(() => {
     if (!accessToken || !refreshToken) return;
 
@@ -86,7 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const decoded = jwtDecode<JwtPayload>(accessToken);
       const exp = decoded.exp * 1000;
       const now = Date.now();
-      const timeout = exp - now - 10_000;
+      const timeout = exp - now - 10_000; // Refresh 10s before expiry
 
       if (timeout <= 0) {
         refreshAccessToken();
@@ -103,7 +109,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn: !!accessToken, accessToken, refreshToken, loading, login, logout, isLoggingOut }}
+      value={{
+        isLoggedIn: !!accessToken,
+        accessToken,
+        refreshToken,
+        loading,
+        login,
+        logout,
+        isLoggingOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

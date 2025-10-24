@@ -19,23 +19,41 @@ type Booking = {
   admin_name: string | null;
   user_email: string;
   items: BookingItem[];
-  address:   string;
+  address: string;
 };
 
-function ServiceListProcess({ onLoadDone }: { onLoadDone: () => void }) {
+function ServiceListProcess() {
   const fetchWithToken = useFetchWithToken();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [message, setMessage] = useState<string>("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  // ✅ ใช้ useCallback กัน useEffect เตือน
+  const [isLoading, setIsLoading] = useState(true); // ✅ จัดการ loading เอง
+
+  const seedetail = useCallback((id: number) => {
+    setBookings((prev) => {
+      const booking = prev.find((b) => b.booking_id === id);
+      if (booking) setSelectedBooking(booking);
+      return prev;
+    });
+  }, []);
+
+  const closedetail = useCallback(() => {
+    setSelectedBooking(null);
+  }, []);
+
   useEffect(() => {
+    let isMounted = true;
+
     const fetchBookings = async () => {
       try {
-        const statusQuery = ["รอดำเนินการ", "ดำเนินการอยู่"].join(",");
+        setIsLoading(true); // ✅ เริ่ม loading
+        const statusQuery = encodeURIComponent("รอดำเนินการ,ดำเนินการอยู่");
         const res = await fetchWithToken<{ bookings: Booking[] }>(
           `/api/afterservice/order?status=${statusQuery}`,
           { method: "GET" }
         );
+
+        if (!isMounted) return;
 
         if (!res.bookings || res.bookings.length === 0) {
           setMessage("ไม่มีข้อมูลการซ่อม");
@@ -43,29 +61,37 @@ function ServiceListProcess({ onLoadDone }: { onLoadDone: () => void }) {
           setBookings(res.bookings);
         }
       } catch (error: unknown) {
+        if (!isMounted) return;
+
         const err = error as Error;
         console.error("Error fetching bookings:", err.message);
         setMessage("ไม่มีข้อมูลการซ่อม");
+      } finally {
+        if (isMounted) {
+          setIsLoading(false); // ✅ หยุด loading
+        }
       }
     };
 
-    fetchBookings().then(() => {
-      onLoadDone?.();
-    });
-  }, []);
+    fetchBookings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchWithToken]); // ✅ dependency เดียว
+
+  // ✅ แสดง loading ภายใน component
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (message) {
     return <p className="text-center text-gray-600 mt-4">{message}</p>;
   }
-
-  const seedetail = (id: number) => {
-    const booking = bookings.find((b) => b.booking_id === id);
-    setSelectedBooking(booking || null);
-  };
-
-  const closedetail = () =>{
-    setSelectedBooking(null)
-  } 
 
   return (
     <div className="flex flex-col gap-6 relative">
@@ -79,16 +105,15 @@ function ServiceListProcess({ onLoadDone }: { onLoadDone: () => void }) {
           status={order.status_name}
           totalPrice={order.total_price}
           onViewDetails={() => seedetail(order.booking_id)}
-          detail ={"รายละเอียด"}
+          detail="รายละเอียด"
         />
       ))}
 
-      {/* 🟢 Popup Modal */}
       {selectedBooking && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg ">
+          <div className="bg-white rounded-lg">
             <PaymentSummary
-              status={"ชำระเงินเรียบร้อย !" }
+              status="ชำระเงินเรียบร้อย !"
               items={selectedBooking.items}
               date={
                 selectedBooking.service_date
@@ -99,7 +124,7 @@ function ServiceListProcess({ onLoadDone }: { onLoadDone: () => void }) {
               address={selectedBooking.address}
               totalPrice={selectedBooking.total_price}
               eventname="ปิด"
-              clickevent={()=>closedetail()}
+              clickevent={closedetail}
             />
           </div>
         </div>

@@ -1,15 +1,11 @@
 import { Footer } from "@/components/footer";
 import Navbar from "@/components/navbar/navbar";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ServiceListProcess from "./servicelist-process";
 import ServiceListSuccess from "./servicelist-success";
-import { useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import UserProfile from "./profile";
-
-
-
 
 function AfterService() {
   const menuItems = [
@@ -18,25 +14,13 @@ function AfterService() {
     { label: "ประวัติการสั่งซ่อม", icon: "/images/icon_history.svg" },
   ];
 
-
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab");
 
   const [keyword, setkeyword] = useState(tab || "ข้อมูลผู้ใช้งาน");
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLoadDone = useCallback(() => {
-  setIsLoading(false);
-}, []);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000); // รอ 1 วินาที
-    return () => clearTimeout(timer);
-  }, [keyword]);
-
+  // ✅ ลบ isLoading และ handleLoadDone ออกทั้งหมด
+  // ให้ child component จัดการ loading state เอง
 
   function RenderContent() {
     switch (keyword) {
@@ -44,20 +28,20 @@ function AfterService() {
         return <UserProfile />;
 
       case "รายการคำสั่งซ่อม":
-        return <ServiceListProcess onLoadDone={handleLoadDone} />;
+        return <ServiceListProcess />;
 
       case "ประวัติการสั่งซ่อม":
-        return <ServiceListSuccess onLoadDone={handleLoadDone} />;
+        return <ServiceListSuccess />;
 
       default:
-        return <p>กรุณาเลือกนวัฒกรรมใหม่</p>;
+        return <p>กรุณาเลือกเมนู</p>;
     }
   }
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <div className="hidden md:flex h-[100px] w-[100%] bg-[var(--blue-600)]  justify-center items-center">
+      <div className="hidden md:flex h-[100px] w-[100%] bg-[var(--blue-600)] justify-center items-center">
         <p className="text-[32px] font-[500] text-[var(--white)]">{keyword}</p>
       </div>
 
@@ -77,8 +61,8 @@ function AfterService() {
                 <div
                   key={item.label}
                   id={item.label}
-                  className={`flex flex-row items-center md:h-[50px] gap-[12px]  w-full
-                                 hover:cursor-pointer hover:text-[var(--blue-700)]   `}
+                  className={`flex flex-row items-center md:h-[50px] gap-[12px] w-full
+                             hover:cursor-pointer hover:text-[var(--blue-700)]`}
                   onClick={() => setkeyword(item.label)}
                 >
                   <Image
@@ -87,23 +71,26 @@ function AfterService() {
                     width={24}
                     height={24}
                   />
-                  <p className={`${keyword === item.label ? "text-[var(--blue-700)]" : ""}`}>{item.label}</p>
+                  <p
+                    className={`${
+                      keyword === item.label ? "text-[var(--blue-700)]" : ""
+                    }`}
+                  >
+                    {item.label}
+                  </p>
                 </div>
               ))}
             </div>
           </div>
-          <div className="flex md:hidden  w-[90%] bg-[var(--blue-600)]  justify-center items-center rounded-xl px-[16px] py-[8px]">
-              <p className="text-[20px] font-[500] text-[var(--white)]">{keyword}</p>
+
+          <div className="flex md:hidden w-[90%] bg-[var(--blue-600)] justify-center items-center rounded-xl px-[16px] py-[8px]">
+            <p className="text-[20px] font-[500] text-[var(--white)]">
+              {keyword}
+            </p>
           </div>
 
-          <div className="w-[90%] md:w-[800px] ">
-            {isLoading ? (
-              <div className="flex  justify-center items-center md:h-64">
-                <div className="w-8 h-8 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-              </div>
-            ) : (
-              <RenderContent />
-            )}
+          <div className="w-[90%] md:w-[800px]">
+            <RenderContent />
           </div>
         </div>
       </div>

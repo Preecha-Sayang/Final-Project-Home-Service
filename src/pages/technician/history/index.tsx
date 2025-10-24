@@ -1,17 +1,37 @@
 import { useRouter } from "next/router";
-import InputDropdown, { Option } from "@/components/input/inputDropdown/input_dropdown";
+import InputDropdown, {
+  Option,
+} from "@/components/input/inputDropdown/input_dropdown";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-
+type ServiceOption = {
+  booking_item_id: number;
+  service_option_id: number;
+  service_option_name: string;
+  unit: string;
+  unit_price: string;
+  quantity: number;
+  subtotal_price: string;
+};
 
 type Booking = {
   booking_id: number;
-  servicename: string;
+  user_id: number;
+  address_id: number | null;
+  total_price: string;
   service_date: string;
   service_time: string;
+  status_id: number;
   order_code: string;
-  total_price: number;
+  admin_id: number;
+  address_data: unknown;
+  create_at: string;
+  service_id: number | null;
+  servicename: string | null;
+  category_id: number | null;
+  category_name: string | null;
+  service_options: ServiceOption[];
 };
 
 interface FetchParams {
@@ -22,23 +42,23 @@ interface FetchParams {
 }
 
 function TecnicianProfile() {
-    const router = useRouter();
+  const router = useRouter();
   const [SelectCategory, setSelectedCategory] = useState("");
   const [search, setSearch] = useState("");
-  const [bookings, setBookings] = useState<Booking[]>([]);;
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 6;
   const [services, setServices] = useState<Option[]>([]);
 
-
   useEffect(() => {
     const fetchBookings = async () => {
       setLoading(true);
       try {
-        const params: FetchParams = { page, status: 4 };
-        if (SelectCategory && SelectCategory !== "") params.servicename = SelectCategory;
+        const params: FetchParams = { page, status: 3 };
+        if (SelectCategory && SelectCategory !== "")
+          params.servicename = SelectCategory;
         if (search.trim()) params.search = search.trim();
 
         const token = localStorage.getItem("accessToken");
@@ -62,11 +82,10 @@ function TecnicianProfile() {
     fetchBookings();
   }, [SelectCategory, search, page]);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchServices = async () => {
       try {
         const res = await axios.get("/api/technician/history/allservice");
-        // สมมติ API คืน { services: [{ servicename: "ล้างแอร์" }, ...] }
         const options: Option[] = [
           { label: "บริการทั้งหมด", value: "" },
           ...res.data.services.map((s: { servicename: string }) => ({
@@ -75,7 +94,6 @@ function TecnicianProfile() {
           })),
         ];
         setServices(options);
-        console.log(options)
       } catch (err) {
         console.error("Error fetching service names:", err);
       }
@@ -84,8 +102,36 @@ function TecnicianProfile() {
     fetchServices();
   }, []);
 
+  useEffect(() => {
+    console.log("bookings updated:", bookings);
+    console.log("total updated:", total);
+  }, [bookings, total]);
 
   const totalPages = Math.ceil(total / limit);
+
+  // ฟังก์ชันแปลงวันที่
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "-";
+    try {
+      return new Date(dateString).toLocaleDateString("th-TH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  };
+
+  // ฟังก์ชันแปลงเวลา
+  const formatTime = (timeString: string) => {
+    if (!timeString) return "-";
+    try {
+      return timeString.substring(0, 5);
+    } catch (error: unknown) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -115,7 +161,7 @@ function TecnicianProfile() {
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
-                  setPage(1); // reset page
+                  setPage(1);
                 }}
                 className="w-full rounded-md border border-[var(--gray-300)] pl-10 pr-3 py-2 text-sm outline-none hover:border-[var(--gray-400)] focus:ring-2 focus:ring-[var(--blue-600)] focus:border-[var(--blue-600)]"
               />
@@ -125,8 +171,8 @@ function TecnicianProfile() {
       </div>
 
       {/* Body */}
-      <div className="m-[15px]  md:m-[40px]">
-        <div className=" flex flex-col md:flex-row md:items-center gap-[15px]">
+      <div className="m-[15px] md:m-[40px]">
+        <div className="flex flex-col md:flex-row md:items-center gap-[15px]">
           <p>บริการ</p>
           <InputDropdown
             className="w-[100%] md:!w-[300px]"
@@ -134,7 +180,7 @@ function TecnicianProfile() {
             value={SelectCategory}
             onChange={(value) => {
               setSelectedCategory(value);
-              setPage(1); // reset page
+              setPage(1);
             }}
             placeholder="เลือกบริการ…"
           />
@@ -167,20 +213,35 @@ function TecnicianProfile() {
                     </td>
                   </tr>
                 ) : (
-                  bookings.map((row, index) => (
-                    <tr key={index} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4">{row.servicename}</td>
+                  bookings.map((row) => (
+                    <tr
+                      key={row.booking_id}
+                      className="border-b hover:bg-gray-50"
+                    >
                       <td className="px-6 py-4">
-                        วันที่ {new Date(row.service_date).toLocaleDateString("th-TH")}{" "}
-                        เวลา {row.service_time.substring(0, 5)} น.
+                        <div>
+                          <div className="font-medium">
+                            {row.servicename || "ไม่ระบุบริการ"}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        วันที่ {formatDate(row.service_date)} เวลา{" "}
+                        {formatTime(row.service_time)} น.
                       </td>
                       <td className="px-6 py-4">{row.order_code}</td>
                       <td className="px-6 py-4 text-left">
-                        {row.total_price?.toLocaleString("th-TH")} ฿
+                        {parseFloat(row.total_price || "0").toLocaleString(
+                          "th-TH"
+                        )}{" "}
+                        ฿
                       </td>
                       <td className="px-6 py-4 flex justify-center">
-                        <button className="p-2 text-blue-500 hover:text-blue-700 hover:cursor-pointer"
-                        onClick={() => router.push(`/technician/history/${row.booking_id}`)}
+                        <button
+                          className="p-2 text-blue-500 hover:text-blue-700 hover:cursor-pointer"
+                          onClick={() =>
+                            router.push(`/technician/history/${row.booking_id}`)
+                          }
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -214,7 +275,9 @@ function TecnicianProfile() {
               >
                 ก่อนหน้า
               </button>
-              <span>หน้า {page} / {totalPages}</span>
+              <span>
+                หน้า {page} / {totalPages}
+              </span>
               <button
                 className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50 cursor-pointer w-[85px]"
                 disabled={page >= totalPages}
