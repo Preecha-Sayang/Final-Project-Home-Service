@@ -262,7 +262,7 @@ export default function TechnicianCombinedSettingsPage() {
                       value={formData.firstName}
                       onChange={handleInputChange("firstName")}
                       placeholder="กรุณากรอกชื่อ"
-                      className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
                   />
                 </div>
 
@@ -276,7 +276,7 @@ export default function TechnicianCombinedSettingsPage() {
                       value={formData.lastName}
                       onChange={handleInputChange("lastName")}
                       placeholder="กรุณากรอกนามสกุล "
-                      className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
                   />
                 </div>
 
@@ -290,10 +290,11 @@ export default function TechnicianCombinedSettingsPage() {
                       value={formData.phone}
                       onChange={handleInputChange("phone")}
                       placeholder="กรุณากรอกเบอร์ติดต่อ"
-                      className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
                   />
                 </div>
 
+<<<<<<< HEAD
               {/* Address */}
               <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
                 <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
@@ -320,6 +321,31 @@ export default function TechnicianCombinedSettingsPage() {
                 >
                   เลือกตำแหน่งบนแผนที่
                 </button>
+=======
+                {/* Address */}
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+                  <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
+                    ตำแหน่งที่อยู่ปัจจุบัน<span className="text-[var(--red)]">*</span>
+                  </label>
+                  <input
+                      type="text"
+                      value={loading ? "กำลังดึงข้อมูล…" : formData.address || "—"}
+                      onChange={handleInputChange("address")}
+                      placeholder="กรุณากรอกที่อยู่"
+                      
+                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                  />
+                   <button
+                        type="button"
+                        disabled={loading}
+                        onClick={onRefreshCurrent}
+                        className="w-[96px] h-[36px] cursor-pointer rounded-lg border border-[var(--blue-300)] text-[var(--blue-700)] hover:bg-[var(--blue-100)]"
+                    >
+                        {loading ? "กำลังรีเฟรช…" : "รีเฟรช"}
+                    </button>
+                
+                </div>
+>>>>>>> 03ac8ce (style: Update Technician Settings Page input field widths for improved layout)
               </div>
               {loading && (
                 <div className="text-sm text-[var(--gray-700)]">กำลังโหลดตำแหน่ง…</div>
