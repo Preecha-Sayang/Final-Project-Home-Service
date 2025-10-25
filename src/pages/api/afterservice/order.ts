@@ -28,7 +28,7 @@ const statusFilter = statusQuery ? statusQuery.split(",") : [];
       b.comment_rate,
       b.comment_text,
       COALESCE(b.address_data->>'address', '') || ' ' ||
-      COALESCE(b.address_data->>'subDistrict', '') || ' ' ||
+      COALESCE(b.address_data->>'subdistrict', '') || ' ' ||
       COALESCE(b.address_data->>'district', '') || ' ' ||
       COALESCE(b.address_data->>'province', '') AS address,
       s.name AS status_name,

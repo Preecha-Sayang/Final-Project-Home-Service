@@ -8,7 +8,7 @@ import BookingDetailsForm from "@/components/BookingForm";
 import BookingFooter from "@/components/BookingFooter";
 import OrderSummary from "@/components/ordersummary/order_summary";
 import Breadcrumb from "@/components/breadcrump/bread_crump";
-import BookingTimer from '@/components/BookingTimer'
+import BookingTimer from "@/components/BookingTimer";
 import { useBookingStore } from "@/stores/bookingStore";
 import axios from "axios";
 import Navbar from "@/components/navbar/navbar";
@@ -101,12 +101,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
 
       // เริ่ม timer เมื่อเข้า step 2
       setIsTimerActive(true)
-      setCurrentStep('details')
-    } else if (currentStep === 'details') {
-      // อัพเดท booking store ก่อนไปหน้า payment
-      // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
-      setServiceCart(selectedItems);
-
       setCurrentStep("payment");
     }
   };
@@ -136,8 +130,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
       0
     );
   };
-    return selectedItems.reduce((total, item) => total + item.unit_price * item.quantity, 0)
-  }
 
   // Handle timeout from timer
   const handleTimeout = () => {
@@ -199,7 +191,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
 
       case "payment":
         return (
-          <PaymentForm
           <PaymentForm
             ref={paymentFormRef}
             totalPrice={calculateTotal()}
@@ -427,25 +418,27 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
               {/* Right Column - Timer + Order Summary */}
               <div className="lg:col-span-1">
                 {/* Timer - แสดงเฉพาะเมื่อ step 2 และ 3 */}
-              <BookingTimer
-                isActive={isTimerActive}
-                onTimeout={handleTimeout}
-                onStop={() => setIsTimerActive(false)}
-              />
+              {currentStep === "details" || currentStep === "payment" ? (
+                <BookingTimer
+                  isActive={isTimerActive}
+                  onTimeout={handleTimeout}
+                  onStop={() => setIsTimerActive(false)}
+                />
+              ) : null}
 
               {/* Order Summary */}
               <OrderSummary
-                  items={selectedItems.map(((item)) => ({
-                    name: item.name,
-                    quantity: item.quantity,,
-                  }))}
-                  total={calculateTotal()}
-                  date={formatDate(customerInfo.serviceDate)}
-                  time={formatTime(customerInfo.serviceTime)}
-                  address={formatAddress()}
-                promotion={discount | 0}
-                  fallbackText="ยังไม่ได้เลือก"
-                />
+                items={selectedItems.map((item) => ({
+                  name: item.name,
+                  quantity: item.quantity,
+                }))}
+                total={calculateTotal()}
+                date={formatDate(customerInfo.serviceDate)}
+                time={formatTime(customerInfo.serviceTime)}
+                address={formatAddress()}
+                promotion={discount || 0}
+                fallbackText="ยังไม่ได้เลือก"
+              />
               </div>
             </div>
           </div>
