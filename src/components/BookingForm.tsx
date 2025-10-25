@@ -360,16 +360,6 @@ const BookingDetailsForm: React.FC = () => {
     value: s.subdistrict_code.toString(),
   }))
 
-  // ฟังก์ชันสำหรับ format ที่อยู่แสดง
-  const formatDefaultAddress = () => {
-    if (!defaultAddress) return ''
-    
-    const provinceData = provinces.find(p => p.province_code === defaultAddress.province_code)
-    const provinceName = provinceData?.province_name_th || ''
-    
-    return `${defaultAddress.address}${provinceName ? `, ${provinceName}` : ''}`
-  }
-
   return (
     <div className="bg-white rounded-lg shadow p-4 md:p-6 space-y-6">
       <h2 className="text-lg md:text-xl font-semibold text-gray-800">กรอกข้อมูลบริการ</h2>
