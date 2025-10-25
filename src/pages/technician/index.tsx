@@ -3,6 +3,7 @@ import PageToolbar from "@/components/technician/common/PageToolbar";
 import { useGeolocation } from "@/hooks/useGeolocation";
 import { useTechnicianLocation } from "@/stores/geoStore";
 import { useTechJobs } from "@/stores/techJobsStore";
+import AvailabilityToggle from "@/components/technician/settings/AvailabilityToggle";
 import JobTable from "@/components/technician/jobs/JobTable";
 
 function toGeoPosition(p: { lat: number; lng: number; accuracy?: number }): GeolocationPosition {
@@ -28,8 +29,32 @@ export default function TechnicianInboxPage() {
     const { getPositionOnce, permission, error } = useGeolocation();
     const { jobs, loadNearby, accept, decline } = useTechJobs();
 
+<<<<<<< HEAD
     // โหลดข้อมูลจาก DB เมื่อเข้าเพจ (ครั้งเดียว)
     const bootRef = useRef(false);
+=======
+    const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
+    const [loadingProfile, setLoadingProfile] = useState(false);
+
+    useEffect(() => {
+        const loadProfile = async () => {
+            try {
+                setLoadingProfile(true);
+                const resp = await fetch("/api/technician/profile", { credentials: "include" });
+                const json = await resp.json();
+                setIsAvailable(Boolean(json.profile.is_available ?? false));
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoadingProfile(false);
+            }
+        };
+        void loadProfile();
+    }, []);
+
+    // โหลดตำแหน่งครั้งแรก
+    const loadRef = useRef(loadFromServer);
+>>>>>>> 5155395 (feat: Implement Availability Toggle for Technicians)
     useEffect(() => {
         if (bootRef.current) return;
         bootRef.current = true;
@@ -54,10 +79,15 @@ export default function TechnicianInboxPage() {
         }
     };
 
+    const onToggleAvailability = async () => {
+        document.location.reload();
+    }
+
     return (
         <>
             <PageToolbar title="คำขอบริการซ่อม" />
 
+<<<<<<< HEAD
             <div className="flex items-center justify-center mt-5 px-8">
                 <div className="flex items-center justify-between w-[1120px] rounded-xl bg-[var(--blue-100)] border-2 border-[var(--blue-300)] px-6 py-4 mb-6">
                     <div className="flex gap-5 text-[var(--blue-600)]">
@@ -89,9 +119,15 @@ export default function TechnicianInboxPage() {
                     >
                         {loading ? "กำลังรีเฟรช…" : "รีเฟรช"}
                     </button>
+=======
+            { !isAvailable && (
+                <div className="p-8">
+                    <AvailabilityToggle onStatusChanged={onToggleAvailability} />
+>>>>>>> 5155395 (feat: Implement Availability Toggle for Technicians)
                 </div>
-            </div>
+            )}
 
+<<<<<<< HEAD
             <div className="flex items-center justify-center">
                 <div className="flex items-center justify-center w-[1120px] rounded-xl border p-6 bg-white">
                     <JobTable
@@ -99,8 +135,51 @@ export default function TechnicianInboxPage() {
                         onAccept={accept}
                         onDecline={decline}
                     />
+=======
+            { isAvailable && (
+                <div>
+                    {/* แบนเนอร์ที่อยู่ปัจจุบัน */}
+                    <div className="px-8">
+                        <div className="flex items-center justify-between rounded-xl bg-[var(--blue-50)] border border-[var(--blue-100)] px-6 py-4 mb-6">
+                            <div className="text-[var(--blue-800)]">
+                                <div className="font-medium">ตำแหน่งที่อยู่ปัจจุบัน</div>
+                                <div className="text-[var(--blue-900)]">
+                                    {loading ? "กำลังดึงข้อมูล…" : addressText || "—"}
+                                </div>
+                                {permission === "denied" && (
+                                    <div className="text-[var(--red-600)] text-sm mt-1">
+                                        เบราว์เซอร์ปิดสิทธิ์ระบุตำแหน่ง
+                                    </div>
+                                )}
+                                {error && (
+                                    <div className="text-[var(--red-600)] text-sm mt-1">{error}</div>
+                                )}
+                            </div>
+                            <button
+                                type="button"
+                                disabled={loading}
+                                onClick={onRefresh}
+                                className="w-[96px] h-[36px] rounded-lg bg-white border border-[var(--blue-300)] text-[var(--blue-700)] hover:bg-[var(--blue-50)]"
+                            >
+                                {loading ? "กำลังรีเฟรช…" : "รีเฟรช"}
+                            </button>
+                        </div>
+                    </div>
+                    <div className="p-8">
+                        <div className="rounded-xl border p-6 bg-white">
+                            <JobTable
+                                jobs={jobs.filter((j) =>
+                                    q ? (j.address_text ?? "").includes(q) : true
+                                )}
+                                onAccept={(id) => void accept(id)}
+                                onDecline={(id) => void decline(id)}
+                            />
+                        </div>
+                    </div>
+>>>>>>> 5155395 (feat: Implement Availability Toggle for Technicians)
                 </div>
-            </div>
+            )}
+
         </>
     );
 }

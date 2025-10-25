@@ -81,25 +81,11 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
   if (req.method === "POST") {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : (req.body || {});
 
-    const name = (body.name ?? "").toString().trim().slice(0, 100); // legacy support
     const first_name = (body.first_name ?? "").toString().trim().slice(0, 100);
     const last_name = (body.last_name ?? "").toString().trim().slice(0, 100);
     const phone = (body.phone ?? "").toString().trim().slice(0, 50);
-    // const lat = Number(body.lat);
-    // const lng = Number(body.lng);
-    // const address_text = (body.address_text ?? "").toString().trim();
-    // const meta = body.meta ?? body.address_meta ?? null; // accept both, prefer meta (same as location API)
     const is_available = Boolean(body.is_available);
     const service_ids = toIntArray(body.service_ids);
-
-    // Basic validation (follow location style)
-    // if (
-    //   typeof lat !== "number" || Number.isNaN(lat) ||
-    //   typeof lng !== "number" || Number.isNaN(lng) ||
-    //   typeof address_text !== "string" || !address_text
-    // ) {
-    //   return res.status(400).json({ ok: false, message: "invalid payload" });
-    // }
 
     // Validate service_ids against services table if any provided
     if (service_ids.length > 0) {
@@ -114,19 +100,6 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
 
     try {
       await query("BEGIN");
-
-      // Upsert location (meta -> address_meta)
-      // await query(
-      //   `INSERT INTO public.technician_locations (admin_id, lat, lng, address_text, address_meta)
-      //    VALUES ($1, $2, $3, $4, $5)
-      //    ON CONFLICT (admin_id)
-      //    DO UPDATE SET lat = EXCLUDED.lat,
-      //                  lng = EXCLUDED.lng,
-      //                  address_text = EXCLUDED.address_text,
-      //                  address_meta = EXCLUDED.address_meta,
-      //                  updated_at   = now()`,
-      //   [techId, lat, lng, address_text, meta == null ? null : meta]
-      // );
 
       // Upsert technician profile (availability + services + contacts)
       await query(
