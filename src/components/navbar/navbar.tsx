@@ -6,13 +6,18 @@ import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import IconBell from "../button/iconbell";
 import { useAuth } from "@/context/AuthContext";
+import StatusListener from "../StatusListener";
 
 export default function Navbar() {
-  const { isLoggedIn, accessToken } = useAuth();
-  
+  const { isLoggedIn, accessToken, user } = useAuth();
+  const [notifications, setNotifications] = useState<
+    { booking_id: number; new_status: string }[]
+  >([]);
   // State สำหรับเก็บข้อมูลโปรไฟล์และอวาตาร์
   const [fullname, setFullname] = useState<string>("");
-  const [avatarURL, setAvatarURL] = useState<string | typeof user_default>(user_default);
+  const [avatarURL, setAvatarURL] = useState<string | typeof user_default>(
+    user_default
+  );
 
   // ฟังก์ชันดึงข้อมูลโปรไฟล์
   const fetchProfile = useCallback(() => {
@@ -52,12 +57,28 @@ export default function Navbar() {
       if (newAvatar) setAvatarURL(newAvatar);
     };
 
-    window.addEventListener('profileUpdated', handleProfileUpdate as EventListener);
-    
+    window.addEventListener(
+      "profileUpdated",
+      handleProfileUpdate as EventListener
+    );
+
     return () => {
-      window.removeEventListener('profileUpdated', handleProfileUpdate as EventListener);
+      window.removeEventListener(
+        "profileUpdated",
+        handleProfileUpdate as EventListener
+      );
     };
   }, []);
+
+  const handleNewNotification = useCallback(
+    (data: { booking_id: number; new_status: string }) => {
+      setNotifications((prev) => [data, ...prev]);
+    },
+    []
+  );
+
+  const clearNotifications = useCallback(() => setNotifications([]), []);
+
 
   return (
     <div className="sticky top-0 z-40 bg-[var(--white)] shadow-md">
@@ -102,7 +123,19 @@ export default function Navbar() {
                 {fullname}
               </div>
               <DropdownUser imageURL={avatarURL} fullname={fullname} />
-              <IconBell />
+                {user && (
+                  <>
+                    <StatusListener
+                      userId={Number(user.user_id)}
+                      onNewNotification={handleNewNotification}
+                    />
+                    <IconBell
+                      notifications={notifications}
+                      onClear={clearNotifications}
+                    />
+                  </>
+                )}
+
             </div>
           )}
         </div>
