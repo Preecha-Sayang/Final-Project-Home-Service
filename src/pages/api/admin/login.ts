@@ -44,7 +44,7 @@ export default async function handler(
       cookie.serialize("accessToken", token, {
         httpOnly: true, 
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: "lax",
         path: "/",
         maxAge: 60 * 60, // 1 ชม.
       })
@@ -53,7 +53,7 @@ export default async function handler(
 
     return res.json({
       token,
-      admin: { admin_id: admin.admin_id, email: admin.email, role: admin.role },
+      admin: { adminId: admin.admin_id, email: admin.email, role: admin.role },
     });
   } catch (error) {
     console.log("Error IS:", error);

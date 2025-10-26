@@ -7,6 +7,24 @@ import GoogleLocationPickerModal from "@/components/location/GoogleLocationPicke
 import { reverseGeocode, formatThaiAddress } from "lib/client/maps/googleProvider";
 import { useTechnicianLocation } from "@/stores/geoStore";
 
+import { useGeolocation } from "@/hooks/useGeolocation";
+function toGeoPosition(p: { lat: number; lng: number; accuracy?: number }): GeolocationPosition {
+  const obj = {
+    coords: {
+      latitude: p.lat,
+      longitude: p.lng,
+      accuracy: p.accuracy ?? 5,
+      altitude: null,
+      altitudeAccuracy: null,
+      heading: null,
+      speed: null,
+    },
+    timestamp: Date.now(),
+    toJSON() { return this as unknown as GeolocationPosition; },
+  };
+  return obj as unknown as GeolocationPosition;
+}
+
 // ServiceRow: รูปแบบข้อมูลบริการจาก API / Type definition for service items from API
 type ServiceRow = {
   service_id: number;
@@ -30,7 +48,8 @@ export default function TechnicianCombinedSettingsPage() {
   const [selectedServiceIds, setSelectedServiceIds] = useState<Set<number>>(new Set());
 
   // Store สำหรับข้อมูลตำแหน่งช่าง / Technician location store
-  const { addressText, coords, loading, loadFromServer } = useTechnicianLocation();
+  const { addressText, coords, loading, loadFromServer, reverseAndSave } = useTechnicianLocation();
+  const { getPositionOnce } = useGeolocation();
 
   // สถานะเปิด/ปิด modal เลือกตำแหน่ง / Location picker modal open state
   const [openPicker, setOpenPicker] = useState(false);
@@ -125,23 +144,23 @@ export default function TechnicianCombinedSettingsPage() {
   // ยืนยันและบันทึกข้อมูล / Confirm and save data
   const handleConfirm = async () => {
     try {
-      const lat = coords?.lat;
-      const lng = coords?.lng;
-      const address_text = addressText || formData.address;
+      // const lat = coords?.lat;
+      // const lng = coords?.lng;
+      // const address_text = addressText || formData.address;
 
-      if (typeof lat !== "number" || typeof lng !== "number" || !address_text) {
-        alert("กรุณาเลือกตำแหน่งที่อยู่ก่อนบันทึก");
-        return;
-      }
+      // if (typeof lat !== "number" || typeof lng !== "number" || !address_text) {
+      //   alert("กรุณาเลือกตำแหน่งที่อยู่ก่อนบันทึก");
+      //   return;
+      // }
 
       const payload = {
         name: [formData.firstName, formData.lastName].filter(Boolean).join(" ").trim(),
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
-        lat,
-        lng,
-        address_text,
+        // lat,
+        // lng,
+        // address_text,
         is_available: isAvailable,
         service_ids: selectedIdsArray,
       };
@@ -188,6 +207,19 @@ export default function TechnicianCombinedSettingsPage() {
   const initialPicker = useMemo(() => {
     return coords ? { point: coords, place_name: addressText || undefined } : undefined;
   }, [coords?.lat, coords?.lng, addressText]);
+
+  // ปุ่ม "รีเฟรช" ในหน้า settings: ใช้ตำแหน่งปัจจุบันจริง (เหมือนหน้า inbox)
+  const onRefreshCurrent = async () => {
+    try {
+      const p = await getPositionOnce(); // { lat, lng }
+      await reverseAndSave(async () =>
+        toGeoPosition({ lat: p.lat, lng: p.lng, accuracy: 5 })
+      );
+    } catch (e) {
+      console.error(e);
+      alert(e instanceof Error ? e.message : String(e));
+    }
+  };
 
   return (
     <>
@@ -276,7 +308,7 @@ export default function TechnicianCombinedSettingsPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => { void loadFromServer(); }}
+                  onClick={onRefreshCurrent}
                   className="cursor-pointer w-full md:w-[96px] h-[42px] rounded-lg border border-[var(--blue-300)] text-[var(--blue-700)] text-sm font-medium hover:bg-[var(--blue-50)]"
                 >
                   รีเฟรช
