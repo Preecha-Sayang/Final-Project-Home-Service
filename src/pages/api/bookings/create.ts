@@ -59,14 +59,14 @@ export default async function handler(
         service_date,
         service_time,
         JSON.stringify(address_data), // เก็บเป็น JSON
-        promotion_id || null,
+        promotion_id || null, // บันทึก promotion_id
         1, // status_id = 1 (pending/confirmed)
       ]
     );
 
     const bookingId = bookingResult.rows[0].booking_id;
 
-    // บันทึกรายการบริการลงตาราง booking_item (ตามโครงสร้างที่มีอยู่)
+    // บันทึกรายการบริการลงตาราง booking_item
     for (const item of items) {
       await query(
         `INSERT INTO booking_item (
@@ -84,6 +84,8 @@ export default async function handler(
       );
     }
 
+    console.log(`[Booking Created] ID: ${bookingId}, Promotion ID: ${promotion_id}, Discount: ${discount}`);
+
     return res.status(201).json({
       success: true,
       booking_id: bookingId,
@@ -97,4 +99,3 @@ export default async function handler(
     });
   }
 }
-

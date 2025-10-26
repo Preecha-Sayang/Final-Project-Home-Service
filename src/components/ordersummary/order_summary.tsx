@@ -11,13 +11,14 @@ interface OrderSummaryProps {
   time?: string;
   address?: string;
   promotion?: number;
+  promotionCode?: string | null;
   total: number;
   defaultOpen?: boolean;
-  fallbackText?: string; 
-  showPromotionWhenZero?: boolean; // จะโชว์ promotion=0 หรือไม่
-  currency?: string;              // สัญลักษณ์สกุลเงิน
-  decimalDigits?: number;         // จำนวนทศนิยม (default = 2)
-  useIcons?: boolean; 
+  fallbackText?: string;
+  showPromotionWhenZero?: boolean;
+  currency?: string;
+  decimalDigits?: number;
+  useIcons?: boolean;
 }
 
 export default function OrderSummary({
@@ -26,6 +27,7 @@ export default function OrderSummary({
   time,
   address,
   promotion,
+  promotionCode,
   total,
   defaultOpen = true,
   fallbackText = "-",
@@ -34,12 +36,15 @@ export default function OrderSummary({
   decimalDigits = 2,
 }: OrderSummaryProps) {
   const [open, setOpen] = useState(defaultOpen);
-  
+
   const formatNumber = (num: number) =>
     num.toLocaleString(undefined, {
       minimumFractionDigits: decimalDigits,
       maximumFractionDigits: decimalDigits,
     });
+
+  // คำนวณราคาหลังหักส่วนลด
+  const finalTotal = promotion && promotion > 0 ? total - promotion : total;
 
   return (
     <div className="w-[375px] rounded-lg border border-gray-200 bg-white p-4 shadow-sm mt-[16px] ml-[16px] flex flex-col">
@@ -70,47 +75,59 @@ export default function OrderSummary({
 
           <hr className="border-t-2 border-gray-200 mb-3" />
 
-
           <div className="space-y-3 mb-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-600 text-sm">วันที่</span>
               <span className="text-gray-950 font-medium text-sm">
-              {date ?? fallbackText}
+                {date ?? fallbackText}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 text-sm">เวลา</span>
               <span className="text-gray-950 font-medium text-sm">
-              {time ?? fallbackText}
+                {time ?? fallbackText}
               </span>
             </div>
             <div className="flex justify-between items-start">
               <span className="text-gray-600 text-sm">สถานที่</span>
               <span className="text-right text-gray-950 font-medium text-sm leading-5 max-w-[200px]">
-              {address ?? fallbackText}
+                {address ?? fallbackText}
               </span>
             </div>
           </div>
 
           <hr className="border-t-2 border-gray-200 mb-3" />
 
-          {(promotion !== undefined &&
-            (showPromotionWhenZero || promotion !== 0)) && (
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 text-sm">Promotion Code</span>
-              <span className="text-red-500 font-medium text-sm">
-                -{formatNumber(promotion)} {currency}
-              </span>
-            </div>
-          )}
+          {/* แสดงยอดรวมก่อนลด */}
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-gray-600 text-sm">ยอดรวม</span>
+            <span className="text-gray-950 font-medium text-sm">
+              {formatNumber(total)} {currency}
+            </span>
+          </div>
+
+          {/* แสดงส่วนลด */}
+          {promotion !== undefined &&
+            (showPromotionWhenZero || promotion !== 0) && (
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-600 text-sm">
+                  ส่วนลด {promotionCode && `(${promotionCode})`}
+                </span>
+                <span className="text-red-500 font-medium text-sm">
+                  -{formatNumber(promotion)} {currency}
+                </span>
+              </div>
+            )}
         </>
       )}
 
-      {/* รวม */}
-      <div className="pt-2 flex justify-between items-center">
-        <span className="text-gray-800 font-semibold text-base">รวม</span>
-        <span className="text-gray-950 font-semibold text-base">
-          {formatNumber(total)} {currency}
+      {/* ยอดสุทธิ - แสดงเสมอ */}
+      <div className="pt-2 flex justify-between items-center border-t-2 border-gray-300">
+        <span className="text-gray-800 font-semibold text-base">
+          {promotion && promotion > 0 ? "ยอดสุทธิ" : "รวม"}
+        </span>
+        <span className="text-blue-600 font-bold text-lg">
+          {formatNumber(finalTotal)} {currency}
         </span>
       </div>
     </div>
@@ -118,85 +135,47 @@ export default function OrderSummary({
 }
 
 /**
- * วิธีใช้งาน OrderSummary Component
- * 
+ * วิธีใช้งาน OrderSummary Component (Updated)
+ *
  * OrderSummary Component เป็นคอมโพเนนต์สรุปรายการสั่งซื้อ/จองบริการ
  * แสดงรายการสินค้า/บริการ, วันที่, เวลา, ที่อยู่, ส่วนลด และยอดรวม
- * 
+ *
  * คุณสมบัติหลัก:
  * - แสดงรายการสินค้า/บริการพร้อมจำนวน
  * - แสดงวันที่, เวลา, และที่อยู่
- * - แสดงส่วนลดจาก promotion code
- * - คำนวณและแสดงยอดรวม
+ * - แสดงส่วนลดจาก promotion code พร้อมชื่อโค้ด
+ * - คำนวณและแสดงยอดรวมก่อนและหลังหักส่วนลด
  * - รองรับการเปิด/ปิดรายละเอียด
  * - รองรับสกุลเงินและทศนิยมที่กำหนดเอง
- * - สไตล์ที่สอดคล้องกับ design system
- * 
- * ตัวอย่างการใช้งาน:
- * 
- * 1) การใช้งานพื้นฐาน - สรุปรายการบริการ:
- *    const orderItems = [
- *      { name: "ทำความสะอาดบ้าน", quantity: 1 },
- *      { name: "ล้างแอร์", quantity: 2 },
- *      { name: "ซ่อมเครื่องซักผ้า", quantity: 1 }
- *    ];
- *    
- *    <OrderSummary
- *      items={orderItems}
- *      date="15 มกราคม 2567"
- *      time="14:00 - 16:00"
- *      address="123 ถนนสุขุมวิท กรุงเทพฯ 10110"
- *      promotion={100}
- *      total={1500}
- *    />
- * 
- * 3) การใช้งานแบบไม่มี Promotion:
- *    <OrderSummary
- *      items={[
- *        { name: "บริการทำความสะอาด", quantity: 1 }
- *      ]}
- *      date="25 มกราคม 2567"
- *      time="09:00 - 11:00"
- *      address="789 ถนนลาดพร้าว กรุงเทพฯ"
- *      total={800}
- *      showPromotionWhenZero={false}
- *    />
  *
- * การแสดงผล:
- * - Header พร้อมปุ่มเปิด/ปิดรายละเอียด
- * - รายการสินค้า/บริการพร้อมจำนวน
- * - ข้อมูลวันที่, เวลา, และที่อยู่
- * - ส่วนลดจาก promotion code (ถ้ามี)
- * - ยอดรวมทั้งหมด
- * - รองรับ responsive design
- * 
- * สถานะต่างๆ:
- * - Open: แสดงรายละเอียดทั้งหมด
- * - Closed: แสดงเฉพาะ header และยอดรวม
- * - With Promotion: แสดงส่วนลดด้วยสีแดง
- * - Without Promotion: ไม่แสดงส่วนลด
- * 
- * Best Practices:
- * 1. ใช้ items array ที่มีข้อมูลครบถ้วน
- * 2. ตรวจสอบ total ให้ถูกต้อง
- * 3. ใช้ fallbackText ที่เหมาะสมเมื่อไม่มีข้อมูล
- * 4. ตั้งค่า defaultOpen ตาม UX ที่ต้องการ
- * 5. ใช้ currency และ decimalDigits ที่สอดคล้องกับระบบ
- * 6. ตรวจสอบ promotion logic ให้ถูกต้อง
- * 
- * การใช้งานกับ Form Libraries:
- * 
- * React Hook Form:
- * ```tsx
- * const { watch } = useForm();
- * const formData = watch();
+ * ตัวอย่างการใช้งาน:
+ *
+ * 1) การใช้งานพื้นฐาน - สรุปรายการบริการ:
+ * const orderItems = [
+ *   { name: "ทำความสะอาดบ้าน", quantity: 1 },
+ *   { name: "ล้างแอร์", quantity: 2 },
+ * ];
  * 
  * <OrderSummary
- *   items={formData.items}
- *   date={formData.date}
- *   time={formData.time}
- *   address={formData.address}
- *   promotion={formData.promotion}
- *   total={formData.total}
+ *   items={orderItems}
+ *   date="15 มกราคม 2567"
+ *   time="14:00 - 16:00"
+ *   address="123 ถนนสุขุมวิท กรุงเทพฯ 10110"
+ *   promotion={150}
+ *   promotionCode="SAVE10"
+ *   total={1500}
  * />
- */ 
+ *
+ * จะแสดงผล:
+ * ยอดรวม:    1,500.00 ฿
+ * ส่วนลด (SAVE10): -150.00 ฿
+ * ─────────────────────
+ * ยอดสุทธิ:  1,350.00 ฿
+ *
+ * 2) การใช้งานแบบไม่มี Promotion:
+ * <OrderSummary
+ *   items={orderItems}
+ *   total={800}
+ *   showPromotionWhenZero={false}
+ * />
+ */

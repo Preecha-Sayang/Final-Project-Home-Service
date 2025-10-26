@@ -12,7 +12,9 @@ type BookingItem = {
 type Booking = {
   booking_id: number;
   order_code: string;
-  total_price: string;
+  total_price: number; // ✅ เปลี่ยนเป็น number
+  discount: number; // ✅ เพิ่ม
+  promo_code: string | null; // ✅ เพิ่ม
   service_date: string;
   service_time: string;
   status_name: string;
@@ -103,7 +105,7 @@ function ServiceListProcess() {
           employee={order.admin_name}
           items={order.items}
           status={order.status_name}
-          totalPrice={order.total_price}
+          totalPrice={order.total_price.toString()}
           onViewDetails={() => seedetail(order.booking_id)}
           detail="รายละเอียด"
         />
@@ -123,6 +125,8 @@ function ServiceListProcess() {
               time={selectedBooking.service_time}
               address={selectedBooking.address}
               totalPrice={selectedBooking.total_price}
+              discount={selectedBooking.discount} // ✅ เพิ่มบรรทัดนี้
+              promoCode={selectedBooking.promo_code} // ✅ เพิ่มบรรทัดนี้
               eventname="ปิด"
               clickevent={closedetail}
             />
