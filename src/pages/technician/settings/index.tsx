@@ -144,23 +144,11 @@ export default function TechnicianCombinedSettingsPage() {
   // ยืนยันและบันทึกข้อมูล / Confirm and save data
   const handleConfirm = async () => {
     try {
-      // const lat = coords?.lat;
-      // const lng = coords?.lng;
-      // const address_text = addressText || formData.address;
-
-      // if (typeof lat !== "number" || typeof lng !== "number" || !address_text) {
-      //   alert("กรุณาเลือกตำแหน่งที่อยู่ก่อนบันทึก");
-      //   return;
-      // }
-
       const payload = {
         name: [formData.firstName, formData.lastName].filter(Boolean).join(" ").trim(),
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
-        // lat,
-        // lng,
-        // address_text,
         is_available: isAvailable,
         service_ids: selectedIdsArray,
       };
@@ -294,62 +282,24 @@ export default function TechnicianCombinedSettingsPage() {
                   />
                 </div>
 
-<<<<<<< HEAD
               {/* Address */}
               <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
                 <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
                   ตำแหน่งที่อยู่ปัจจุบัน<span className="text-[var(--red)]">*</span>
                 </label>
                 <input
-                  type="text"
-                  value={formData.address}
-                  onChange={handleInputChange("address")}
-                  placeholder="กรุณากรอกที่อยู่"
-                  className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                    className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                     value={loading ? "กำลังดึงข้อมูล…" : addressText || "—"}
                 />
-                <button
-                  type="button"
-                  onClick={onRefreshCurrent}
-                  className="cursor-pointer w-full md:w-[96px] h-[42px] rounded-lg border border-[var(--blue-300)] text-[var(--blue-700)] text-sm font-medium hover:bg-[var(--blue-50)]"
-                >
-                  รีเฟรช
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenPicker(true)}
-                  className="cursor-pointer w-full md:w-[200px] h-[42px] rounded-lg border bg-[var(--gray-100)] hover:bg-[var(--gray-200)] text-sm"
-                >
-                  เลือกตำแหน่งบนแผนที่
-                </button>
-=======
-                {/* Address */}
-                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                  <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
-                    ตำแหน่งที่อยู่ปัจจุบัน<span className="text-[var(--red)]">*</span>
-                  </label>
-                  <input
-                      type="text"
-                      value={loading ? "กำลังดึงข้อมูล…" : formData.address || "—"}
-                      onChange={handleInputChange("address")}
-                      placeholder="กรุณากรอกที่อยู่"
-                      
-                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
-                  />
-                   <button
-                        type="button"
-                        disabled={loading}
-                        onClick={onRefreshCurrent}
-                        className="w-[96px] h-[36px] cursor-pointer rounded-lg border border-[var(--blue-300)] text-[var(--blue-700)] hover:bg-[var(--blue-100)]"
-                    >
-                        {loading ? "กำลังรีเฟรช…" : "รีเฟรช"}
-                    </button>
-                
-                </div>
->>>>>>> 03ac8ce (style: Update Technician Settings Page input field widths for improved layout)
+               <button
+                   type="button"
+                   disabled={loading}
+                   onClick={onRefreshCurrent}
+                   className="w-[96px] h-[36px] rounded-lg font-medium  border-2 border-[var(--blue-300)] text-[var(--blue-700)] hover:bg-[var(--blue-100)] cursor-pointer transition"
+                   >
+                  {loading ? "กำลังรีเฟรช…" : "รีเฟรช"}
+               </button>
               </div>
-              {loading && (
-                <div className="text-sm text-[var(--gray-700)]">กำลังโหลดตำแหน่ง…</div>
-              )}
             </div>
           </section>
 
