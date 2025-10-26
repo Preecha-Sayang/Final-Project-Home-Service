@@ -305,7 +305,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
             } else {
               setDiscount(0);
               const errorMsg =
-                "การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ");
+                "การชำระเงินล้มเหลว: " + (result || "ไม่ทราบสาเหตุ");
               alert(errorMsg);
               if (onPaymentError) onPaymentError(errorMsg);
             }

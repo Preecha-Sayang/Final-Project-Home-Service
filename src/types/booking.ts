@@ -1,11 +1,20 @@
 export type BookingId = number;
 
+export type BookingSubItem = {
+    service_option_id: number;
+    name: string;
+    quantity: number;
+    unit: string | null;
+    unit_price: number | null;
+    subtotal_price: number | null;
+};
+
 export enum BookingStatusId {
     WaitingAccept = 1,   // รอรับงาน
     WaitingProcess = 2,  // รอดำเนินการ
-    InProgress = 3,  // ดำเนินการอยู่
-    Completed = 4,  // เสร็จสิ้น
-    Canceled = 5,  // ยกเลิก
+    InProgress = 3,      // ดำเนินการอยู่
+    Completed = 4,       // เสร็จสิ้น
+    Canceled = 5,        // ยกเลิก
 }
 
 export type BookingAction =
@@ -28,17 +37,32 @@ export type JobListItem = {
     order_code: string;
 };
 
+// โครง address_data
+export type AddressMeta = {
+    text?: string;
+    lat?: number;
+    lng?: number;
+    address?: string;
+    subdistrict?: string;
+    district?: string;
+    province?: string;
+    [k: string]: unknown;
+} | null;
+
 // งานใกล้เคียง
 export type BookingNearby = {
     booking_id: number;
     order_code: string;
     address_text: string | null;
+    address_meta?: AddressMeta | null;
     lat: number | null;
     lng: number | null;
-    distance_km: number | null;   // null ถ้าคำนวณไม่ได้
-    service_date: string | null;  // ISO หรือ null
-    service_time: string | null;  // HH:mm หรือ null
+    distance_km: number | null;
+    service_date: string | null;
+    service_time: string | null;
     status_id: BookingStatusId;
     total_price?: number | null;
     item_names?: string[];
+    service_titles?: string[];
+    sub_items?: BookingSubItem[];
 };

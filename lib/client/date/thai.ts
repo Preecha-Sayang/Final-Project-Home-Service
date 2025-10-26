@@ -24,5 +24,5 @@ export function formatThaiDateTimeText(
     const yyyyBE = d.getFullYear() + 543;
 
     // 25/04/2563 เวลา 13.00 น.
-    return `ในวันที่ ${dd}/${mm2}/${yyyyBE} เวลา ${hh}.${mm} น.`;
+    return `${dd}/${mm2}/${yyyyBE} เวลา ${hh}.${mm} น.`;
 }
