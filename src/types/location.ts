@@ -45,4 +45,12 @@ export type TechnicianLocation = {
 export type LatLng = { lat: number; lng: number };
 export type GeoPermission = "granted" | "denied" | "prompt" | "unknown";
 
-//# GeoPoint, AddressRecord, TechnicianLocation ฯลฯ
+export type AddressData = {
+    address?: string;
+    subdistrict?: string;
+    district?: string;
+    province?: string;
+    postcode?: string;
+    additional_info?: string;
+    text?: string;
+};

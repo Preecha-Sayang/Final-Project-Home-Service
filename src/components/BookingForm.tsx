@@ -68,6 +68,7 @@ const BookingDetailsForm: React.FC = () => {
   const [defaultAddress, setDefaultAddress] = useState<DefaultAddress | null>(null)
   const [loadingDefaultAddress, setLoadingDefaultAddress] = useState(false)
   const [hasDefaultAddress, setHasDefaultAddress] = useState(false)
+  const [mapOpen, setMapOpen] = useState(false);
 
   // 🗺️ Map modal state
   const [showMapModal, setShowMapModal] = useState(false)
@@ -359,16 +360,18 @@ const BookingDetailsForm: React.FC = () => {
         let hour = now.getHours()
         let minute = roundedMinutes
 
+        // ถ้านาทีเกิน 60 ให้เพิ่มชั่วโมง
         if (minute >= 60) {
           hour += 1
           minute = minute % 60
         }
 
+        // ถ้าเกิน 23:45 ไม่ให้เลือกเวลาเลย
         if (hour >= 24) {
           return '23:59'
         }
 
-        return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`
+        return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
       }
     } catch (error) {
       console.error('Error parsing date:', error)

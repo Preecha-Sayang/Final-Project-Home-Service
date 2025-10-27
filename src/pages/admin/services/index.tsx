@@ -1,7 +1,7 @@
 // ลำดับ | (ไอคอนลาก) | ชื่อบริการ | หมวดหมู่ | สร้างเมื่อ | แก้ไขล่าสุด | Action
 import ServiceTable from "@/components/admin/services/service_table";
 import { ServiceItem } from "@/types/service";
-import { deleteService, listServices, reorderServices } from "lib/client/servicesApi";
+import { listServices, reorderServices } from "lib/client/servicesApi"; // ลบ deleteService ออก ใช้ fetch ตรงเพื่ออ่าน body error
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import ConfirmDialog from "@/components/dialog/confirm_dialog";
@@ -11,12 +11,74 @@ import LoadingTable from "@/components/common/LoadingTable";
 
 const PAGE_SIZE = 30;
 
+/** Popup แสดงสาเหตุลบไม่ได้ */
+function InUseDialog({
+    open,
+    count,
+    technicians,
+    serviceName,
+    onClose,
+}: {
+    open: boolean;
+    count: number;
+    technicians: string[];
+    serviceName?: string;
+    onClose: () => void;
+}) {
+    if (!open) return null;
+    return (
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40">
+            <div className="flex flex-col justify-center items-center w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
+                <h3 className="text-lg font-semibold text-[var(--red)]">ไม่สามารถลบบริการนี้ได้!</h3>
+                <div className="text-base font-semibold">เนื่องจากบริการ</div>
+                <div className="flex flex-col justify-center items-center  text-gray-700">
+                    <div className="text-xl">
+                        {serviceName ? <><b>{serviceName}</b></> : null}
+                    </div>
+                    <div>
+                        ถูกใช้งานอยู่ใน <b>{count}</b> รายการจองของช่าง
+                    </div>
+                </div>
+
+                {technicians.length > 0 && (
+                    <div className="mt-3 rounded-md bg-gray-50 p-3">
+                        <div className="mb-1 text-sm font-medium text-gray-800">
+                            ช่างที่เกี่ยวข้อง (บางส่วน)
+                        </div>
+                        <ul className="list-inside list-disc text-sm text-gray-700">
+                            {technicians.map((t, i) => (
+                                <li key={`${t}-${i}`}>{t}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                <div className="mt-4 flex justify-end gap-2">
+                    <button
+                        onClick={onClose}
+                        className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
+                    >
+                        ปิด
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function AdminServicesPage() {
     const [items, setItems] = useState<ServiceItem[]>([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
     const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: ServiceItem; loading?: boolean }>({ open: false });
     const [page, setPage] = useState(1);
+
+    // 👉 state สำหรับ popup
+    const [inUseOpen, setInUseOpen] = useState(false);
+    const [inUseCount, setInUseCount] = useState(0);
+    const [inUseTechs, setInUseTechs] = useState<string[]>([]);
+    const [inUseServiceName, setInUseServiceName] = useState<string | undefined>(undefined);
+
     const router = useRouter();
 
     useEffect(() => {
@@ -69,23 +131,34 @@ export default function AdminServicesPage() {
         } catch { }
     }
 
-    // ลบ
+    // ลบ (ดัก 409 เพื่อโชว์ popup)
     async function handleDelete(item: ServiceItem) {
-        const prev = items;
-        // optimistic update
-        const next = items
-            .filter(x => x.id !== item.id)
-            .map((x, i) => ({ ...x, index: i + 1 }));
-        setItems(next);
+        // ทำทีละขั้น: ยิง API ก่อน แล้วค่อยปรับ state (จะได้อ่าน body error ได้ชัด)
+        const res = await fetch(`/api/services/${item.id}`, { method: "DELETE" });
 
-        try {
-            await deleteService(item.id);
+        if (res.ok) {
+            // ลบสำเร็จ → อัปเดตรายการ
+            const next = items.filter(x => x.id !== item.id).map((x, i) => ({ ...x, index: i + 1 }));
+            setItems(next);
             const totalAfter = (filtered.length - 1);
             const maxPage = Math.max(1, Math.ceil(totalAfter / PAGE_SIZE));
             if (page > maxPage) setPage(maxPage);
-        } catch {
-            setItems(prev);
+            return;
         }
+
+        if (res.status === 409) {
+            // ลบไม่ได้เพราะมีการใช้งาน → เปิด popup พร้อม count/รายชื่อช่าง
+            const data = await res.json().catch(() => ({} as any));
+            setInUseCount(Number(data?.count ?? 0));
+            setInUseTechs(Array.isArray(data?.technicians) ? data.technicians : []);
+            setInUseServiceName(item.name);
+            setInUseOpen(true);
+            return;
+        }
+
+        // error อื่น ๆ
+        const err = await res.json().catch(() => ({} as any));
+        alert(err?.message || "ลบไม่สำเร็จ");
     }
 
     return (
@@ -122,7 +195,6 @@ export default function AdminServicesPage() {
                     <>
                         <ServiceTable
                             items={pagedItems}
-                            // loading={loading}
                             search={search}
                             onEdit={(item) => router.push(`/admin/services/${item.id}/edit`)}
                             onDelete={(item) => setConfirmDel({ open: true, item, loading: false })}
@@ -148,8 +220,6 @@ export default function AdminServicesPage() {
                 )}
             </div>
 
-
-
             <ConfirmDialog
                 open={confirmDel.open}
                 title="ยืนยันการลบรายการ?"
@@ -157,7 +227,9 @@ export default function AdminServicesPage() {
                     <>
                         {confirmDel && (
                             <div className="mt-2 text-base">
-                                คุณต้องการลบบริการ <br /><strong className="font-semibold text-xl text-[var(--red)]">‘{confirmDel.item?.name}’</strong><br /> ใช่หรือไม่
+                                คุณต้องการลบบริการ <br />
+                                <strong className="font-semibold text-xl text-[var(--red)]">‘{confirmDel.item?.name}’</strong>
+                                <br /> ใช่หรือไม่
                             </div>
                         )}
                     </>
@@ -170,6 +242,15 @@ export default function AdminServicesPage() {
                     await handleDelete(confirmDel.item);
                     setConfirmDel({ open: false, item: undefined, loading: false });
                 }}
+            />
+
+            {/* Popup แสดงจำนวนที่ใช้งาน + รายชื่อช่าง */}
+            <InUseDialog
+                open={inUseOpen}
+                count={inUseCount}
+                technicians={inUseTechs}
+                serviceName={inUseServiceName}
+                onClose={() => setInUseOpen(false)}
             />
         </>
     );

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { reverseGeocode, formatThaiAddress } from "lib/client/maps/googleProvider";
 
 export type LatLng = { lat: number; lng: number };
 export type TechnicianLocationRow = {
@@ -76,20 +77,12 @@ async function fetchLatestLocation(): Promise<TechnicianLocationRow | null> {
 
 /** เรียก reverse geocode ผ่าน proxy server */
 async function reverseAddress(lat: number, lng: number): Promise<string> {
-    const r = await fetch(`/api/geocode/google-reverse?lat=${lat}&lng=${lng}`);
-    const data: unknown = await r.json();
-
-    const ok =
-        typeof data === "object" &&
-        data !== null &&
-        Array.isArray((data as { results?: unknown }).results);
-
-    if (!ok) return `${lat}, ${lng}`;
-
-    const results = (data as GoogleReverseResponse).results;
-    const full = results[0]?.formatted_address;
-    return typeof full === "string" && full.trim() ? full : `${lat}, ${lng}`;
+    const r = await reverseGeocode(lat, lng);
+    if (!r) return `${lat}, ${lng}`;
+    return formatThaiAddress(r.fullText, r.meta);
 }
+
+
 
 /** POST บันทึกตำแหน่งใหม่ */
 async function postLocation(payload: {

@@ -16,6 +16,11 @@ type ActionMeta = {
   ua?: string;
 };
 
+// --- minimal socket typing to avoid any
+type SocketRoom = { emit: (event: string, data: unknown) => void };
+type SocketServer = { io?: { to: (room: string) => SocketRoom } };
+type ResWithSocket = NextApiResponse & { socket: { server: SocketServer } };
+
 async function handler(req: AdminRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).end();
 
@@ -72,29 +77,20 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
 
     await client.query("COMMIT");
 
-    // 🔔 ส่งการแจ้งเตือนผ่าน Socket.IO ไปยัง user
-    const resIO = res as any;
-    const io = resIO.socket?.server?.io;
-    
+    // 🔔 ส่งการแจ้งเตือนผ่าน Socket.IO ไปยัง user (typed)
+    const r = res as ResWithSocket;
+    const io = r.socket?.server?.io;
+
     if (io && user_id) {
       const notificationData = {
         booking_id: bookingId,
         order_code: order_code || `#${bookingId}`,
         new_status: "รอดำเนินการ",
       };
-
       io.to(`user_${user_id}`).emit("statusUpdate", notificationData);
-      
-      console.log("📢 Emitted statusUpdate:", {
-        ...notificationData,
-        user_id,
-        room: `user_${user_id}`
-      });
+      console.log("📢 Emitted statusUpdate:", { ...notificationData, user_id, room: `user_${user_id}` });
     } else {
-      console.warn("⚠️ Socket.IO not initialized or user_id missing", { 
-        hasIO: !!io, 
-        user_id 
-      });
+      console.warn("⚠️ Socket.IO not initialized or user_id missing", { hasIO: !!io, user_id });
     }
 
     return res.json({ ok: true });

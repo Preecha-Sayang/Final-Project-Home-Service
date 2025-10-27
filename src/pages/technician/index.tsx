@@ -18,10 +18,13 @@ function toGeoPosition(p: { lat: number; lng: number; accuracy?: number }): Geol
             speed: null,
         },
         timestamp: Date.now(),
-        toJSON() { return this as any; },
+        toJSON() {
+            return this as any;
+        },
     };
     return obj as unknown as GeolocationPosition;
 }
+
 export default function TechnicianInboxPage() {
     const [q, setQ] = useState("");
     const { addressText, coords, loading, loadFromServer, reverseAndSave } = useTechnicianLocation();
@@ -30,6 +33,14 @@ export default function TechnicianInboxPage() {
     const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
     const [loadingProfile, setLoadingProfile] = useState(false);
 
+    // ref กัน loop reverse geocode
+    const hasReversedRef = useRef(false);
+    const bootRef = useRef(false);
+
+    const looksLikeLatLng = (s?: string | null) =>
+        !!s && /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(s);
+
+    // โหลดโปรไฟล์ช่าง (ดูสถานะเปิดรับงาน)
     useEffect(() => {
         const loadProfile = async () => {
             try {
@@ -45,58 +56,76 @@ export default function TechnicianInboxPage() {
         };
         void loadProfile();
     }, []);
-      // โหลดข้อมูลจาก DB เมื่อเข้าเพจ (ครั้งเดียว)
-      const bootRef = useRef(false);
-     useEffect(() => {
+
+    // โหลดตำแหน่งจาก DB ครั้งแรก + reverse ถ้ายังเป็นตัวเลข lat,lng
+    useEffect(() => {
         if (bootRef.current) return;
         bootRef.current = true;
-        void loadFromServer();  
-     }, [loadFromServer]);
- 
-     // เมื่อได้ coords จาก DB แล้ว → ค่อยโหลดงานใกล้ตัว
-     useEffect(() => {
-        if (coords?.lat != null && coords?.lng != null) {
-            void loadNearby({ lat: coords.lat, lng: coords.lng });
+
+        (async () => {
+            await loadFromServer();
+            const { coords, addressText, loading } = useTechnicianLocation.getState();
+
+            if (!loading && coords && looksLikeLatLng(addressText)) {
+                console.log("[reverse] after loadFromServer()");
+                await reverseAndSave(async () =>
+                    toGeoPosition({ lat: coords.lat, lng: coords.lng, accuracy: 5 })
+                );
+            }
+
+            if (coords) {
+                await loadNearby({ lat: coords.lat, lng: coords.lng });
+            }
+        })();
+    }, [loadFromServer, reverseAndSave, loadNearby]);
+
+    // reverse geocode ตอนรันครั้งแรกถ้า addressText ยังเป็นตัวเลข
+    useEffect(() => {
+        if (hasReversedRef.current) return;
+
+        if (!loading && coords && looksLikeLatLng(addressText)) {
+            hasReversedRef.current = true;
+            console.log("[reverse] triggered from watcher", { addressText, coords });
+            void reverseAndSave(async () =>
+                toGeoPosition({ lat: coords.lat, lng: coords.lng, accuracy: 5 })
+            );
         }
-    }, [coords?.lat, coords?.lng, loadNearby]);
-    // ปุ่มรีเฟรช: ค่อยใช้ตำแหน่งจากอุปกรณ์ แล้วบันทึก + โหลดงานใหม่
-     const onRefresh = async () => {
-         try {
+    }, [loading, coords?.lat, coords?.lng, addressText, reverseAndSave]);
+
+    const onRefresh = async () => {
+        hasReversedRef.current = false; // รีเซ็ตให้ reverse ใหม่ได้
+        try {
             const p = await getPositionOnce();
             await reverseAndSave(async () => toGeoPosition({ lat: p.lat, lng: p.lng, accuracy: 5 }));
-            await loadNearby({ lat: p.lat, lng: p.lng }); 
-         } catch (e) {
-             alert(e instanceof Error ? e.message : String(e));
-         }
-     };
- 
-     const onToggleAvailability = async () => {
-         document.location.reload();
-     }
+            await loadNearby({ lat: p.lat, lng: p.lng });
+        } catch (e) {
+            alert(e instanceof Error ? e.message : String(e));
+        }
+    };
+
+    const onToggleAvailability = async () => {
+        document.location.reload();
+    };
 
     return (
         <>
             <PageToolbar title="คำขอบริการซ่อม" />
-            
-            { !isAvailable && (
+
+            {!isAvailable && (
                 <div className="p-8">
                     <AvailabilityToggle onStatusChanged={onToggleAvailability} />
                 </div>
             )}
-            
-            { isAvailable && (
+
+            {isAvailable && (
                 <>
                     <div className="flex items-center justify-center mt-5 px-8">
                         <div className="flex items-center justify-between w-[1120px] rounded-xl bg-[var(--blue-100)] border-2 border-[var(--blue-300)] px-6 py-4 mb-6">
                             <div className="flex gap-5 text-[var(--blue-600)]">
-                                <div>
-                                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                                        <path d="M11.1993 27.7332C11.6237 27.6095 12.0798 27.6594 12.4674 27.8719C12.855 28.0844 13.1422 28.4422 13.266 28.8666C13.3898 29.2909 13.3399 29.7471 13.1274 30.1346C12.9148 30.5222 12.557 30.8095 12.1327 30.9332C11.2993 31.1766 10.6993 31.4333 10.3143 31.6666C10.711 31.9049 11.3377 32.1716 12.2077 32.4199C14.1327 32.9699 16.8877 33.3332 19.9993 33.3332C23.111 33.3332 25.866 32.9699 27.791 32.4199C28.6627 32.1716 29.2877 31.9049 29.6843 31.6666C29.301 31.4333 28.701 31.1766 27.8677 30.9332C27.45 30.804 27.0998 30.5159 26.8927 30.1309C26.6855 29.7459 26.6378 29.2949 26.7601 28.8751C26.8823 28.4554 27.1645 28.1004 27.546 27.8868C27.9275 27.6732 28.3776 27.6181 28.7993 27.7332C29.9127 28.0583 30.9327 28.4749 31.716 29.0099C32.441 29.5083 33.3327 30.3766 33.3327 31.6666C33.3327 32.9716 32.4193 33.8466 31.6827 34.3449C30.886 34.8816 29.8443 35.2999 28.706 35.6249C26.4093 36.2832 23.3327 36.6666 19.9993 36.6666C16.666 36.6666 13.5893 36.2832 11.2927 35.6249C10.1543 35.2999 9.11268 34.8816 8.31602 34.3449C7.57935 33.8449 6.66602 32.9716 6.66602 31.6666C6.66602 30.3766 7.55768 29.5083 8.28268 29.0099C9.06602 28.4749 10.086 28.0583 11.1993 27.7332ZM19.9993 3.33325C23.3146 3.33325 26.494 4.65021 28.8382 6.99442C31.1824 9.33862 32.4993 12.518 32.4993 15.8333C32.4993 20.1133 30.166 23.5933 27.7493 26.0666C26.7243 27.1132 25.6493 28.0149 24.661 28.7582C23.671 29.5016 21.4077 30.8949 21.4077 30.8949C20.9784 31.1389 20.4931 31.2672 19.9993 31.2672C19.5056 31.2672 19.0203 31.1389 18.591 30.8949C17.4673 30.2444 16.3811 29.531 15.3377 28.7582C14.2419 27.9401 13.2095 27.0403 12.2493 26.0666C9.83268 23.5933 7.49935 20.1133 7.49935 15.8333C7.49935 12.518 8.81631 9.33862 11.1605 6.99442C13.5047 4.65021 16.6841 3.33325 19.9993 3.33325ZM19.9993 6.66658C17.5682 6.66658 15.2366 7.63236 13.5175 9.35144C11.7985 11.0705 10.8327 13.4021 10.8327 15.8333C10.8327 18.8599 12.4927 21.5466 14.6327 23.7332C16.2427 25.3799 18.016 26.6333 19.2443 27.4032L19.9993 27.8599L20.7543 27.4032C21.981 26.6333 23.756 25.3799 25.366 23.7349C27.506 21.5466 29.166 18.8616 29.166 15.8333C29.166 14.6295 28.9289 13.4375 28.4682 12.3253C28.0076 11.2132 27.3324 10.2026 26.4812 9.35144C25.63 8.50024 24.6194 7.82502 23.5073 7.36436C22.3951 6.90369 21.2031 6.66658 19.9993 6.66658ZM19.9993 10.8333C20.656 10.8333 21.3061 10.9626 21.9128 11.2139C22.5194 11.4651 23.0706 11.8334 23.5349 12.2977C23.9992 12.762 24.3675 13.3132 24.6187 13.9198C24.87 14.5265 24.9993 15.1766 24.9993 15.8333C24.9993 16.4899 24.87 17.14 24.6187 17.7467C24.3675 18.3533 23.9992 18.9045 23.5349 19.3688C23.0706 19.8331 22.5194 20.2014 21.9128 20.4526C21.3061 20.7039 20.656 20.8333 19.9993 20.8333C18.6733 20.8333 17.4015 20.3065 16.4638 19.3688C15.5261 18.4311 14.9993 17.1593 14.9993 15.8333C14.9993 14.5072 15.5261 13.2354 16.4638 12.2977C17.4015 11.36 18.6733 10.8333 19.9993 10.8333ZM19.9993 14.1666C19.7805 14.1666 19.5638 14.2097 19.3615 14.2935C19.1593 14.3772 18.9756 14.5 18.8208 14.6547C18.6661 14.8095 18.5433 14.9932 18.4596 15.1954C18.3758 15.3977 18.3327 15.6144 18.3327 15.8333C18.3327 16.0521 18.3758 16.2688 18.4596 16.4711C18.5433 16.6733 18.6661 16.857 18.8208 17.0118C18.9756 17.1665 19.1593 17.2893 19.3615 17.373C19.5638 17.4568 19.7805 17.4999 19.9993 17.4999C20.4414 17.4999 20.8653 17.3243 21.1779 17.0118C21.4904 16.6992 21.666 16.2753 21.666 15.8333C21.666 15.3912 21.4904 14.9673 21.1779 14.6547C20.8653 14.3422 20.4414 14.1666 19.9993 14.1666Z" fill="#336DF2" />
-                                    </svg>
-                                </div>
+                                <div>{/* icon … */}</div>
                                 <div>
                                     <div className="font-medium">ตำแหน่งที่อยู่ปัจจุบัน</div>
-                                    <div className="text-[var(--blue-600)]">
+                                    <div className="text-sm text-[var(--blue-600)]">
                                         {loading ? "กำลังดึงข้อมูล…" : addressText || "—"}
                                     </div>
                                     {permission === "denied" && (
@@ -104,7 +133,9 @@ export default function TechnicianInboxPage() {
                                             กรุณาอนุญาตการเข้าถึงตำแหน่ง เพื่อค้นหางานใกล้คุณ
                                         </div>
                                     )}
-                                    {error && <div className="text-[var(--red-600)] text-sm mt-1">{error}</div>}
+                                    {error && (
+                                        <div className="text-[var(--red-600)] text-sm mt-1">{error}</div>
+                                    )}
                                 </div>
                             </div>
                             <button
@@ -117,10 +148,11 @@ export default function TechnicianInboxPage() {
                             </button>
                         </div>
                     </div>
+
                     <div className="flex items-center justify-center">
                         <div className="flex items-center justify-center w-[1120px] rounded-xl border p-6 bg-white">
                             <JobTable
-                                jobs={jobs.filter((j) => q ? (j.address_text ?? "").includes(q) : true)}
+                                jobs={jobs}
                                 onAccept={(id) => accept(id)}
                                 onDecline={(id) => decline(id)}
                             />

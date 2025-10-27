@@ -10,11 +10,10 @@ export type BookingSubItem = {
 };
 
 export enum BookingStatusId {
-    WaitingAccept = 1,   // รอรับงาน
-    WaitingProcess = 2,  // รอดำเนินการ
-    InProgress = 3,      // ดำเนินการอยู่
-    Completed = 4,       // เสร็จสิ้น
-    Canceled = 5,        // ยกเลิก
+    WaitingAccept = 1,
+    WaitingProcess = 2,
+    Completed = 3,
+    Canceled = 4,
 }
 
 export type BookingAction =
@@ -65,4 +64,13 @@ export type BookingNearby = {
     item_names?: string[];
     service_titles?: string[];
     sub_items?: BookingSubItem[];
+    pinned_location?: PinnedLocation | null;
+};
+
+// geo point จากการปักหมุดหน้า booking นะ
+export type PinnedLocation = {
+    lat: number;
+    lng: number;
+    text?: string;
+    place_name?: string | null;
 };

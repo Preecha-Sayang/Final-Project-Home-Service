@@ -13,13 +13,13 @@ import TechnicianShell from "@/components/technician/shell/TechnicianShell";
 import { Toaster } from "react-hot-toast";
 import StatusListener from "@/components/StatusListener";
 import { useState } from "react";
+import Script from "next/script";
 
 const fontPrompt = Prompt({
   variable: "--font-prompt",
   subsets: ["latin", "thai"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
-
 
 interface UserAppProps {
   Component: AppProps["Component"];
@@ -33,7 +33,7 @@ function UserApp({ Component, pageProps }: UserAppProps) {
   >([]);
 
   const handleNewNotification = (data: { booking_id: number; new_status: string }) => {
-    setNotifications(prev => [data, ...prev]);
+    setNotifications((prev) => [data, ...prev]);
   };
 
   return (
@@ -50,15 +50,11 @@ function UserApp({ Component, pageProps }: UserAppProps) {
   );
 }
 
-
-
-
-
-
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const path = router.pathname;
-
+  const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const shouldLoadMaps = path.startsWith("/technician") || path.startsWith("/admin");
 
   // กำหนดหน้าที่ต้อง login
   const protectedRoutes = [
@@ -66,40 +62,36 @@ export default function App({ Component, pageProps }: AppProps) {
     "/afterservice",
     "/payment",
     "/technician",
-    // เพิ่มหน้าอื่นๆ ที่ต้อง login ตรงนี้
   ];
 
-  // กำหนดหน้า login/register (ล็อกอินแล้วเข้าไม่ได้)
   const authRoutes = ["/login", "/register", "/admin/login"];
 
-  // ตรวจสอบว่าเป็นหน้าที่ต้อง login หรือไม่
   const isProtected =
     protectedRoutes.some((route) => path.startsWith(route)) &&
-    path !== "/admin/login"; // ยกเว้น /admin/login
+    path !== "/admin/login";
 
-  // ตรวจสอบว่าเป็นหน้า auth หรือไม่
   const isAuthRoute = authRoutes.includes(path);
-
-  // Admin pages (ยกเว้น /admin/login)
   const inAdmin = path.startsWith("/admin") && path !== "/admin/login";
-
-  // Technician page
   const inTechnician = path.startsWith("/technician");
+
+  const GoogleMapsScript = shouldLoadMaps && googleMapsKey ? (
+    <Script
+      id="gmaps-sdk"
+      src={`https://maps.googleapis.com/maps/api/js?key=${googleMapsKey}&libraries=places,marker&language=th&region=TH&loading=async`}
+      strategy="afterInteractive"
+      onLoad={() => console.log("Google Maps SDK loaded")}
+      onError={(e) => console.error("โหลด Google Maps SDK ไม่สำเร็จ", e)}
+    />
+  ) : null;
 
   if (inAdmin) {
     return (
       <div className={fontPrompt.className}>
+        {GoogleMapsScript}
         <AuthProvider>
-          {/* <ProtectedRoute 
-            redirectTo="/admin/login"
-            popupTitle="กรุณาเข้าสู่ระบบ"
-            popupMessage="คุณต้องเข้าสู่ระบบก่อนเข้าถึงหน้า Admin"
-            allowCancel={false}
-          > */}
           <AdminShell>
             <Component {...pageProps} />
           </AdminShell>
-          {/* </ProtectedRoute> */}
         </AuthProvider>
       </div>
     );
@@ -108,42 +100,33 @@ export default function App({ Component, pageProps }: AppProps) {
   if (inTechnician) {
     return (
       <div className={fontPrompt.className}>
+        {GoogleMapsScript}
         <AuthProvider>
-          {/* สามารถเปิด ProtectedRoute ทีหลังได้เหมือน admin */}
-          {/* <ProtectedRoute redirectTo="/login"> */}
           <TechnicianShell>
             <Component {...pageProps} />
           </TechnicianShell>
-          {/* </ProtectedRoute> */}
         </AuthProvider>
       </div>
     );
   }
 
-  // หน้าปกติ
   return (
     <div className={fontPrompt.className}>
+      {GoogleMapsScript}
       <AuthProvider>
-        {/* ข้อความแจ้งเตือนให้อยู่ล่างขวา */}
         <Toaster position="bottom-right" />
-
         {isProtected ? (
-          // หน้าที่ต้อง login
           <ProtectedRoute>
             <UserApp Component={Component} pageProps={pageProps} />
           </ProtectedRoute>
         ) : isAuthRoute ? (
-          // หน้า login/register (ล็อกอินแล้วเข้าไม่ได้)
           <AuthRoute>
             <UserApp Component={Component} pageProps={pageProps} />
           </AuthRoute>
         ) : (
-          // หน้าสาธารณะ (ไม่ต้อง login)
           <UserApp Component={Component} pageProps={pageProps} />
         )}
       </AuthProvider>
     </div>
   );
 }
-//const fetchWithToken = useFetchWithToken();
-// const data = await fetchWithToken<UserData>("/api/protected/user");
