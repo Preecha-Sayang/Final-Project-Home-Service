@@ -60,7 +60,7 @@ export default function PromotionsTable({ rows, sort, onSort, onDelete }: Props)
                         <th className="w-[140px] px-3 py-1">{th("ราคาที่ลด", "discount_value")}</th>
                         <th className="w-[220px] px-1 py-3">{th("สร้างเมื่อ", "create_at")}</th>
                         <th className="w-[220px] px-1 py-3">{th("วันหมดอายุ", "expire_at")}</th>
-                        <th className="w-[120px] px-1 py-3 font-[400]">สถานะ</th>
+                        <th className="w-[60px] px-1 py-3 font-[400]">สถานะ</th>
                         <th className="w-[120px] px-1 py-3 font-[400]">Action</th>
                     </tr>
                 </thead>
