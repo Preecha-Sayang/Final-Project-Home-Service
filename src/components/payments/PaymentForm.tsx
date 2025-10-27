@@ -8,8 +8,6 @@ import { useBookingStore } from "@/stores/bookingStore";
 import { useAuth } from "@/context/AuthContext";
 import { PromotionUse } from "@/types/promotion";
 import { usePromotionStore } from "@/stores/promotionStore";
-import { result } from "lodash";
-import { ref } from "yup";
 
 interface PaymentFormProps {
   totalPrice: number;
@@ -53,18 +51,17 @@ interface OmiseTokenResponse {
 const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
   ({ totalPrice, onPaymentSuccess, onPaymentError }, ref) => {
     const router = useRouter();
-
+    
     // ดึงข้อมูลจาก booking store
     const { getActiveCartItems, getFinalAmount, customerInfo, paymentInfo } =
       useBookingStore();
-
+    
     // ดึงข้อมูล user จาก auth context
     const { accessToken } = useAuth();
-
+    
     // ฟังก์ชันดึง user_id จาก JWT token
     const getUserIdFromToken = () => {
       if (!accessToken) return 1; // default user_id
-
       try {
         // Decode JWT token (base64)
         const payload = JSON.parse(atob(accessToken.split(".")[1]));
@@ -86,9 +83,16 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
 
     // ป้องกันกดชำระเงินซ้ำ/แสดงสถานะระหว่างรอ
     const [processing, setProcessing] = useState(false);
-
     const { payment } = usePaymentStore();
-    const { discount, setDiscount } = usePromotionStore();
+    const { 
+      discount, 
+      promotionId,
+      promotionCode,
+      discountType,
+      discountValue,
+      setPromotion,
+      clearPromotion 
+    } = usePromotionStore();
 
     const handleChange = (name: string, value: string) => {
       setForm({ ...form, [name]: value });
@@ -148,7 +152,6 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
         // ดึงวิธีชำระเงินที่ผู้ใช้เลือกจาก localStorage
         const selectedPayment =
           localStorage.getItem("selectedPayment") || "credit_card";
-
         const amountBaht = totalPrice && totalPrice > 0 ? totalPrice : 0;
 
         if (form.credit_card_number === "") {
@@ -180,6 +183,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
         if (selectedPayment === "credit_card") {
           const omiseWindow = window as OmiseWindow;
           const Omise = omiseWindow.Omise;
+
           if (!Omise) {
             alert("โหลดไม่สำเสร็จ กรุณาลองใหม่");
             setProcessing(false);
@@ -208,6 +212,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
               );
             }
           );
+
           // บันทึกข้อมูลการจองลง database
           let chargeId = "";
           try {
@@ -217,6 +222,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
             // ตรวจสอบว่ามีข้อมูลหรือไม่
             if (!cartItems || cartItems.length === 0) {
               alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
+              setProcessing(false);
               return;
             }
 
@@ -229,8 +235,8 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                 quantity: item.quantity,
                 unit: item.unit,
               })),
-              total_price: finalAmount,
-              discount: paymentInfo.discount?.amount || 0,
+              total_price: amountBaht,
+              discount: discount || 0,
               service_date: customerInfo.serviceDate
                 ?.toISOString()
                 .split("T")[0],
@@ -244,7 +250,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                 latitude: customerInfo.latitude,
                 longitude: customerInfo.longitude,
               },
-              promotion_id: null,
+              promotion_id: promotionId,
               charge_id: null,
             };
 
@@ -271,21 +277,31 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
 
               const result = await res.json();
               chargeId = result.chargeId || result.charge_id || "";
-              if (result.status === "success") {
-                setDiscount(0);
-                alert("ชำระเงินสำเร็จ!");
 
-                // จ่ายเงินเสร็จ จะยิง api ลง code ส่วนลด database ตรงนี้
-                // const resPromotionUsage = await fetch("/api/payment", {
-                //   method: "POST",
-                //   headers: { "Content-Type": "application/json" },
-                //   body: JSON.stringify({
-                //     amount: discount > 0 ? amountBaht - discount : amountBaht,
-                //     method: "credit_card",
-                //     tokenId: tokenRes.id,
-                //     booking_id: bookingResult.booking_id,
-                //   }),
-                // });
+              if (result.status === "success") {
+                // บันทึกการใช้ promotion code ลง database
+                if (promotionId && promotionCode) {
+                  try {
+                    const usageRes = await fetch("/api/promotionsusage", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        promotion_id: promotionId,
+                        booking_id: bookingResult.booking_id,
+                      }),
+                    });
+                    
+                    if (!usageRes.ok) {
+                      console.error("Failed to save promotion usage");
+                    }
+                  } catch (usageError) {
+                    console.error("Error saving promotion usage:", usageError);
+                  }
+                }
+
+                // ล้างข้อมูล promotion
+                clearPromotion();
+                alert("ชำระเงินสำเร็จ!");
 
                 if (onPaymentSuccess) {
                   onPaymentSuccess(bookingResult.booking_id, chargeId);
@@ -297,44 +313,35 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                 }
               } else {
                 // ถ้าบันทึกไม่สำเร็จ แต่ชำระเงินสำเร็จแล้ว
-                setDiscount(0);
+                clearPromotion();
                 console.error("Failed to save booking:", bookingResult);
                 alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
                 router.push(`/payment/summary?chargeId=${chargeId}`);
               }
             } else {
-              setDiscount(0);
+              clearPromotion();
               const errorMsg =
-                "การชำระเงินล้มเหลว: " + (result || "ไม่ทราบสาเหตุ");
+                "การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ");
               alert(errorMsg);
               if (onPaymentError) onPaymentError(errorMsg);
             }
           } catch (bookingError) {
-            setDiscount(0);
+            clearPromotion();
             console.error("Booking creation error:", bookingError);
             alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
             router.push(`/payment/summary?chargeId=${chargeId}`);
           }
-          // } else if (result.status === "pending" && result.redirect_url) {
-          //   // Handle redirect if needed
-          // }
         } else if (selectedPayment === "qr") {
           const res = await fetch("/api/payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount: amountBaht, method: "qr" }),
           });
-
           const result = await res.json();
 
           if (result.status === "pending" && result.qr_url) {
             // แสดง QR Code และเริ่มตรวจสอบสถานะ
             window.open(result.qr_url, "_blank");
-
-            // TODO: Implement polling to check payment status
-            // เมื่อชำระเงินสำเร็จ ให้ redirect ไป:
-            // router.push(`/payment/summary?chargeId=${result.chargeId}`);
-
             alert(
               "กรุณาสแกน QR Code เพื่อชำระเงิน\nระบบจะตรวจสอบสถานะการชำระเงินอัตโนมัติ"
             );
@@ -359,7 +366,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
       try {
         if (!form.promotion) {
           alert("กรุณากรอกรหัสส่วนลด");
-          setDiscount(0);
+          clearPromotion();
           return;
         }
 
@@ -369,25 +376,32 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
         });
 
         const data: PromotionResponse = await res.json();
-        //console.log("DATA:", data);
 
-        if (data.ok) {
+        if (data.ok && data.promotion) {
           alert(data.message);
-
-          if (data.promotion?.discount_type === "fixed") {
-            setDiscount(Number(data.promotion.discount_value));
-          } else if (data.promotion?.discount_type == "percent") {
-            const discountCalulate =
-              (totalPrice / 100) * Number(data.promotion.discount_value);
-            const currentDiscount = totalPrice - discountCalulate;
-            setDiscount(Number(currentDiscount));
+          
+          let calculatedDiscount = 0;
+          if (data.promotion.discount_type === "fixed") {
+            calculatedDiscount = Number(data.promotion.discount_value);
+          } else if (data.promotion.discount_type === "percent") {
+            calculatedDiscount =
+              (totalPrice * Number(data.promotion.discount_value)) / 100;
           }
+
+          // บันทึกข้อมูล promotion แบบเต็มรูปแบบ
+          setPromotion({
+            promotionId: data.promotion.promotion_id,
+            promotionCode: form.promotion,
+            discountType: data.promotion.discount_type,
+            discountValue: Number(data.promotion.discount_value),
+            discount: calculatedDiscount,
+          });
         } else {
           alert(data.message || "ไม่สามารถใช้โค้ดส่วนลดได้");
-          setDiscount(0);
+          clearPromotion();
         }
       } catch (error) {
-        setDiscount(0);
+        clearPromotion();
         console.error("Error:", error);
         alert("เกิดข้อผิดพลาดในการตรวจสอบรหัสส่วนลด");
       }
@@ -405,6 +419,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
 
           {/* แถบเลือกวิธีชำระเงิน */}
           <Payment />
+
           <div className="mt-4 flex flex-col">
             {payment === "credit_card" ? (
               <div className="flex flex-col gap-8 min-h-[270px]">
@@ -421,7 +436,6 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                     )
                   }
                 />
-
                 <InputField
                   label="ชื่อบนบัตร *"
                   type="text"
@@ -432,7 +446,6 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                     handleChange("card_fullname", e.target.value)
                   }
                 />
-
                 <div className="flex flex-row gap-6">
                   <div className="w-1/2">
                     <InputField
@@ -465,11 +478,12 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
               </div>
             ) : (
               <div className="flex flex-col gap-8 mb-4 min-h-[270px]">
-                <span>QR Code are commimg.</span>
+                <span>QR Code are coming.</span>
               </div>
             )}
 
             <hr className="mt-6 mb-4" />
+
             <div className="flex flex-row items-center gap-6">
               <div className="w-1/2">
                 <InputField
@@ -479,18 +493,46 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                   value={form.promotion}
                   placeholder="กรุณากรอกโค้ดส่วนลด (ถ้ามี)"
                   onChange={(e) => handleChange("promotion", e.target.value)}
+                  disabled={!!promotionCode}
                 />
               </div>
               <div className="w-1/2">
-                <ButtonPrimary
-                  className="mt-6"
-                  onClick={() => submitDiscountCode()}
-                  type="button"
-                >
-                  ใช้โค้ด
-                </ButtonPrimary>
+                {promotionCode ? (
+                  <ButtonPrimary
+                    className="mt-6 bg-red-500 hover:bg-red-600"
+                    onClick={() => {
+                      clearPromotion();
+                      setForm({ ...form, promotion: "" });
+                    }}
+                    type="button"
+                  >
+                    ยกเลิกโค้ด
+                  </ButtonPrimary>
+                ) : (
+                  <ButtonPrimary
+                    className="mt-6"
+                    onClick={() => submitDiscountCode()}
+                    type="button"
+                  >
+                    ใช้โค้ด
+                  </ButtonPrimary>
+                )}
               </div>
             </div>
+
+            {/* แสดงข้อมูลโค้ดที่ใช้ */}
+            {promotionCode && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-800">
+                  ✓ ใช้โค้ด <strong>{promotionCode}</strong> สำเร็จ
+                  <br />
+                  ส่วนลด:{" "}
+                  {discountType === "fixed"
+                    ? `${discount.toFixed(2)} ฿`
+                    : `${discountValue}% (${discount.toFixed(2)} ฿)`}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

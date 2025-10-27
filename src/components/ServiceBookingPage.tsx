@@ -8,6 +8,7 @@ import BookingDetailsForm from "@/components/BookingForm";
 import BookingFooter from "@/components/BookingFooter";
 import OrderSummary from "@/components/ordersummary/order_summary";
 import Breadcrumb from "@/components/breadcrump/bread_crump";
+import BookingTimer from "@/components/BookingTimer";
 import { useBookingStore } from "@/stores/bookingStore";
 import axios from "axios";
 import Navbar from "@/components/navbar/navbar";
@@ -44,14 +45,19 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
   const { customerInfo, resetForNewService, setServiceCart } =
     useBookingStore();
   const paymentFormRef = useRef<PaymentFormRef>(null);
-  const { discount } = usePromotionStore();
+  const { discount, promotionCode, clearPromotion } = usePromotionStore();
+
+  // Timer state
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
   // Reset booking store และ selected items เมื่อเข้าหน้า service ใหม่หรือ reload
   useEffect(() => {
     resetForNewService();
     setSelectedItems([]);
     setCurrentStep("items");
-  }, [serviceId, resetForNewService]);
+    setIsTimerActive(false);
+    clearPromotion();
+  }, [serviceId, resetForNewService, clearPromotion]);
 
   useEffect(() => {
     const fetchServiceName = async () => {
@@ -73,7 +79,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
         setLoading(false);
       }
     };
-
     fetchServiceName();
   }, [serviceId]);
 
@@ -88,21 +93,20 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
       }
 
       // อัพเดท booking store เมื่อเปลี่ยนจาก items → details
-      // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
       setServiceCart(selectedItems);
-
+      setIsTimerActive(true);
       setCurrentStep("details");
     } else if (currentStep === "details") {
-      // อัพเดท booking store ก่อนไปหน้า payment
-      // Zustand persist middleware จะบันทึกลง sessionStorage อัตโนมัติ
       setServiceCart(selectedItems);
-
+      // เริ่ม timer เมื่อเข้า step 2
       setCurrentStep("payment");
     }
   };
 
   const handleBack = () => {
     if (currentStep === "details") {
+      // หยุด timer เมื่อกลับไป step 1
+      setIsTimerActive(false);
       setCurrentStep("items");
     } else if (currentStep === "payment") {
       setCurrentStep("details");
@@ -113,9 +117,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
 
   const handleItemsChange = (items: CartItem[]) => {
     setSelectedItems(items);
-
-    // ไม่ต้องอัพเดท booking store ที่นี่ เพราะจะทำให้เกิด infinite loop
-    // booking store จะถูกอัพเดทเมื่อผู้ใช้กดปุ่ม "ถัดไป" แทน
   };
 
   const calculateTotal = () => {
@@ -125,18 +126,26 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
     );
   };
 
+  // Handle timeout from timer
+  const handleTimeout = () => {
+    // หยุด timer
+    setIsTimerActive(false);
+    // Reset ทุกอย่าง
+    setCurrentStep("items");
+    setSelectedItems([]);
+    resetForNewService();
+    clearPromotion();
+  };
+
   // Helper functions for formatting data
   const formatDate = (date: Date | null) => {
     if (!date) return "ยังไม่ได้เลือก";
-
     // ตรวจสอบว่า date เป็น valid Date object หรือไม่
     const dateObj = date instanceof Date ? date : new Date(date);
-
     // ตรวจสอบว่า date เป็น valid หรือไม่
     if (isNaN(dateObj.getTime())) {
       return "ยังไม่ได้เลือก";
     }
-
     return new Intl.DateTimeFormat("th-TH", {
       year: "numeric",
       month: "long",
@@ -171,13 +180,14 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
         );
       case "details":
         return <BookingDetailsForm />;
-
       case "payment":
         return (
           <PaymentForm
             ref={paymentFormRef}
             totalPrice={calculateTotal()}
             onPaymentSuccess={(bookingId, chargeId) => {
+              // หยุด timer เมื่อชำระเงินสำเร็จ
+              setIsTimerActive(false);
               router.push(
                 `/payment/summary?bookingId=${bookingId}&chargeId=${chargeId}`
               );
@@ -260,13 +270,12 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
             return false;
           }
         case "payment":
-          return true; // ตรวจสอบข้อมูลการชำระเงินเมื่อมี
+          return true;
         default:
           return false;
       }
     };
 
-    // กำหนดข้อความปุ่ม Next
     const getNextButtonText = () => {
       if (currentStep === "payment") return "ชำระเงิน";
       if (currentStep === "items" && !isLoggedIn && selectedItems.length > 0)
@@ -294,7 +303,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
     );
   };
 
-  // Show loading state
   if (loading) {
     return (
       <>
@@ -309,7 +317,6 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <>
@@ -399,8 +406,18 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2">{renderStepContent()}</div>
 
-            {/* Right Column - Order Summary */}
+            {/* Right Column - Timer + Order Summary */}
             <div className="lg:col-span-1">
+              {/* Timer - แสดงเฉพาะเมื่อ step 2 และ 3 */}
+              {currentStep === "details" || currentStep === "payment" ? (
+                <BookingTimer
+                  isActive={isTimerActive}
+                  onTimeout={handleTimeout}
+                  onStop={() => setIsTimerActive(false)}
+                />
+              ) : null}
+
+              {/* Order Summary */}
               <OrderSummary
                 items={selectedItems.map((item) => ({
                   name: item.name,
@@ -410,12 +427,14 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
                 date={formatDate(customerInfo.serviceDate)}
                 time={formatTime(customerInfo.serviceTime)}
                 address={formatAddress()}
-                promotion={discount | 0}
+                promotion={discount || 0}
+                promotionCode={promotionCode}
                 fallbackText="ยังไม่ได้เลือก"
               />
             </div>
           </div>
         </div>
+
         {/* Fixed Footer */}
         {renderFooter()}
       </div>

@@ -14,25 +14,28 @@ export default async function handler(
 
   if (req.method === "GET") {
     try {
-      // ดึงข้อมูลการจอง
+      // ดึงข้อมูลการจอง พร้อมข้อมูล promotion
       const bookingResult = await query(
-        `SELECT 
-          booking_id,
-          user_id,
-          address_id,
-          discount,
-          promotion_id,
-          total_price,
-          service_date,
-          service_time,
-          create_at,
-          update_at,
-          status_id,
-          order_code,
-          admin_id,
-          address_data
-        FROM booking 
-        WHERE booking_id = $1`,
+        `SELECT
+          b.booking_id,
+          b.user_id,
+          b.discount,
+          b.promotion_id,
+          b.total_price,
+          b.service_date,
+          b.service_time,
+          b.create_at,
+          b.update_at,
+          b.status_id,
+          b.order_code,
+          b.admin_id,
+          b.address_data,
+          p.code as promo_code,
+          p.discount_type,
+          p.discount_value
+        FROM booking b
+        LEFT JOIN promotions p ON b.promotion_id = p.promotion_id
+        WHERE b.booking_id = $1`,
         [id]
       );
 
@@ -41,11 +44,11 @@ export default async function handler(
       }
 
       const booking = bookingResult.rows[0];
-      console.log('Booking data from database:', booking);
+      console.log("Booking data from database:", booking);
 
-      // ดึงรายการบริการ (join กับ service_option โดยใช้ column ที่ถูกต้อง)
+      // ดึงรายการบริการ
       const itemsResult = await query(
-        `SELECT 
+        `SELECT
           bi.id,
           bi.booking_id,
           bi.service_option_id,
@@ -59,13 +62,14 @@ export default async function handler(
         WHERE bi.booking_id = $1`,
         [id]
       );
-      console.log('Items data from database:', itemsResult.rows);
+
+      console.log("Items data from database:", itemsResult.rows);
 
       // แปลงข้อมูลให้ตรงกับ frontend
       const formattedBooking = {
         booking_id: booking.booking_id,
         service_name: "บริการล้างแอร์", // อาจต้องดึงจาก service_option หรือตารางอื่น
-        items: itemsResult.rows.map(item => ({
+        items: itemsResult.rows.map((item) => ({
           title: item.title || "บริการ",
           price: parseFloat(item.price) || 0,
           quantity: item.quantity,
@@ -73,8 +77,11 @@ export default async function handler(
         })),
         total_amount: parseFloat(booking.total_price),
         discount_amount: parseFloat(booking.discount || 0),
-        final_amount: parseFloat(booking.total_price) - parseFloat(booking.discount || 0),
-        promo_code: null, // อาจต้องดึงจากตาราง promotion
+        final_amount:
+          parseFloat(booking.total_price) - parseFloat(booking.discount || 0),
+        promo_code: booking.promo_code || null,
+        discount_type: booking.discount_type || null,
+        discount_value: booking.discount_value ? parseFloat(booking.discount_value) : null,
         service_date: booking.service_date,
         service_time: booking.service_time,
         address: booking.address_data?.address || "",
@@ -86,8 +93,8 @@ export default async function handler(
         charge_id: null, // อาจต้องเก็บในตารางแยก
       };
 
-      console.log('Formatted booking data:', formattedBooking);
-      
+      console.log("Formatted booking data:", formattedBooking);
+
       return res.status(200).json({
         success: true,
         booking: formattedBooking,
@@ -104,7 +111,6 @@ export default async function handler(
   if (req.method === "PATCH") {
     try {
       const { status, charge_id } = req.body;
-
       const updates: string[] = [];
       const values: (string | number | null)[] = [];
       let paramCount = 1;
@@ -129,10 +135,10 @@ export default async function handler(
       values.push(id);
 
       const result = await query(
-        `UPDATE booking 
-         SET ${updates.join(", ")} 
-         WHERE booking_id = $${paramCount}
-         RETURNING *`,
+        `UPDATE booking
+        SET ${updates.join(", ")}
+        WHERE booking_id = $${paramCount}
+        RETURNING *`,
         values
       );
 
@@ -155,4 +161,3 @@ export default async function handler(
 
   return res.status(405).json({ error: "Method not allowed" });
 }
-
