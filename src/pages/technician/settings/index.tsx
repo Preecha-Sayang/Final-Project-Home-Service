@@ -6,6 +6,7 @@ import Checkbox from "@/components/radio/check_box";
 import GoogleLocationPickerModal from "@/components/location/GoogleLocationPickerModal";
 import { reverseGeocode, formatThaiAddress } from "lib/client/maps/googleProvider";
 import { useTechnicianLocation } from "@/stores/geoStore";
+import Swal from "sweetalert2";
 
 import { useGeolocation } from "@/hooks/useGeolocation";
 function toGeoPosition(p: { lat: number; lng: number; accuracy?: number }): GeolocationPosition {
@@ -161,10 +162,24 @@ export default function TechnicianCombinedSettingsPage() {
       });
       const js = await res.json();
       if (!res.ok || !js?.ok) throw new Error(js?.message || `Save failed: ${res.status}`);
-      alert("บันทึกข้อมูลเรียบร้อยแล้ว");
+      
+      // แสดง popup สำเร็จ
+      await Swal.fire({
+        title: "บันทึกข้อมูลสำเร็จ!",
+        text: "ข้อมูลของคุณได้รับการบันทึกเรียบร้อยแล้ว",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
     } catch (e) {
       console.error(e);
-      alert("บันทึกไม่สำเร็จ");
+      
+      // แสดง popup error
+      await Swal.fire({
+        title: "เกิดข้อผิดพลาด!",
+        text: "ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
     }
   };
 
