@@ -73,12 +73,12 @@ export default function TechnicianCombinedSettingsPage() {
 
         // แปลงผลลัพธ์บริการ / Normalize services data
         const svcList: ServiceRow[] = Array.isArray(svcJson)
-          ? svcJson
-          : Array.isArray(svcJson.services)
-          ? svcJson.services
-          : [];
+            ? svcJson
+            : Array.isArray(svcJson.services)
+                ? svcJson.services
+                : [];
         setServices(
-          svcList.map((s: any) => ({ service_id: s.service_id, servicename: s.servicename }))
+            svcList.map((s: any) => ({ service_id: s.service_id, servicename: s.servicename }))
         );
 
         // โหลดข้อมูลโปรไฟล์ / Load technician profile
@@ -100,8 +100,8 @@ export default function TechnicianCombinedSettingsPage() {
           }));
           setIsAvailable(Boolean(p.is_available ?? true));
           const ids = Array.isArray(p.service_ids)
-            ? (p.service_ids.filter((n: unknown) => Number.isInteger(n)) as number[])
-            : [];
+              ? (p.service_ids.filter((n: unknown) => Number.isInteger(n)) as number[])
+              : [];
           setSelectedServiceIds(new Set(ids));
         }
       } catch (e) {
@@ -144,23 +144,11 @@ export default function TechnicianCombinedSettingsPage() {
   // ยืนยันและบันทึกข้อมูล / Confirm and save data
   const handleConfirm = async () => {
     try {
-      // const lat = coords?.lat;
-      // const lng = coords?.lng;
-      // const address_text = addressText || formData.address;
-
-      // if (typeof lat !== "number" || typeof lng !== "number" || !address_text) {
-      //   alert("กรุณาเลือกตำแหน่งที่อยู่ก่อนบันทึก");
-      //   return;
-      // }
-
       const payload = {
         name: [formData.firstName, formData.lastName].filter(Boolean).join(" ").trim(),
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone,
-        // lat,
-        // lng,
-        // address_text,
         is_available: isAvailable,
         service_ids: selectedIdsArray,
       };
@@ -222,77 +210,77 @@ export default function TechnicianCombinedSettingsPage() {
   };
 
   return (
-    <>
-      {/* Toolbar ด้านบน / Top page toolbar */}
-      <PageToolbar
-        title="ตั้งค่าบัญชีผู้ใช้"
-        rightSlot={
-          <div className="flex flex-row sm:flex-row gap-2 sm:gap-6 w-full sm:w-auto">
-            <ButtonSecondary
-              onClick={handleCancel}
-              className="w-full sm:w-auto sm:min-w-[120px] px-4 py-1.5 text-sm"
-            >
-              ยกเลิก
-            </ButtonSecondary>
+      <>
+        {/* Toolbar ด้านบน / Top page toolbar */}
+        <PageToolbar
+            title="ตั้งค่าบัญชีผู้ใช้"
+            rightSlot={
+              <div className="flex flex-row sm:flex-row gap-2 sm:gap-6 w-full sm:w-auto">
+                <ButtonSecondary
+                    onClick={handleCancel}
+                    className="w-full sm:w-auto sm:min-w-[120px] px-4 py-1.5 text-sm"
+                >
+                  ยกเลิก
+                </ButtonSecondary>
 
-            <ButtonPrimary
-              onClick={handleConfirm}
-              className="w-full sm:w-auto sm:min-w-[120px] px-4 py-1.5 text-sm"
-            >
-              ยืนยัน
-            </ButtonPrimary>
-          </div>
-        }
-      />
-
-      <div className="p-4 md:p-8 bg-[var(--gray-50)] min-h-screen">
-        <div className="bg-[var(--white)] rounded-xl shadow-sm p-4 md:p-8 space-y-6 md:space-y-10">
-          {/* รายละเอียดบัญชี / Account Details Section */}
-          <section>
-            <div className="text-xl font-semibold text-[var(--gray-900)] mb-6">รายละเอียดบัญชี</div>
-
-            <div className="flex flex-col gap-3 ">
-              {/* First Name */}
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
-                  ชื่อ<span className="text-[var(--red)]">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.firstName}
-                  onChange={handleInputChange("firstName")}
-                  placeholder="กรุณากรอกชื่อ"
-                  className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
-                />
+                <ButtonPrimary
+                    onClick={handleConfirm}
+                    className="w-full sm:w-auto sm:min-w-[120px] px-4 py-1.5 text-sm"
+                >
+                  ยืนยัน
+                </ButtonPrimary>
               </div>
+            }
+        />
 
-              {/* Last Name */}
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
-                  นามสกุล<span className="text-[var(--red)]">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.lastName}
-                  onChange={handleInputChange("lastName")}
-                  placeholder="กรุณากรอกนามสกุล "
-                  className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
-                />
-              </div>
+        <div className="p-4 md:p-8 bg-[var(--gray-50)] min-h-screen">
+          <div className="bg-[var(--white)] rounded-xl shadow-sm p-4 md:p-8 space-y-6 md:space-y-10">
+            {/* รายละเอียดบัญชี / Account Details Section */}
+            <section>
+              <div className="text-xl font-semibold text-[var(--gray-900)] mb-6">รายละเอียดบัญชี</div>
 
-              {/* Phone */}
-              <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
-                <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
-                  เบอร์ติดต่อ<span className="text-[var(--red)]">*</span>
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleInputChange("phone")}
-                  placeholder="กรุณากรอกเบอร์ติดต่อ"
-                  className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
-                />
-              </div>
+              <div className="flex flex-col gap-3 ">
+                {/* First Name */}
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+                  <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
+                    ชื่อ<span className="text-[var(--red)]">*</span>
+                  </label>
+                  <input
+                      type="text"
+                      value={formData.firstName}
+                      onChange={handleInputChange("firstName")}
+                      placeholder="กรุณากรอกชื่อ"
+                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+                  <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
+                    นามสกุล<span className="text-[var(--red)]">*</span>
+                  </label>
+                  <input
+                      type="text"
+                      value={formData.lastName}
+                      onChange={handleInputChange("lastName")}
+                      placeholder="กรุณากรอกนามสกุล "
+                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+                  <label className="text-m font-medium text-[var(--gray-700)] whitespace-nowrap w-full md:w-[200px]">
+                    เบอร์ติดต่อ<span className="text-[var(--red)]">*</span>
+                  </label>
+                  <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleInputChange("phone")}
+                      placeholder="กรุณากรอกเบอร์ติดต่อ"
+                      className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                  />
+                </div>
 
               {/* Address */}
               <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
@@ -300,93 +288,81 @@ export default function TechnicianCombinedSettingsPage() {
                   ตำแหน่งที่อยู่ปัจจุบัน<span className="text-[var(--red)]">*</span>
                 </label>
                 <input
-                  type="text"
-                  value={formData.address}
-                  onChange={handleInputChange("address")}
-                  placeholder="กรุณากรอกที่อยู่"
-                  className="cursor-pointer w-full md:w-[350px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                    className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
+                     value={loading ? "กำลังดึงข้อมูล…" : addressText || "—"}
                 />
+               <button
+                   type="button"
+                   disabled={loading}
+                   onClick={onRefreshCurrent}
+                   className="w-[96px] h-[36px] rounded-lg font-medium  border-2 border-[var(--blue-300)] text-[var(--blue-700)] hover:bg-[var(--blue-100)] cursor-pointer transition"
+                   >
+                  {loading ? "กำลังรีเฟรช…" : "รีเฟรช"}
+               </button>
+              </div>
+            </div>
+          </section>
+
+            <hr className="border-b border-[var(--gray-200)]" />
+
+            {/* สถานะบัญชี / Account Status Section */}
+            <section>
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
+                <div className="text-xl font-semibold text-[var(--gray-900)] w-full md:w-[200px]">
+                  สถานะบัญชี
+                </div>
                 <button
-                  type="button"
-                  onClick={onRefreshCurrent}
-                  className="cursor-pointer w-full md:w-[96px] h-[42px] rounded-lg border border-[var(--blue-300)] text-[var(--blue-700)] text-sm font-medium hover:bg-[var(--blue-50)]"
+                    type="button"
+                    onClick={() => setIsAvailable(!isAvailable)}
+                    className={`cursor-pointer w-16 h-8 rounded-full p-1 flex items-center transition-all duration-300 ${
+                        isAvailable ? "bg-[var(--blue-500)] justify-end" : "bg-[var(--gray-300)] justify-start"
+                    }`}
                 >
-                  รีเฟรช
+                  <div className="cursor-pointer h-6 w-6 bg-[var(--white)] rounded-full shadow-md transition-transform duration-300"></div>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setOpenPicker(true)}
-                  className="cursor-pointer w-full md:w-[200px] h-[42px] rounded-lg border bg-[var(--gray-100)] hover:bg-[var(--gray-200)] text-sm"
-                >
-                  เลือกตำแหน่งบนแผนที่
-                </button>
-              </div>
-              {loading && (
-                <div className="text-sm text-[var(--gray-700)]">กำลังโหลดตำแหน่ง…</div>
-              )}
-            </div>
-          </section>
 
-          <hr className="border-b border-[var(--gray-200)]" />
-
-          {/* สถานะบัญชี / Account Status Section */}
-          <section>
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-4">
-              <div className="text-xl font-semibold text-[var(--gray-900)] w-full md:w-[200px]">
-                สถานะบัญชี
+                <div className="text-base font-medium text-[var(--gray-900)]">พร้อมให้บริการ</div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsAvailable(!isAvailable)}
-                className={`cursor-pointer w-16 h-8 rounded-full p-1 flex items-center transition-all duration-300 ${
-                  isAvailable ? "bg-[var(--blue-500)] justify-end" : "bg-[var(--gray-300)] justify-start"
-                }`}
-              >
-                <div className="cursor-pointer h-6 w-6 bg-[var(--white)] rounded-full shadow-md transition-transform duration-300"></div>
-              </button>
-
-              <div className="text-base font-medium text-[var(--gray-900)]">พร้อมให้บริการ</div>
-            </div>
-            <div className="flex items-center gap-4 ">
-              <div className="w-[200px]"></div>
-              <div className="w-16"></div>
-              <div className="text-sm text-[var(--gray-600)]">
-                ระบบจะแสดงคำสั่งซ่อมในบริเวณใกล้เคียงตำแหน่งที่อยู่ปัจจุบัน ให้สามารถเลือกรับงานได้
+              <div className="flex items-center gap-4 ">
+                <div className="w-[200px]"></div>
+                <div className="w-16"></div>
+                <div className="text-sm text-[var(--gray-600)]">
+                  ระบบจะแสดงคำสั่งซ่อมในบริเวณใกล้เคียงตำแหน่งที่อยู่ปัจจุบัน ให้สามารถเลือกรับงานได้
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
 
-          <hr className="border-b border-[var(--gray-200)] " />
+            <hr className="border-b border-[var(--gray-200)] " />
 
-          {/* บริการที่รับซ่อม / Service Selection Section */}
-          <section>
-            <div className="flex flex-col md:flex-row">
-              <div className="text-xl font-semibold text-[var(--gray-900)] w-full md:w-[220px] mb-6">
-                บริการที่รับซ่อม
+            {/* บริการที่รับซ่อม / Service Selection Section */}
+            <section>
+              <div className="flex flex-col md:flex-row">
+                <div className="text-xl font-semibold text-[var(--gray-900)] w-full md:w-[220px] mb-6">
+                  บริการที่รับซ่อม
+                </div>
+                <div className="flex flex-col gap-2 ">
+                  {services.map((svc) => (
+                      <Checkbox
+                          key={svc.service_id}
+                          id={`service-${svc.service_id}`}
+                          checked={selectedServiceIds.has(svc.service_id)}
+                          onChange={toggleService(svc.service_id)}
+                          label={svc.servicename}
+                      />
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-col gap-2 ">
-                {services.map((svc) => (
-                  <Checkbox
-                    key={svc.service_id}
-                    id={`service-${svc.service_id}`}
-                    checked={selectedServiceIds.has(svc.service_id)}
-                    onChange={toggleService(svc.service_id)}
-                    label={svc.servicename}
-                  />
-                ))}
-              </div>
-            </div>
-          </section>
+            </section>
+          </div>
         </div>
-      </div>
 
-      {/* Modal เลือกตำแหน่ง / Map Picker Modal */}
-      <GoogleLocationPickerModal
-        open={openPicker}
-        onClose={() => setOpenPicker(false)}
-        initial={initialPicker}
-        onConfirm={(v) => { void saveSelected(v); setOpenPicker(false); }}
-      />
-    </>
+        {/* Modal เลือกตำแหน่ง / Map Picker Modal */}
+        <GoogleLocationPickerModal
+            open={openPicker}
+            onClose={() => setOpenPicker(false)}
+            initial={initialPicker}
+            onConfirm={(v) => { void saveSelected(v); setOpenPicker(false); }}
+        />
+      </>
   );
 }
