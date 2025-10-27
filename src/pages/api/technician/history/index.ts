@@ -88,7 +88,7 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
     // ดึงข้อมูลเต็มของ bookings พร้อม service options
     const rawBookings = await sql`
       SELECT
-        b.booking_id, b.user_id, b.address_id, b.total_price,
+        b.booking_id, b.user_id, b.total_price,
         b.service_date, b.service_time, b.status_id, b.order_code,
         b.admin_id, b.address_data, b.create_at,
         bi.id AS booking_item_id, bi.service_option_id, bi.quantity, bi.subtotal_price,
@@ -150,10 +150,13 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
     const bookings = Array.from(bookingsMap.values());
 
     return res.json({ bookings, total });
-  } catch (error) {
-    console.error("Error fetching bookings:", error);
-    return res.status(500).json({ message: "Internal Server Error" });
-  }
+} catch (error: any) {
+  console.error("Error fetching bookings:", error.message, error.stack);
+  return res.status(500).json({
+    message: "Internal Server Error",
+    error: error.message,
+  });
+}
 }
 
 export default withAdminAuth(handler, ["admin", "technician"]);
