@@ -12,8 +12,9 @@ import AdminShell from "@/pages/admin";
 import TechnicianShell from "@/components/technician/shell/TechnicianShell";
 import { Toaster } from "react-hot-toast";
 import StatusListener from "@/components/StatusListener";
-import { useState } from "react";
 import Script from "next/script";
+import { useEffect, useState } from "react";
+import { AdminProtectedRoute, AdminAuthRoute } from "@/components/routeprotect/Protectadmin";
 
 const fontPrompt = Prompt({
   variable: "--font-prompt",
@@ -56,22 +57,16 @@ export default function App({ Component, pageProps }: AppProps) {
   const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const shouldLoadMaps = path.startsWith("/technician") || path.startsWith("/admin");
 
-  // กำหนดหน้าที่ต้อง login
-  const protectedRoutes = [
-    "/admin",
-    "/afterservice",
-    "/payment",
-    "/technician",
-  ];
+  const [mounted, setMounted] = useState(false);
 
-  const authRoutes = ["/login", "/register", "/admin/login"];
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
-  const isProtected =
-    protectedRoutes.some((route) => path.startsWith(route)) &&
-    path !== "/admin/login";
+  // ✅ Admin routes
+  const inAdminLogin = path === "/admin/login";
+  const inAdmin = path.startsWith("/admin") && !inAdminLogin;
 
-  const isAuthRoute = authRoutes.includes(path);
-  const inAdmin = path.startsWith("/admin") && path !== "/admin/login";
+  // Technician page
   const inTechnician = path.startsWith("/technician");
 
   const GoogleMapsScript = shouldLoadMaps && googleMapsKey ? (
@@ -84,31 +79,50 @@ export default function App({ Component, pageProps }: AppProps) {
     />
   ) : null;
 
-  if (inAdmin) {
+  // 🔒 หน้า login admin (กันไม่ให้คนที่ login แล้วเข้ามา)
+  if (inAdminLogin) {
     return (
       <div className={fontPrompt.className}>
-        {GoogleMapsScript}
-        <AuthProvider>
-          <AdminShell>
-            <Component {...pageProps} />
-          </AdminShell>
-        </AuthProvider>
+        <AdminAuthRoute>
+          <Component {...pageProps} />
+        </AdminAuthRoute>
       </div>
     );
   }
 
+  // 🔐 หน้า Admin (ต้อง login และ role = admin)
+  if (inAdmin) {
+    return (
+      <div className={fontPrompt.className}>
+        {GoogleMapsScript}
+        <AdminProtectedRoute role="admin">
+          <AdminShell>
+            <Component {...pageProps} />
+          </AdminShell>
+        </AdminProtectedRoute>
+      </div>
+    );
+  }
+
+  // 🔐 หน้า Technician (ต้อง login และ role = technician)
   if (inTechnician) {
     return (
       <div className={fontPrompt.className}>
         {GoogleMapsScript}
-        <AuthProvider>
+        <AdminProtectedRoute role="technician">
           <TechnicianShell>
             <Component {...pageProps} />
           </TechnicianShell>
-        </AuthProvider>
+        </AdminProtectedRoute>
       </div>
     );
   }
+
+  // 👤 หน้าปกติ (User)
+  const protectedRoutes = ["/afterservice", "/payment"];
+  const authRoutes = ["/login", "/register"];
+  const isProtected = protectedRoutes.some((route) => path.startsWith(route));
+  const isAuthRoute = authRoutes.includes(path);
 
   return (
     <div className={fontPrompt.className}>
