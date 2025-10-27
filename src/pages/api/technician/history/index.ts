@@ -150,11 +150,11 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
     const bookings = Array.from(bookingsMap.values());
 
     return res.json({ bookings, total });
-} catch (error: any) {
-  console.error("Error fetching bookings:", error.message, error.stack);
+} catch (error) {
+  console.error("Error fetching bookings:", error);
   return res.status(500).json({
     message: "Internal Server Error",
-    error: error.message,
+    error: error
   });
 }
 }

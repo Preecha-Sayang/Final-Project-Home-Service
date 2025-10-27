@@ -8,16 +8,67 @@ import IconBell from "../button/iconbell";
 import { useAuth } from "@/context/AuthContext";
 import StatusListener from "../StatusListener";
 
+interface Notification {
+  booking_id: number;
+  order_code: string;
+  new_status: string;
+}
+
+
 export default function Navbar() {
   const { isLoggedIn, accessToken, user } = useAuth();
-  const [notifications, setNotifications] = useState<
-    { booking_id: number; new_status: string }[]
-  >([]);
   // State สำหรับเก็บข้อมูลโปรไฟล์และอวาตาร์
   const [fullname, setFullname] = useState<string>("");
   const [avatarURL, setAvatarURL] = useState<string | typeof user_default>(
     user_default
   );
+
+    // โหลด notifications จาก localStorage
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    if (typeof window !== 'undefined' && user) {
+      try {
+        const saved = localStorage.getItem(`notifications_${user.user_id}`);
+        return saved ? JSON.parse(saved) : [];
+      } catch (error) {
+        console.error("Error loading notifications from localStorage:", error);
+        return [];
+      }
+    }
+    return [];
+  });
+
+    // บันทึก notifications ลง localStorage เมื่อมีการเปลี่ยนแปลง
+  useEffect(() => {
+    if (user && notifications.length > 0) {
+      try {
+        localStorage.setItem(`notifications_${user.user_id}`, JSON.stringify(notifications));
+      } catch (error) {
+        console.error("Error saving notifications to localStorage:", error);
+      }
+    }
+  }, [notifications, user]);
+
+  // โหลด notifications จาก localStorage เมื่อ user login
+  useEffect(() => {
+    if (user) {
+      try {
+        const saved = localStorage.getItem(`notifications_${user.user_id}`);
+        if (saved) {
+          setNotifications(JSON.parse(saved));
+        }
+      } catch (error) {
+        console.error("Error loading notifications:", error);
+      }
+    }
+  }, [user]);
+
+    // เคลียร์ notifications เมื่อ logout
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setNotifications([]);
+    }
+  }, [isLoggedIn]);
+
 
   // ฟังก์ชันดึงข้อมูลโปรไฟล์
   const fetchProfile = useCallback(() => {
@@ -70,18 +121,43 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleNewNotification = useCallback(
-    (data: { booking_id: number; new_status: string }) => {
-      setNotifications((prev) => [data, ...prev]);
-    },
-    []
-  );
+  const handleNewNotification = useCallback((data: Notification) => {
+    // console.log("🔔 New notification in Navbar:", data);
+    setNotifications((prev) => {
+      const newList = [data, ...prev];
+      // บันทึกลง localStorage ทันที
+      if (user) {
+        try {
+          localStorage.setItem(`notifications_${user.user_id}`, JSON.stringify(newList));
+        } catch (error) {
+          console.error("Error saving notification:", error);
+        }
+      }
+      return newList;
+    });
+  }, [user]);
 
-  const clearNotifications = useCallback(() => setNotifications([]), []);
-
+  const clearNotifications = useCallback(() => {
+    // console.log("🧹 Clearing all notifications");
+    setNotifications([]);
+    // ลบจาก localStorage
+    if (user) {
+      try {
+        localStorage.removeItem(`notifications_${user.user_id}`);
+      } catch (error) {
+        console.error("Error clearing notifications:", error);
+      }
+    }
+  }, [user])
 
   return (
     <div className="sticky top-0 z-40 bg-[var(--white)] shadow-md">
+{isLoggedIn && user && (
+  <StatusListener 
+    userId={Number(user.user_id)} 
+    onNewNotification={handleNewNotification} 
+  />
+)}
       <div className="mx-auto max-w-[1440px] h-[80px] bg-[var(--white)] flex items-center justify-between relative px-4 lg:px-15">
         {/* โลโก้ และ เมนู */}
         <div className="flex items-center gap-4 lg:gap-20">
@@ -125,10 +201,6 @@ export default function Navbar() {
               <DropdownUser imageURL={avatarURL} fullname={fullname} />
                 {user && (
                   <>
-                    <StatusListener
-                      userId={Number(user.user_id)}
-                      onNewNotification={handleNewNotification}
-                    />
                     <IconBell
                       notifications={notifications}
                       onClear={clearNotifications}
@@ -144,37 +216,3 @@ export default function Navbar() {
   );
 }
 
-/**
- * วิธีใช้งาน Navbar Component
- *
- * Navbar คือคอมโพเนนต์แถบนำทางด้านบนของเว็บแอปที่แสดงโลโก้ เมนู "บริการของเรา"
- * และส่วนผู้ใช้ (เข้าสู่ระบบ/โปรไฟล์ + กระดิ่งแจ้งเตือน) พร้อมรองรับหน้าจอมือถือ/เดสก์ท็อป
- *
- * นำเข้า:
- *   import Navbar from "@/components/navbar/navbar";
- *
- * การใช้งานพื้นฐาน:
- *   export default function Page() {
- *     return (
- *       <div>
- *         <Navbar />
- *         // เนื้อหาหน้าเพจ
- *       </div>
- *     );
- *   }
- *
- * การทำงานร่วมกับระบบล็อกอิน:
- * - คอมโพเนนต์นี้ใช้ `useAuth()` จาก `AuthContext` เพื่ออ่าน `isLoggedIn` และ `accessToken`.
- * - เมื่อมี `accessToken` จะเรียก `/api/profile` เพื่อดึงข้อมูล `fullname` และ `avatar` มาแสดง.
- * - เมื่ออัพเดตโปรไฟล์ ข้อมูลจะ refresh อัตโนมัติเมื่อ component re-render หรือ accessToken เปลี่ยน.
- * - ต้องครอบแอปด้วย `AuthProvider` ในระดับสูงของแอป (เช่นใน `_app.tsx`).
- *
- * เส้นทางลิงก์เริ่มต้น:
- * - โลโก้ -> "/"
- * - เมนู "บริการของเรา" -> "/service"
- * - ปุ่ม "เข้าสู่ระบบ" -> "/login"
- *
- * Responsive:
- * - ใช้ Tailwind จัดการขนาดและตัวอักษรบนมือถือ/เดสก์ท็อป (`text-sm lg:text-base`, `h-6 lg:h-9`).
- * - ชื่อผู้ใช้แสดงเฉพาะจอใหญ่ (`hidden lg:block`) เพื่อประหยัดพื้นที่บนมือถือ.
- */

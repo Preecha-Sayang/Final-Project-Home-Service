@@ -9,16 +9,19 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     const email = req.user?.email;
     if (!email) {
-      return res
-        .status(400)
-        .json({ ok: false, message: "Email not found in token" });
+      return res.status(400).json({ ok: false, message: "Email not found in token" });
     }
 
-    // เงื่อนไข status filter
+    // Pagination
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
+
+    // Status filter
     const statusQuery = req.query.status as string | undefined;
     const statusFilter = statusQuery ? statusQuery.split(",") : [];
 
-    // ✅ ดึงข้อมูล booking พร้อม discount และ promo_code
+    // ดึงข้อมูล booking
     const bookings = await sql`
       SELECT 
         b.booking_id,
@@ -46,15 +49,26 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       WHERE u.email = ${email}
         ${statusFilter.length > 0 ? sql`AND s.name = ANY(${statusFilter})` : sql``}
       ORDER BY b.order_code ASC
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
+    // รวม total count
+    const totalCountResult = await sql`
+      SELECT COUNT(*)::int AS total
+      FROM booking AS b
+      INNER JOIN status AS s ON b.status_id = s.status_id
+      INNER JOIN users AS u ON b.user_id = u.user_id
+      WHERE u.email = ${email}
+        ${statusFilter.length > 0 ? sql`AND s.name = ANY(${statusFilter})` : sql``}
+    `;
+    const totalCount = totalCountResult[0]?.total || 0;
+
     if (bookings.length === 0) {
-      return res.status(200).json({ ok: true, bookings: [] });
+      return res.status(200).json({ ok: true, bookings: [], totalCount, page, limit });
     }
 
     const bookingIds = bookings.map((b) => b.booking_id);
 
-    // ดึง booking items
     const items = await sql`
       SELECT 
         bi.booking_id,
@@ -83,7 +97,13 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
       };
     });
 
-    return res.status(200).json({ ok: true, bookings: bookingsWithItems });
+    return res.status(200).json({
+      ok: true,
+      bookings: bookingsWithItems,
+      totalCount,
+      page,
+      limit,
+    });
   }
 }
 

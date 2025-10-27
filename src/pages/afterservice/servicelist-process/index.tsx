@@ -12,9 +12,9 @@ type BookingItem = {
 type Booking = {
   booking_id: number;
   order_code: string;
-  total_price: number; // ✅ เปลี่ยนเป็น number
-  discount: number; // ✅ เพิ่ม
-  promo_code: string | null; // ✅ เพิ่ม
+  total_price: number;
+  discount: number;
+  promo_code: string | null;
   service_date: string;
   service_time: string;
   status_name: string;
@@ -29,7 +29,10 @@ function ServiceListProcess() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [message, setMessage] = useState<string>("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // ✅ จัดการ loading เอง
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(4);
+  const [totalCount, setTotalCount] = useState(0);
 
   const seedetail = useCallback((id: number) => {
     setBookings((prev) => {
@@ -43,46 +46,41 @@ function ServiceListProcess() {
     setSelectedBooking(null);
   }, []);
 
-  useEffect(() => {
-    let isMounted = true;
+  const fetchBookings = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const statusQuery = encodeURIComponent("รอดำเนินการ,ดำเนินการอยู่");
+      const res = await fetchWithToken<{
+        bookings: Booking[];
+        totalCount: number;
+      }>(`/api/afterservice/order?status=${statusQuery}&page=${page}&limit=${limit}`, {
+        method: "GET",
+      });
 
-    const fetchBookings = async () => {
-      try {
-        setIsLoading(true); // ✅ เริ่ม loading
-        const statusQuery = encodeURIComponent("รอดำเนินการ,ดำเนินการอยู่");
-        const res = await fetchWithToken<{ bookings: Booking[] }>(
-          `/api/afterservice/order?status=${statusQuery}`,
-          { method: "GET" }
-        );
-
-        if (!isMounted) return;
-
-        if (!res.bookings || res.bookings.length === 0) {
-          setMessage("ไม่มีข้อมูลการซ่อม");
-        } else {
-          setBookings(res.bookings);
-        }
-      } catch (error: unknown) {
-        if (!isMounted) return;
-
-        const err = error as Error;
-        console.error("Error fetching bookings:", err.message);
+      if (!res.bookings || res.bookings.length === 0) {
         setMessage("ไม่มีข้อมูลการซ่อม");
-      } finally {
-        if (isMounted) {
-          setIsLoading(false); // ✅ หยุด loading
-        }
+        setBookings([]);
+        setTotalCount(0);
+      } else {
+        setBookings(res.bookings);
+        setTotalCount(res.totalCount);
+        setMessage("");
       }
-    };
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error("Error fetching bookings:", err.message);
+      setMessage("ไม่มีข้อมูลการซ่อม");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchWithToken, page, limit]);
 
+  useEffect(() => {
     fetchBookings();
+  }, [fetchBookings]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [fetchWithToken]); // ✅ dependency เดียว
+  const totalPages = Math.ceil(totalCount / limit);
 
-  // ✅ แสดง loading ภายใน component
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -111,22 +109,43 @@ function ServiceListProcess() {
         />
       ))}
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center mt-4 gap-2">
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={page === 1}
+            onClick={() => setPage((prev) => prev - 1)}
+          >
+            ก่อนหน้า
+          </button>
+
+          <span>
+            {page} / {totalPages}
+          </span>
+
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            disabled={page === totalPages}
+            onClick={() => setPage((prev) => prev + 1)}
+          >
+            ถัดไป
+          </button>
+        </div>
+      )}
+
       {selectedBooking && (
         <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg">
             <PaymentSummary
               status="ชำระเงินเรียบร้อย !"
               items={selectedBooking.items}
-              date={
-                selectedBooking.service_date
-                  ? new Date(selectedBooking.service_date)
-                  : undefined
-              }
+              date={selectedBooking.service_date ? new Date(selectedBooking.service_date) : undefined}
               time={selectedBooking.service_time}
               address={selectedBooking.address}
               totalPrice={selectedBooking.total_price}
-              discount={selectedBooking.discount} // ✅ เพิ่มบรรทัดนี้
-              promoCode={selectedBooking.promo_code} // ✅ เพิ่มบรรทัดนี้
+              discount={selectedBooking.discount}
+              promoCode={selectedBooking.promo_code}
               eventname="ปิด"
               clickevent={closedetail}
             />
