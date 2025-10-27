@@ -102,7 +102,7 @@ const ServiceItem: React.FC<ServiceItemProps> = ({
         const isLastItem = index === options.length - 1
 
         return (
-          <div key={option.service_option_id} className={`flex flex-col sm:flex-row justify-between items-center p-4 gap-2 sm:gap-0 ${!isLastItem ? 'border-b border-gray-200' : ''}`}>
+          <div key={option.service_option_id} className={`flex flex-col sm:flex-row justify-between md:items-center p-4 gap-2 sm:gap-0 ${!isLastItem ? 'border-b border-gray-200' : ''}`}>
             <div className="w-full sm:w-auto flex flex-col items-start">
               <h6 className="text-medium font-semibold text-gray-800 mb-1">
                 {option.name}

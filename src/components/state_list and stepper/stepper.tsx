@@ -20,7 +20,7 @@ export default function Stepper({ currentStep = 1 }: { currentStep?: number }) {
       {/* กรอบ stepper */}
       <div className="w-full max-w bg-white border border-gray-200 rounded-xl  p-6">
         {/* cake ปรับ padding stepper */}
-        <div className="relative flex items-center px-40">
+        <div className="relative flex items-center md:px-40">
           {/* เส้นเชื่อมพื้นหลัง - วางไว้ข้างหลัง */}
           {/* cake ปรับ padding เส้น stepper  */}
           <div className="absolute top-8 left-0 right-0 flex items-center px-36">

@@ -47,7 +47,7 @@ export default function OrderSummary({
   const finalTotal = promotion && promotion > 0 ? total - promotion : total;
 
   return (
-    <div className="w-[375px] rounded-lg border border-gray-200 bg-white p-4 shadow-sm mt-[16px] ml-[16px] flex flex-col">
+    <div className=" md:w-[375px] rounded-lg border border-gray-200 bg-white p-4 shadow-sm md:mt-[16px] md:ml-[16px] flex flex-col">
       {/* Header พร้อม toggle */}
       <div
         className="mb-2 flex cursor-pointer items-center justify-between select-none"
