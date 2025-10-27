@@ -46,7 +46,7 @@ export default async function handler(
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60, // 1 ชม.
+        maxAge: 60 * 60 * 24 * 7, // 7 วัน
       })
     );
     // จบ เพิ่ม set cookie

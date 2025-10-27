@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import ServiceCard from './Cards/ServiceCard';
 import type { Service } from '@/types/service.types';
 
+
 export default function PopularServices() {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);

@@ -55,11 +55,19 @@ export default function AdminLogin() {
       });
 
       const result = await res.json();
-
+      console.log(result);
       if (res.ok) {
         // เก็บ JWT ใน localStorage
-        localStorage.setItem("token", result.token);
-        router.push("/admin/categories");
+        //localStorage.setItem("token", result.token);
+
+        // Redirect ตาม role
+        if (result.admin.role === "admin") {
+          router.push("/admin/categories");
+        } else if (result.admin.role === "technician") {
+          router.push("/technician");
+        } else {
+          alert("ไม่พบ role ที่รองรับ");
+        }
       } else if (res.status === 401) {
         // แสดง error ที่ email และ password พร้อมกัน
         setError("email", {
