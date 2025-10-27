@@ -9,6 +9,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const admin = verifyAdminToken(token);
     res.status(200).json({ admin });
   } catch (err) {
+    console.log(err)
     res.status(200).json({ admin: null });
   }
 }

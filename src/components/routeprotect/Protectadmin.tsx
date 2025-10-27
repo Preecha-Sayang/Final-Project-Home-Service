@@ -50,6 +50,7 @@ export const AdminProtectedRoute = ({ children, role }: ProtectedRouteProps) => 
         // ✅ ผ่านการตรวจสอบ
         setLoading(false);
       } catch (err) {
+        console.log(err)
         await Swal.fire({
           icon: "error",
           title: "เกิดข้อผิดพลาด",
