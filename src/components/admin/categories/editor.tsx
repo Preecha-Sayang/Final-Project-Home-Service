@@ -71,7 +71,7 @@ export default function CategoryEditor({ mode, id }: Props) {
           ring_color_hex: ring,
           admin_id: adminId,
         });
-        router.push(`/admin/__categories_demo/${created.category_id}`);
+        router.push(`/admin/categories/${created.category_id}`);
       } else {
         const updated = await updateCategory(id!, {
           name: name.trim(),
@@ -79,7 +79,7 @@ export default function CategoryEditor({ mode, id }: Props) {
           text_color_hex: text,
           ring_color_hex: ring,
         });
-        router.push(`/admin/__categories_demo/${updated.category_id}`);
+        router.push(`/admin/categories/${updated.category_id}`);
       }
     } catch (e) {
       alert(e instanceof Error ? e.message : String(e));

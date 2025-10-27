@@ -62,7 +62,7 @@ const Preview: NextPage = () => {
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
-            href="/admin/__categories_demo"
+            href="/admin/categories"
             className="rounded-lg border px-3 py-2 text-[var(--gray-700)] hover:bg-[var(--gray-100)]"
           >
             ← กลับ
@@ -74,7 +74,7 @@ const Preview: NextPage = () => {
 
         {category && (
           <Link
-            href={`/admin/__categories_demo/${category.category_id}/edit`}
+            href={`/admin/categories/${category.category_id}/edit`}
             className="rounded-lg bg-[var(--blue-600)] px-4 py-2 text-white hover:bg-[var(--blue-700)]"
           >
             แก้ไข
