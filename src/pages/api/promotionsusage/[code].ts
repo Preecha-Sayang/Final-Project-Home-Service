@@ -15,6 +15,23 @@ export default async function handler(
 
   try {
     if (req.method === "GET") {
+
+//       const check_use = (await sql/*sql*/ `
+//         SELECT m.promotion_id, code, discount_type, discount_value, usage_limit,
+// count(t.promotion_id) as count_of_use,
+// expire_at,
+// CASE WHEN expire_at >= Now() THEN TRUE ELSE FALSE END as can_use
+// , create_at, update_at
+// FROM promotions m
+// LEFT JOIN promotion_usage t ON m.promotion_id = t.promotion_id
+// WHERE m.code = ${code}
+// GROUP BY m.promotion_id, code, discount_type, discount_value, usage_limit, expire_at, create_at, update_at
+//     `) as PromotionUse[];
+
+//       const checkuse = check_use[0];
+
+      
+
       const rows = (await sql/*sql*/ `
                 SELECT m.promotion_id, code, discount_type, discount_value, usage_limit,
   count(t.promotion_id) as count_of_use,
@@ -56,12 +73,11 @@ export default async function handler(
       }
     }
 
-    
     // if (req.method === "POST") {
     //   const {  bookingId } = req.body;
 
     //   const rows = (await sql/*sql*/ `
-    //   INSERT INTO promotion_usage (promotion_id,booking_id) VALUES (${promotionCode},${bookingId}) 
+    //   INSERT INTO promotion_usage (promotion_id,booking_id) VALUES (${promotionCode},${bookingId})
     //   RETURNING usage_id,promotion_id,booking_id,used_at
     // `) as promotionUsage[];
 
@@ -74,7 +90,6 @@ export default async function handler(
     //     res.status(500).json({status: false, message: "use promotion code failed"})
     //   }
     // }
-
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     return res.status(500).json({ ok: false, message: msg });
