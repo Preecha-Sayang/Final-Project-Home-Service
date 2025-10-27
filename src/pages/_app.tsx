@@ -1,14 +1,18 @@
 import "@/styles/globals.css";
-import 'rsuite/dist/rsuite-no-reset.min.css';
+import "rsuite/dist/rsuite-no-reset.min.css";
 import type { AppProps } from "next/app";
 import { Prompt } from "next/font/google";
-import { AuthProvider } from "@/context/AuthContext";
-import { ProtectedRoute, AuthRoute } from "@/components/routeprotect/ProtectedRoute";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import {
+  ProtectedRoute,
+  AuthRoute,
+} from "@/components/routeprotect/ProtectedRoute";
 import { useRouter } from "next/router";
 import AdminShell from "@/pages/admin";
 import TechnicianShell from "@/components/technician/shell/TechnicianShell";
-import { Toaster } from 'react-hot-toast';
-
+import { Toaster } from "react-hot-toast";
+import StatusListener from "@/components/StatusListener";
+import { useState } from "react";
 
 const fontPrompt = Prompt({
   variable: "--font-prompt",
@@ -16,9 +20,45 @@ const fontPrompt = Prompt({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
+
+interface UserAppProps {
+  Component: AppProps["Component"];
+  pageProps: AppProps["pageProps"];
+}
+
+function UserApp({ Component, pageProps }: UserAppProps) {
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<
+    { booking_id: number; new_status: string }[]
+  >([]);
+
+  const handleNewNotification = (data: { booking_id: number; new_status: string }) => {
+    setNotifications(prev => [data, ...prev]);
+  };
+
+  return (
+    <>
+      {user && (
+        <StatusListener
+          userId={Number(user.user_id)}
+          onNewNotification={handleNewNotification}
+        />
+      )}
+      <Toaster position="bottom-right" />
+      <Component {...pageProps} notifications={notifications} />
+    </>
+  );
+}
+
+
+
+
+
+
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const path = router.pathname;
+
 
   // กำหนดหน้าที่ต้อง login
   const protectedRoutes = [
@@ -33,8 +73,9 @@ export default function App({ Component, pageProps }: AppProps) {
   const authRoutes = ["/login", "/register", "/admin/login"];
 
   // ตรวจสอบว่าเป็นหน้าที่ต้อง login หรือไม่
-  const isProtected = protectedRoutes.some(route => path.startsWith(route))
-    && path !== "/admin/login"; // ยกเว้น /admin/login
+  const isProtected =
+    protectedRoutes.some((route) => path.startsWith(route)) &&
+    path !== "/admin/login"; // ยกเว้น /admin/login
 
   // ตรวจสอบว่าเป็นหน้า auth หรือไม่
   const isAuthRoute = authRoutes.includes(path);
@@ -83,23 +124,22 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={fontPrompt.className}>
       <AuthProvider>
-        
         {/* ข้อความแจ้งเตือนให้อยู่ล่างขวา */}
-        <Toaster position="bottom-right" /> 
+        <Toaster position="bottom-right" />
 
         {isProtected ? (
           // หน้าที่ต้อง login
           <ProtectedRoute>
-            <Component {...pageProps} />
+            <UserApp Component={Component} pageProps={pageProps} />
           </ProtectedRoute>
         ) : isAuthRoute ? (
           // หน้า login/register (ล็อกอินแล้วเข้าไม่ได้)
           <AuthRoute>
-            <Component {...pageProps} />
+            <UserApp Component={Component} pageProps={pageProps} />
           </AuthRoute>
         ) : (
           // หน้าสาธารณะ (ไม่ต้อง login)
-          <Component {...pageProps} />
+          <UserApp Component={Component} pageProps={pageProps} />
         )}
       </AuthProvider>
     </div>
