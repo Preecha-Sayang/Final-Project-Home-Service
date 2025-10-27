@@ -6,6 +6,7 @@ import ButtonPrimary from "@/components/button/buttonprimary";
 import ButtonSecondary from "@/components/button/buttonsecondary";
 import { Save, X, Camera } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import Swal from "sweetalert2";
 
 type UserData = {
   user_id: number;
@@ -514,9 +515,25 @@ function UserProfile() {
         }
       }));
       
+      // แสดง popup สำเร็จ
+      await Swal.fire({
+        title: "บันทึกข้อมูลสำเร็จ!",
+        text: "ข้อมูลโปรไฟล์ของคุณได้รับการบันทึกเรียบร้อยแล้ว",
+        icon: "success",
+        confirmButtonText: "ตกลง",
+      });
+      
       console.log("Profile saved successfully");
     } catch (e) {
       console.error("Failed to save profile", e);
+      
+      // แสดง popup error
+      await Swal.fire({
+        title: "เกิดข้อผิดพลาด!",
+        text: e instanceof Error ? e.message : "ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง",
+        icon: "error",
+        confirmButtonText: "ตกลง",
+      });
     }
   };
 
