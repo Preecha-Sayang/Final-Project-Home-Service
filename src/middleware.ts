@@ -24,5 +24,5 @@ export function middleware(req: NextRequest) {
 
 // ให้ middleware ทำงานเฉพาะเส้นทาง /admin/*
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*","/technician/:path*"],
 };

@@ -8,6 +8,9 @@ import { useBookingStore } from "@/stores/bookingStore";
 import { useAuth } from "@/context/AuthContext";
 import { PromotionUse } from "@/types/promotion";
 import { usePromotionStore } from "@/stores/promotionStore";
+import Swal from "sweetalert2";
+
+
 
 interface PaymentFormProps {
   totalPrice: number;
@@ -157,13 +160,21 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
         const amountBaht = totalPrice && totalPrice > 0 ? totalPrice : 0;
 
         if (form.credit_card_number === "") {
-          alert("กรุณากรอกหมายเลขบัตรเครดิต");
+          await Swal.fire({
+            text: "กรุณากรอกหมายเลขบัตรเครดิต",
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+          });
           setProcessing(false);
           return;
         }
 
         if (form.card_fullname === "") {
-          alert("กรุณากรอกชื่อบนบัตรเครดิต");
+          await Swal.fire({
+            text: "กรุณากรอกชื่อบนบัตรเครดิต",
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+          });
           setProcessing(false);
           return;
         }
@@ -171,13 +182,21 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
         // ตรวจวันหมดอายุ
         const exp = parseExpiry(form.expired_date);
         if (!exp) {
-          alert("กรุณากรอกวันหมดอายุรูปแบบ MM/YY (เช่น 08/27)");
+          await Swal.fire({
+            text: "กรุณากรอกวันหมดอายุรูปแบบ MM/YY (เช่น 08/27)",
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+          });
           setProcessing(false);
           return;
         }
 
         if (form.ccv === "") {
-          alert("กรุณากรอกรหัส CVC / CCV");
+          await Swal.fire({
+            text: "กรุณากรอกรหัส CVC / CCV",
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+          });
           setProcessing(false);
           return;
         }
@@ -187,7 +206,12 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
           const Omise = omiseWindow.Omise;
 
           if (!Omise) {
-            alert("โหลดไม่สำเสร็จ กรุณาลองใหม่");
+            await Swal.fire({
+              title: "เกิดข้อผิดพลาด",
+              text: "โหลดไม่สำเร็จ กรุณาลองใหม่",
+              icon: "error",
+              confirmButtonText: "ตกลง",
+            });
             setProcessing(false);
             return;
           }
@@ -223,14 +247,11 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
 
             // ตรวจสอบว่ามีข้อมูลหรือไม่
             if (!cartItems || cartItems.length === 0) {
-              alert("ไม่พบรายการบริการ กรุณาเลือกบริการใหม่");
-              setProcessing(false);
-              return;
-            }
-
-            // 🗺️ ตรวจสอบพิกัด
-            if (!customerInfo.latitude || !customerInfo.longitude) {
-              alert("กรุณาระบุตำแหน่งบนแผนที่ก่อนชำระเงิน");
+              await Swal.fire({
+                text: "ไม่พบรายการบริการ กรุณาเลือกบริการใหม่",
+                icon: "warning",
+                confirmButtonText: "ตกลง",
+              });
               setProcessing(false);
               return;
             }
@@ -327,31 +348,52 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                 }
               }
 
-              // ล้างข้อมูล promotion
-              clearPromotion();
-              alert("ชำระเงินสำเร็จ!");
+                // ล้างข้อมูล promotion
+                clearPromotion();
+                await Swal.fire({
+                  title: "ชำระเงินสำเร็จ!",
+                  icon: "success",
+                  confirmButtonText: "ตกลง",
+                });
 
               if (onPaymentSuccess) {
                 onPaymentSuccess(bookingResult.booking_id, chargeId);
               } else {
-                // Redirect พร้อม bookingId และ chargeId
-                router.push(
-                  `/payment/summary?bookingId=${bookingResult.booking_id}&chargeId=${chargeId}`
-                );
+                // ถ้าบันทึกไม่สำเร็จ แต่ชำระเงินสำเร็จแล้ว
+                clearPromotion();
+                console.error("Failed to save booking:", bookingResult);
+                await Swal.fire({
+                  title: "ชำระเงินสำเร็จ",
+                  text: "แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล",
+                  icon: "warning",
+                  confirmButtonText: "ตกลง",
+                });
+                
+                router.push(`/payment/summary?chargeId=${chargeId}`);
               }
             } else {
               // ชำระเงินไม่สำเร็จ
               clearPromotion();
               const errorMsg =
                 "การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ");
-              alert(errorMsg);
+                await Swal.fire({
+                  title: "เกิดข้อผิดพลาด",
+                  text: errorMsg,
+                  icon: "error",
+                  confirmButtonText: "ตกลง",
+                });
               if (onPaymentError) onPaymentError(errorMsg);
             }
           } catch (bookingError) {
             clearPromotion();
             console.error("Booking creation error:", bookingError);
-            alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + (bookingError instanceof Error ? bookingError.message : ""));
-            if (onPaymentError) onPaymentError("Booking error");
+            await Swal.fire({
+              title: "ชำระเงินสำเร็จ",
+              text: "แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล",
+              icon: "warning",
+              confirmButtonText: "ตกลง",
+            });
+            router.push(`/payment/summary?chargeId=${chargeId}`);
           }
         } else if (selectedPayment === "qr") {
           const res = await fetch("/api/payment", {
@@ -365,9 +407,12 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
           if (result.status === "pending" && result.qr_url) {
             // แสดง QR Code และเริ่มตรวจสอบสถานะ
             window.open(result.qr_url, "_blank");
-            alert(
-              "กรุณาสแกน QR Code เพื่อชำระเงิน\nระบบจะตรวจสอบสถานะการชำระเงินอัตโนมัติ"
-            );
+            await Swal.fire({
+              title: "ชำระเงินด้วย QR Code",
+              html: "กรุณาสแกน QR Code เพื่อชำระเงิน<br>ระบบจะตรวจสอบสถานะการชำระเงินอัตโนมัติ",
+              icon: "info",
+              confirmButtonText: "ตกลง",
+            });
           } else {
             const errorMsg =
               "สร้าง PromptPay QR ไม่สำเร็จ: " + (result.message || "");
@@ -378,7 +423,12 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
       } catch (error) {
         console.error(error);
         const errorMsg = "เกิดข้อผิดพลาดในการชำระเงิน";
-        alert(errorMsg);
+        await Swal.fire({
+          title: "เกิดข้อผิดพลาด",
+          text: errorMsg,
+          icon: "error",
+          confirmButtonText: "ตกลง",
+        });
         if (onPaymentError) onPaymentError(errorMsg);
       } finally {
         setProcessing(false);
@@ -388,7 +438,11 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
     const submitDiscountCode = async (): Promise<void> => {
       try {
         if (!form.promotion) {
-          alert("กรุณากรอกรหัสส่วนลด");
+          await Swal.fire({
+            text: "กรุณากรอกรหัสส่วนลด",
+            icon: "warning",
+            confirmButtonText: "ตกลง",
+          });
           clearPromotion();
           return;
         }
@@ -401,8 +455,13 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
         const data: PromotionResponse = await res.json();
 
         if (data.ok && data.promotion) {
-          alert(data.message);
-
+          await Swal.fire({
+            text: data.message,
+            icon: "success",
+            confirmButtonText: "ตกลง",
+          });
+          
+          
           let calculatedDiscount = 0;
           if (data.promotion.discount_type === "fixed") {
             calculatedDiscount = Number(data.promotion.discount_value);
@@ -420,13 +479,22 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
             discount: calculatedDiscount,
           });
         } else {
-          alert(data.message || "ไม่สามารถใช้โค้ดส่วนลดได้");
+          await Swal.fire({
+            title: data.ok ? "สำเร็จ!" : "โค้ดไม่ถูกต้อง",
+            text: data.message,
+            icon: data.ok ? "success" : "error",
+            confirmButtonText: "ตกลง",
+          });
           clearPromotion();
         }
       } catch (error) {
         clearPromotion();
         console.error("Error:", error);
-        alert("เกิดข้อผิดพลาดในการตรวจสอบรหัสส่วนลด");
+        await Swal.fire({
+          text: "เกิดข้อผิดพลาดในการตรวจสอบรหัสส่วนลด",
+          icon: "warning",
+          confirmButtonText: "ตกลง",
+        });
       }
     };
 

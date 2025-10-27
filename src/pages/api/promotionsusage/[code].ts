@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "lib/db";
-import type { PromotionUse, promotionUsage } from "@/types/promotion";
+import type { PromotionUse } from "@/types/promotion";
+import Swal from "sweetalert2";
 
 export default async function handler(
   req: NextApiRequest,
@@ -55,7 +56,7 @@ export default async function handler(
       }
     }
 
-    // กำลังทำตรงนี้ ยังไม่เสร็จ
+    
     // if (req.method === "POST") {
     //   const {  bookingId } = req.body;
 
