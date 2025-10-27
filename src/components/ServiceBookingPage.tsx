@@ -207,6 +207,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
       switch (currentStep) {
         case "items":
           return selectedItems.length > 0;
+        
         case "details":
           // ตรวจสอบว่ามีข้อมูลครบถ้วน
           const hasRequiredFields = !!(
@@ -217,17 +218,23 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
             customerInfo.district &&
             customerInfo.subDistrict
           );
-
+          
           if (!hasRequiredFields) return false;
-
+    
+          // 🗺️ ตรวจสอบว่ามีพิกัดหรือไม่
+          if (!customerInfo.latitude || !customerInfo.longitude) {
+            console.warn('[ServiceBookingPage] Cannot proceed: location coordinates missing');
+            return false;
+          }
+    
           // ตรวจสอบว่าวันที่และเวลาที่เลือกไม่ได้อยู่ในอดีต
           try {
             const selectedDate = customerInfo.serviceDate;
             if (!selectedDate) return false;
-
+    
             const today = startOfDay(new Date());
             const selectedDay = startOfDay(selectedDate);
-
+    
             // ถ้าเลือกวันในอดีต ไม่ให้ดำเนินการต่อ
             if (isBefore(selectedDay, today)) {
               console.warn(
@@ -235,19 +242,19 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
               );
               return false;
             }
-
+    
             // ถ้าเลือกวันปัจจุบัน ต้องตรวจสอบเวลาด้วย
             if (isToday(selectedDate)) {
               const serviceTime = customerInfo.serviceTime;
               if (!serviceTime) return false;
-
+    
               const now = new Date();
               const [selectedHour, selectedMinute] = serviceTime
                 .split(":")
                 .map(Number);
               const currentHour = now.getHours();
               const currentMinute = now.getMinutes();
-
+    
               // ถ้าเลือกเวลาที่ผ่านไปแล้ว ไม่ให้ดำเนินการต่อ
               if (
                 selectedHour < currentHour ||
@@ -260,7 +267,7 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
                 return false;
               }
             }
-
+    
             return true;
           } catch (error) {
             console.error(
@@ -269,12 +276,18 @@ const ServiceBookingPage: React.FC<ServiceBookingPageProps> = ({
             );
             return false;
           }
+        
         case "payment":
           return true;
+        
         default:
           return false;
       }
     };
+    
+    
+    
+    
 
     const getNextButtonText = () => {
       if (currentStep === "payment") return "ชำระเงิน";

@@ -21,6 +21,8 @@ export default async function handler(
       address_data,
       promotion_id,
       charge_id,
+      latitude,
+      longitude,
     } = req.body;
 
     // Validation
@@ -36,7 +38,22 @@ export default async function handler(
       return res.status(400).json({ error: "Service details are required" });
     }
 
-    // สร้างการจองในตาราง booking (ตามโครงสร้างที่มีอยู่)
+    // ⚠️ คำเตือนถ้าไม่มีพิกัด (แต่ไม่บล็อก)
+    if (!latitude || !longitude) {
+      console.warn('[Create Booking] Warning: No location coordinates provided');
+    }
+
+    // สร้าง pinned_location JSON ถ้ามีพิกัด
+    let pinnedLocation = null;
+    if (latitude && longitude) {
+      pinnedLocation = JSON.stringify({
+        lat: latitude,
+        lng: longitude,
+        place_name: address_data.address || null,
+      });
+    }
+
+    // สร้างการจองในตาราง booking
     const bookingResult = await query(
       `INSERT INTO booking (
         user_id,
@@ -47,10 +64,13 @@ export default async function handler(
         address_data,
         promotion_id,
         status_id,
+        latitude,
+        longitude,
+        pinned_location,
         create_at,
         update_at
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW()
       ) RETURNING booking_id`,
       [
         user_id || 1, // ถ้าไม่มี user_id ให้ใช้ default
@@ -61,6 +81,9 @@ export default async function handler(
         JSON.stringify(address_data), // เก็บเป็น JSON
         promotion_id || null, // บันทึก promotion_id
         1, // status_id = 1 (pending/confirmed)
+        latitude || null, // บันทึก latitude แยก
+        longitude || null, // บันทึก longitude แยก
+        pinnedLocation, // บันทึก pinned_location เป็น JSON
       ]
     );
 
@@ -84,7 +107,7 @@ export default async function handler(
       );
     }
 
-    console.log(`[Booking Created] ID: ${bookingId}, Promotion ID: ${promotion_id}, Discount: ${discount}`);
+    console.log(`[Booking Created] ID: ${bookingId}, Promotion ID: ${promotion_id}, Discount: ${discount}, Location: (${latitude}, ${longitude})`);
 
     return res.status(201).json({
       success: true,

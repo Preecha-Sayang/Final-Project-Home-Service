@@ -5,6 +5,8 @@ import DatePicker from '@/components/input/inputDatePicker/date_picker_select'
 import TimePicker from '@/components/input/inputTimePicker/time_picker_select'
 import InputField from '@/components/input/inputField/input_state'
 import InputDropdown from '@/components/input/inputDropdown/input_dropdown'
+import GoogleLocationPickerModal from '@/components/location/GoogleLocationPickerModal'
+import type { GeoPoint } from '@/types/location'
 import { format, parseISO, isToday, parse } from 'date-fns'
 import { useAuth } from '@/context/AuthContext'
 
@@ -67,6 +69,17 @@ const BookingDetailsForm: React.FC = () => {
   const [loadingDefaultAddress, setLoadingDefaultAddress] = useState(false)
   const [hasDefaultAddress, setHasDefaultAddress] = useState(false)
 
+  // 🗺️ Map modal state
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [mapLocation, setMapLocation] = useState<{ point: GeoPoint; place_name?: string } | undefined>(
+    customerInfo.latitude && customerInfo.longitude
+      ? {
+          point: { lat: customerInfo.latitude, lng: customerInfo.longitude },
+          place_name: address,
+        }
+      : undefined
+  )
+
   // Load provinces on component mount
   useEffect(() => {
     const fetchProvinces = async () => {
@@ -97,7 +110,7 @@ const BookingDetailsForm: React.FC = () => {
       try {
         setLoadingDefaultAddress(true)
         console.log('[BookingForm] Fetching default address...')
-        
+
         const response = await fetch('/api/profile/default-address', {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -141,21 +154,21 @@ const BookingDetailsForm: React.FC = () => {
 
     if (checked && defaultAddress) {
       console.log('[BookingForm] Filling form with default address:', defaultAddress)
-      
+
       // กรอกที่อยู่
       setAddress(defaultAddress.address)
-      
+
       // ตั้งค่า code
       const provCode = defaultAddress.province_code.toString()
       const distCode = defaultAddress.district_code.toString()
       const subdistCode = defaultAddress.subdistrict_code.toString()
-      
+
       setSelectedProvinceCode(provCode)
       setSelectedDistrictCode(distCode)
       setSelectedSubdistrictCode(subdistCode)
 
       // ดึงชื่อจังหวัด
-      const provinceData = provinces.find(p => p.province_code === defaultAddress.province_code)
+      const provinceData = provinces.find((p) => p.province_code === defaultAddress.province_code)
       if (provinceData) {
         setProvince(provinceData.province_name_th)
       }
@@ -166,7 +179,7 @@ const BookingDetailsForm: React.FC = () => {
         if (districtRes.ok) {
           const districtData = await districtRes.json()
           setDistricts(districtData)
-          
+
           // ดึงชื่ออำเภอ
           const districtInfo = districtData.find((d: District) => d.district_code === defaultAddress.district_code)
           if (districtInfo) {
@@ -179,9 +192,11 @@ const BookingDetailsForm: React.FC = () => {
         if (subdistrictRes.ok) {
           const subdistrictData = await subdistrictRes.json()
           setSubdistricts(subdistrictData)
-          
+
           // ดึงชื่อตำบล
-          const subdistrictInfo = subdistrictData.find((s: Subdistrict) => s.subdistrict_code === defaultAddress.subdistrict_code)
+          const subdistrictInfo = subdistrictData.find(
+            (s: Subdistrict) => s.subdistrict_code === defaultAddress.subdistrict_code
+          )
           if (subdistrictInfo) {
             setSubDistrict(subdistrictInfo.subdistrict_name_th)
           }
@@ -201,11 +216,14 @@ const BookingDetailsForm: React.FC = () => {
       setSelectedSubdistrictCode('')
       setDistricts([])
       setSubdistricts([])
+      // Clear map location
+      setMapLocation(undefined)
     }
   }
 
-  // Update store when form values change
+  // 🔧 Update store when form values OR mapLocation change
   useEffect(() => {
+    console.log('[BookingForm] Updating store with mapLocation:', mapLocation)
     updateCustomerInfo({
       serviceDate: serviceDate ? parseISO(serviceDate.split('-').reverse().join('-')) : null,
       serviceTime,
@@ -214,10 +232,20 @@ const BookingDetailsForm: React.FC = () => {
       district,
       subDistrict,
       additionalInfo,
-      latitude: customerInfo.latitude,
-      longitude: customerInfo.longitude,
+      latitude: mapLocation?.point.lat ?? null,
+      longitude: mapLocation?.point.lng ?? null,
     })
-  }, [serviceDate, serviceTime, address, province, district, subDistrict, additionalInfo, updateCustomerInfo, customerInfo.latitude, customerInfo.longitude])
+  }, [
+    serviceDate,
+    serviceTime,
+    address,
+    province,
+    district,
+    subDistrict,
+    additionalInfo,
+    mapLocation,
+    updateCustomerInfo,
+  ])
 
   // Handle province selection
   const handleProvinceChange = async (provinceCode: string) => {
@@ -227,7 +255,7 @@ const BookingDetailsForm: React.FC = () => {
     setSelectedSubdistrictCode('')
 
     // หาชื่อจังหวัด
-    const provinceData = provinces.find(p => p.province_code === code)
+    const provinceData = provinces.find((p) => p.province_code === code)
     if (provinceData) {
       setProvince(provinceData.province_name_th)
 
@@ -246,6 +274,8 @@ const BookingDetailsForm: React.FC = () => {
       // Reset ค่าอื่นๆ
       setDistrict('')
       setSubDistrict('')
+      // Clear map location when address changes
+      setMapLocation(undefined)
     }
   }
 
@@ -256,7 +286,7 @@ const BookingDetailsForm: React.FC = () => {
     setSelectedSubdistrictCode('')
 
     // หาชื่ออำเภอ
-    const districtData = districts.find(d => d.district_code === code)
+    const districtData = districts.find((d) => d.district_code === code)
     if (districtData) {
       setDistrict(districtData.district_name_th)
 
@@ -273,6 +303,8 @@ const BookingDetailsForm: React.FC = () => {
 
       // Reset ค่าอื่นๆ
       setSubDistrict('')
+      // Clear map location when address changes
+      setMapLocation(undefined)
     }
   }
 
@@ -282,24 +314,48 @@ const BookingDetailsForm: React.FC = () => {
     setSelectedSubdistrictCode(subdistrictCode)
 
     // หาชื่อตำบล
-    const subdistrictData = subdistricts.find(s => s.subdistrict_code === code)
+    const subdistrictData = subdistricts.find((s) => s.subdistrict_code === code)
     if (subdistrictData) {
       setSubDistrict(subdistrictData.subdistrict_name_th)
+      // Clear map location when address changes
+      setMapLocation(undefined)
     }
+  }
+
+  // 🗺️ Handle map confirmation
+  const handleMapConfirm = (picked: { point: GeoPoint; place_name?: string }) => {
+    console.log('[BookingForm] Map location confirmed:', picked)
+    setMapLocation(picked)
+
+    // อัพเดทที่อยู่จาก place_name ถ้ามี
+    if (picked.place_name && !address) {
+      setAddress(picked.place_name)
+    }
+  }
+
+  // 🗺️ Get center point for map
+  const getMapCenter = (): GeoPoint => {
+    // ถ้ามี mapLocation ให้ใช้
+    if (mapLocation) {
+      return mapLocation.point
+    }
+    // ถ้ามีใน customerInfo
+    if (customerInfo.latitude && customerInfo.longitude) {
+      return { lat: customerInfo.latitude, lng: customerInfo.longitude }
+    }
+    // Default: Bangkok
+    return { lat: 13.736717, lng: 100.523186 }
   }
 
   // คำนวณเวลาขั้นต่ำสำหรับ TimePicker (ถ้าเลือกวันปัจจุบัน)
   const minTime = useMemo(() => {
     if (!serviceDate) return undefined
-
     try {
       const selectedDate = parse(serviceDate, 'dd-MM-yyyy', new Date())
-
       if (isToday(selectedDate)) {
         const now = new Date()
         const currentMinutes = now.getMinutes()
         const roundedMinutes = Math.ceil((currentMinutes + 15) / 15) * 15
-
         let hour = now.getHours()
         let minute = roundedMinutes
 
@@ -317,7 +373,6 @@ const BookingDetailsForm: React.FC = () => {
     } catch (error) {
       console.error('Error parsing date:', error)
     }
-
     return undefined
   }, [serviceDate])
 
@@ -345,88 +400,93 @@ const BookingDetailsForm: React.FC = () => {
   }
 
   // Prepare options for dropdowns
-  const provinceOptions = provinces.map(p => ({
+  const provinceOptions = provinces.map((p) => ({
     label: p.province_name_th,
     value: p.province_code.toString(),
   }))
 
-  const districtOptions = districts.map(d => ({
+  const districtOptions = districts.map((d) => ({
     label: d.district_name_th,
     value: d.district_code.toString(),
   }))
 
-  const subdistrictOptions = subdistricts.map(s => ({
+  const subdistrictOptions = subdistricts.map((s) => ({
     label: s.subdistrict_name_th,
     value: s.subdistrict_code.toString(),
   }))
 
   return (
-    <div className="bg-white rounded-lg shadow p-4 md:p-6 space-y-6">
-      <h2 className="text-lg md:text-xl font-semibold text-gray-800">กรอกข้อมูลบริการ</h2>
+    <>
+      <div className="bg-white rounded-lg shadow p-4 md:p-6 space-y-6">
+        <h2 className="text-lg md:text-xl font-semibold text-gray-800">กรอกข้อมูลบริการ</h2>
 
-      {/* วันที่และเวลา */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <DatePicker
-          label="วันที่สะดวกใช้บริการ*"
-          value={serviceDate}
-          onChange={setServiceDate}
-          placeholder="กรุณาเลือกวันที่"
-          min={format(new Date(), 'dd-MM-yyyy')}
-        />
-        <TimePicker
-          label="เวลาที่สะดวกใช้บริการ*"
-          value={serviceTime}
-          onChange={setServiceTime}
-          placeholder="กรุณาเลือกเวลา"
-          step={15}
-          minTime={minTime}
-        />
-      </div>
+        {/* วันที่และเวลา */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <DatePicker
+            label="วันที่สะดวกใช้บริการ*"
+            value={serviceDate}
+            onChange={setServiceDate}
+            placeholder="กรุณาเลือกวันที่"
+            min={format(new Date(), 'dd-MM-yyyy')}
+          />
+          <TimePicker
+            label="เวลาที่สะดวกใช้บริการ*"
+            value={serviceTime}
+            onChange={setServiceTime}
+            placeholder="กรุณาเลือกเวลา"
+            step={15}
+            minTime={minTime}
+          />
+        </div>
 
-      {/* ที่อยู่ */}
-      <div className="w-full">
-        <InputField
-          label="ที่อยู่*"
-          placeholder="กรุณากรอกที่อยู่"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          rightIcon={<MapPin className="h-4 w-4" />}
-          disabled={useDefaultAddress}
-        />
-      </div>
+        {/* ที่อยู่ */}
+        <div className="w-full">
+          <InputField
+            label="ที่อยู่*"
+            placeholder="กรุณากรอกที่อยู่"
+            value={address}
+            onChange={(e) => {
+              setAddress(e.target.value)
+              // Clear map location when address is manually changed
+              if (e.target.value !== mapLocation?.place_name) {
+                setMapLocation(undefined)
+              }
+            }}
+            rightIcon={<MapPin className="h-4 w-4" />}
+            disabled={useDefaultAddress}
+          />
+        </div>
 
-      {/* จังหวัด > อำเภอ > ตำบล */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <InputDropdown
-          label="จังหวัด*"
-          value={selectedProvinceCode}
-          onChange={handleProvinceChange}
-          options={provinceOptions}
-          placeholder="เลือกจังหวัด"
-          disabled={useDefaultAddress}
-        />
+        {/* จังหวัด > อำเภอ > ตำบล */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <InputDropdown
+            label="จังหวัด*"
+            value={selectedProvinceCode}
+            onChange={handleProvinceChange}
+            options={provinceOptions}
+            placeholder="เลือกจังหวัด"
+            disabled={useDefaultAddress}
+          />
+          <InputDropdown
+            label="เขต / อำเภอ*"
+            value={selectedDistrictCode}
+            onChange={handleDistrictChange}
+            options={districtOptions}
+            placeholder="เลือกเขต / อำเภอ"
+            disabled={!selectedProvinceCode || useDefaultAddress}
+          />
+          <InputDropdown
+            label="แขวง / ตำบล*"
+            value={selectedSubdistrictCode}
+            onChange={handleSubdistrictChange}
+            options={subdistrictOptions}
+            placeholder="เลือกแขวง / ตำบล"
+            disabled={!selectedDistrictCode || useDefaultAddress}
+          />
+        </div>
 
-        <InputDropdown
-          label="เขต / อำเภอ*"
-          value={selectedDistrictCode}
-          onChange={handleDistrictChange}
-          options={districtOptions}
-          placeholder="เลือกเขต / อำเภอ"
-          disabled={!selectedProvinceCode || useDefaultAddress}
-        />
-
-        <InputDropdown
-          label="แขวง / ตำบล*"
-          value={selectedSubdistrictCode}
-          onChange={handleSubdistrictChange}
-          options={subdistrictOptions}
-          placeholder="เลือกแขวง / ตำบล"
-          disabled={!selectedDistrictCode || useDefaultAddress}
-        />
-      </div>
-
-      {/* Checkbox ใช้ที่อยู่เริ่มต้น - ใช้ Checkbox component */}
-      {hasDefaultAddress && defaultAddress && (
+        {/* Checkbox ใช้ที่อยู่เริ่มต้น */}
+        {hasDefaultAddress && defaultAddress && (
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -443,17 +503,73 @@ const BookingDetailsForm: React.FC = () => {
               <span className="text-gray-400 ">ใช้ที่อยู่เริ่มต้น</span>
             </label>
           </div>
-      )}
-      
-      {/* ข้อมูลเพิ่มเติม */}
-      <InputField
-        label="ระบุข้อมูลเพิ่มเติม"
-        placeholder="กรุณากรอกข้อมูลเพิ่มเติม"
-        value={additionalInfo}
-        onChange={(e) => setAdditionalInfo(e.target.value)}
-        textarea
+        )}
+
+        {/* 🗺️ ปุ่มเปิดแผนที่ */}
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={() => setShowMapModal(true)}
+            disabled={!address || !province || !district || !subDistrict}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg border-2 border-blue-200 hover:border-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-200"
+          >
+            <MapPin className="h-5 w-5" />
+            <span className="font-medium">
+              {mapLocation ? 'ตรวจสอบตำแหน่งอีกครั้ง' : 'ระบุตำแหน่งบนแผนที่ (Required)'}
+            </span>
+          </button>
+
+          {/* แสดงสถานะพิกัด */}
+          {mapLocation && (
+            <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <svg className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-green-800">✅ ตำแหน่งถูกระบุแล้ว</p>
+                <p className="text-xs text-green-600 mt-1 break-all">
+                  พิกัด: {mapLocation.point.lat.toFixed(6)}, {mapLocation.point.lng.toFixed(6)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* คำเตือนถ้ายังไม่ได้ระบุพิกัด */}
+          {!mapLocation && address && province && district && subDistrict && (
+            <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <svg className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-red-800">⚠️ กรุณาระบุตำแหน่งบนแผนที่</p>
+                <p className="text-xs text-red-600 mt-1">
+                  จำเป็นต้องระบุพิกัดเพื่อให้ช่างสามารถหาตำแหน่งของคุณได้อย่างถูกต้อง
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ข้อมูลเพิ่มเติม */}
+        <InputField
+          label="ระบุข้อมูลเพิ่มเติม"
+          placeholder="กรุณากรอกข้อมูลเพิ่มเติม"
+          value={additionalInfo}
+          onChange={(e) => setAdditionalInfo(e.target.value)}
+          textarea
+        />
+      </div>
+
+      {/* 🗺️ Map Modal */}
+      <GoogleLocationPickerModal
+        open={showMapModal}
+        onClose={() => setShowMapModal(false)}
+        onConfirm={handleMapConfirm}
+        initial={mapLocation ?? { point: getMapCenter(), place_name: address }}
+        hideHeader={false}
+        hideActions={false}
       />
-    </div>
+    </>
   )
 }
 
