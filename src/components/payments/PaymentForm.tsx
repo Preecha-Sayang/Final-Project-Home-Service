@@ -51,14 +51,14 @@ interface OmiseTokenResponse {
 const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
   ({ totalPrice, onPaymentSuccess, onPaymentError }, ref) => {
     const router = useRouter();
-    
+
     // ดึงข้อมูลจาก booking store
     const { getActiveCartItems, getFinalAmount, customerInfo, paymentInfo } =
       useBookingStore();
-    
+
     // ดึงข้อมูล user จาก auth context
     const { accessToken } = useAuth();
-    
+
     // ฟังก์ชันดึง user_id จาก JWT token
     const getUserIdFromToken = () => {
       if (!accessToken) return 1; // default user_id
@@ -84,14 +84,14 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
     // ป้องกันกดชำระเงินซ้ำ/แสดงสถานะระหว่างรอ
     const [processing, setProcessing] = useState(false);
     const { payment } = usePaymentStore();
-    const { 
-      discount, 
+    const {
+      discount,
       promotionId,
       promotionCode,
       discountType,
       discountValue,
       setPromotion,
-      clearPromotion 
+      clearPromotion,
     } = usePromotionStore();
 
     const handleChange = (name: string, value: string) => {
@@ -139,6 +139,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
       const [mm, yy] = (mmYY || "").split("/");
       const month = Number(mm);
       const year = Number("20" + String(yy || "").padStart(2, "0"));
+
       if (!month || month < 1 || month > 12 || !year) return null;
       return { month, year };
     };
@@ -152,6 +153,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
         // ดึงวิธีชำระเงินที่ผู้ใช้เลือกจาก localStorage
         const selectedPayment =
           localStorage.getItem("selectedPayment") || "credit_card";
+
         const amountBaht = totalPrice && totalPrice > 0 ? totalPrice : 0;
 
         if (form.credit_card_number === "") {
@@ -226,6 +228,13 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
               return;
             }
 
+            // 🗺️ ตรวจสอบพิกัด
+            if (!customerInfo.latitude || !customerInfo.longitude) {
+              alert("กรุณาระบุตำแหน่งบนแผนที่ก่อนชำระเงิน");
+              setProcessing(false);
+              return;
+            }
+
             const bookingData = {
               user_id: getUserIdFromToken(),
               items: cartItems.map((item) => ({
@@ -252,7 +261,15 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
               },
               promotion_id: promotionId,
               charge_id: null,
+              // 🗺️ ส่งพิกัดไปด้วย
+              latitude: customerInfo.latitude,
+              longitude: customerInfo.longitude,
             };
+
+            console.log('[PaymentForm] Booking data with location:', {
+              latitude: customerInfo.latitude,
+              longitude: customerInfo.longitude,
+            });
 
             const bookingRes = await fetch("/api/bookings/create", {
               method: "POST",
@@ -262,63 +279,68 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
 
             const bookingResult = await bookingRes.json();
 
-            if (bookingResult.success) {
-              // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
-              const res = await fetch("/api/payment", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  amount: discount > 0 ? amountBaht - discount : amountBaht,
-                  method: "credit_card",
-                  tokenId: tokenRes.id,
-                  booking_id: bookingResult.booking_id,
-                }),
-              });
+            // 🔧 แก้ไข: ตรวจสอบ success ก่อน
+            if (!bookingResult.success) {
+              clearPromotion();
+              const errorMsg =
+                "การบันทึกข้อมูลล้มเหลว: " + (bookingResult.error || bookingResult.message || "ไม่ทราบสาเหตุ");
+              console.error("[PaymentForm] Booking creation failed:", bookingResult);
+              alert(errorMsg);
+              if (onPaymentError) onPaymentError(errorMsg);
+              setProcessing(false);
+              return;
+            }
 
-              const result = await res.json();
-              chargeId = result.chargeId || result.charge_id || "";
+            // เรียก API ที่เราสร้างจาก (Omise) โดยส่ง tokenId ไม่ใช่เลขบัตร
+            const res = await fetch("/api/payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                amount: discount > 0 ? amountBaht - discount : amountBaht,
+                method: "credit_card",
+                tokenId: tokenRes.id,
+                booking_id: bookingResult.booking_id,
+              }),
+            });
 
-              if (result.status === "success") {
-                // บันทึกการใช้ promotion code ลง database
-                if (promotionId && promotionCode) {
-                  try {
-                    const usageRes = await fetch("/api/promotionsusage", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        promotion_id: promotionId,
-                        booking_id: bookingResult.booking_id,
-                      }),
-                    });
-                    
-                    if (!usageRes.ok) {
-                      console.error("Failed to save promotion usage");
-                    }
-                  } catch (usageError) {
-                    console.error("Error saving promotion usage:", usageError);
+            const result = await res.json();
+            chargeId = result.chargeId || result.charge_id || "";
+
+            if (result.status === "success") {
+              // บันทึกการใช้ promotion code ลง database
+              if (promotionId && promotionCode) {
+                try {
+                  const usageRes = await fetch("/api/promotionsusage", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      promotion_id: promotionId,
+                      booking_id: bookingResult.booking_id,
+                    }),
+                  });
+
+                  if (!usageRes.ok) {
+                    console.error("Failed to save promotion usage");
                   }
+                } catch (usageError) {
+                  console.error("Error saving promotion usage:", usageError);
                 }
+              }
 
-                // ล้างข้อมูล promotion
-                clearPromotion();
-                alert("ชำระเงินสำเร็จ!");
+              // ล้างข้อมูล promotion
+              clearPromotion();
+              alert("ชำระเงินสำเร็จ!");
 
-                if (onPaymentSuccess) {
-                  onPaymentSuccess(bookingResult.booking_id, chargeId);
-                } else {
-                  // Redirect พร้อม bookingId และ chargeId
-                  router.push(
-                    `/payment/summary?bookingId=${bookingResult.booking_id}&chargeId=${chargeId}`
-                  );
-                }
+              if (onPaymentSuccess) {
+                onPaymentSuccess(bookingResult.booking_id, chargeId);
               } else {
-                // ถ้าบันทึกไม่สำเร็จ แต่ชำระเงินสำเร็จแล้ว
-                clearPromotion();
-                console.error("Failed to save booking:", bookingResult);
-                alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-                router.push(`/payment/summary?chargeId=${chargeId}`);
+                // Redirect พร้อม bookingId และ chargeId
+                router.push(
+                  `/payment/summary?bookingId=${bookingResult.booking_id}&chargeId=${chargeId}`
+                );
               }
             } else {
+              // ชำระเงินไม่สำเร็จ
               clearPromotion();
               const errorMsg =
                 "การชำระเงินล้มเหลว: " + (result.message || "ไม่ทราบสาเหตุ");
@@ -328,8 +350,8 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
           } catch (bookingError) {
             clearPromotion();
             console.error("Booking creation error:", bookingError);
-            alert("ชำระเงินสำเร็จ แต่เกิดข้อผิดพลาดในการบันทึกข้อมูล");
-            router.push(`/payment/summary?chargeId=${chargeId}`);
+            alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล: " + (bookingError instanceof Error ? bookingError.message : ""));
+            if (onPaymentError) onPaymentError("Booking error");
           }
         } else if (selectedPayment === "qr") {
           const res = await fetch("/api/payment", {
@@ -337,6 +359,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ amount: amountBaht, method: "qr" }),
           });
+
           const result = await res.json();
 
           if (result.status === "pending" && result.qr_url) {
@@ -379,7 +402,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
 
         if (data.ok && data.promotion) {
           alert(data.message);
-          
+
           let calculatedDiscount = 0;
           if (data.promotion.discount_type === "fixed") {
             calculatedDiscount = Number(data.promotion.discount_value);
