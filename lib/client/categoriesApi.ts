@@ -10,21 +10,21 @@ import type {
 } from "@/types/category";
 
 export async function listCategories(): Promise<CategoryRow[]> {
-    const r = await fetch("/api/__categories_demo");
+    const r = await fetch("/api/categories");
     const d = (await r.json()) as CategoryListOk | CategoryErr;
     if (!("ok" in d) || !d.ok) throw new Error((d as CategoryErr).message || "Load failed");
     return d.categories;
 }
 
 export async function getCategory(id: CategoryId | string): Promise<CategoryRow> {
-    const r = await fetch(`/api/__categories_demo/${id}`);
+    const r = await fetch(`/api/categories/${id}`);
     const d = (await r.json()) as CategoryOneOk | CategoryErr;
     if (!("ok" in d) || !d.ok) throw new Error((d as CategoryErr).message || "Not found");
     return d.category;
 }
 
 export async function createCategory(payload: CategoryCreatePayload): Promise<CategoryRow> {
-    const r = await fetch("/api/__categories_demo", {
+    const r = await fetch("/api/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -38,7 +38,7 @@ export async function updateCategory(
     id: CategoryId | string,
     payload: CategoryUpdatePayload
 ): Promise<CategoryRow> {
-    const r = await fetch(`/api/__categories_demo/${id}`, {
+    const r = await fetch(`/api/categories/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -49,7 +49,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: CategoryId | string): Promise<void> {
-    const r = await fetch(`/api/__categories_demo/${id}`, { method: "DELETE" });
+    const r = await fetch(`/api/categories/${id}`, { method: "DELETE" });
     if (!r.ok) {
         const d = (await r.json()) as CategoryErr;
         throw new Error(d.message || "Delete failed");
@@ -57,7 +57,7 @@ export async function deleteCategory(id: CategoryId | string): Promise<void> {
 }
 
 export async function reorderCategories(ids: CategoryId[]): Promise<void> {
-    const r = await fetch("/api/__categories_demo/reorder", {
+    const r = await fetch("/apicategories/reorder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids } satisfies ReorderPayload),

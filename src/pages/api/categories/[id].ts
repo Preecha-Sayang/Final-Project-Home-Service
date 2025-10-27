@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method === "GET") {
         const rows = await sql/*sql*/`
-            SELECT  catergory_id, name, bg_color_hex, text_color_hex, ring_color_hex, position FROM service_categories 
+            SELECT  category_id, name, bg_color_hex, text_color_hex, ring_color_hex, create_at, update_at, position FROM service_categories 
             WHERE category_id = ${id}
             LiMIT 1
         `;
