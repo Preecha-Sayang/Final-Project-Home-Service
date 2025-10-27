@@ -37,24 +37,12 @@ export default function Home() {
                 alt="Professional Technician"
                 width={390}
                 height={390}
+                priority
                 className=" max-w-[390px] md:max-w-[480px] relative  md:right-5 md:top-1 h-auto object-contain pl-12 md:pl-0 ml-0 "
               />
             </div>
           </div>
         </section>
-          {/* รูป */}
-          <div className=" justify-end items-end w-auto relative ">
-            <Image
-              src="/images/technicain.png"
-              alt="Professional Technician"
-              width={480}
-              height={480}
-              priority
-              className=" max-w-[390px] md:max-w-[480px] relative bottom-0 right-0 md:left-10 md:top-4 h-auto object-contain pl-12 md:pl-0 ml-0 "
-            />
-          </div>
-        </div>
-      </section>
 
             {/* Our Services Section */}
             <section className="py-16 bg-[var(--gray-100)]">

@@ -38,12 +38,13 @@ async function handler(req: AuthenticatedNextApiRequest, res: NextApiResponse) {
         COALESCE(b.address_data->>'district', '') || ' ' ||
         COALESCE(b.address_data->>'province', '') AS address,
         s.name AS status_name,
-        a.name AS admin_name,
+        tp.first_name AS admin_name,
         u.email AS user_email,
         p.code AS promo_code
       FROM booking AS b
       INNER JOIN status AS s ON b.status_id = s.status_id
       LEFT JOIN admin AS a ON b.admin_id = a.admin_id
+      LEFT JOIN technician_profiles AS tp ON b.admin_id = tp.admin_id
       INNER JOIN users AS u ON b.user_id = u.user_id
       LEFT JOIN promotions AS p ON b.promotion_id = p.promotion_id
       WHERE u.email = ${email}

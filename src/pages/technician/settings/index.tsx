@@ -305,6 +305,7 @@ export default function TechnicianCombinedSettingsPage() {
                 <input
                     className="cursor-pointer w-full md:w-[400px] border border-[var(--gray-300)] rounded-lg px-3 py-2 text-m text-[var(--gray-900)] focus:outline-none focus:ring-2 focus:ring-[var(--blue-300)]"
                      value={loading ? "กำลังดึงข้อมูล…" : addressText || "—"}
+                     disabled
                 />
                <button
                    type="button"
