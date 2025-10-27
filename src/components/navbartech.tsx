@@ -55,7 +55,7 @@ function NavbarTechnician({ menuItems }: NavbarProps) {
   }, [open]);
 
   return (
-    <div className="bg-[var(--blue-950)] md:w-[240px] md:h-screen flex flex-row md:flex-col justify-between md:justify-center items-center px-[20px] md:px-0 rounded-none">
+    <div className="bg-[var(--blue-950)] md:w-[240px] md:h-screen flex flex-row md:flex-col justify-between md:justify-center items-center px-[20px] md:px-0 rounded-none sticky top-0 z-50">
       {/* Header */}
       <div
         id="header"

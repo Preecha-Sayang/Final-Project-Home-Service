@@ -6,9 +6,10 @@ interface ButtonProps {
   disabled?: boolean;
   className?: string;
   type?: "button" | "submit" | "reset";
+  autoWidth?: boolean;
 }
 
-function ButtonPrimary({ onClick, disabled,className, children, type = "button" }: ButtonProps) {
+function ButtonPrimary({ onClick, disabled,className, children, type = "button", autoWidth }: ButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleClick = async () => {
@@ -22,7 +23,7 @@ function ButtonPrimary({ onClick, disabled,className, children, type = "button" 
   };
 
   const baseClass = `
-    w-[160px] h-[45px] px-[24px] py-[10px] text-[16px] font-medium rounded-xl
+    ${autoWidth ? "w-auto" : "w-[160px]"} h-[45px] px-[24px] py-[10px] text-[16px] font-medium rounded-xl
     box-border border-none flex items-center justify-center gap-2
      transition-colors duration-200
   `;

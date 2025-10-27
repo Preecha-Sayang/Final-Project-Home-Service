@@ -1,31 +1,64 @@
-import { useEffect } from "react";
+"use client";
+import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
-type StatusListenerProps = {
-  userId: number;
-  onNewNotification: (data: { booking_id: number; new_status: string }) => void;
+type Notification = {
+  booking_id: number;
+  order_code: string;
+  new_status: string;
 };
 
-let socket: Socket;
+type Props = {
+  userId: number;
+  onNewNotification: (data: Notification) => void;
+};
 
-export default function StatusListener({ userId, onNewNotification }: StatusListenerProps) {
+// ใช้ singleton socket เพื่อ reconnect-safe
+let socket: Socket | null = null;
+
+export default function StatusListener({ userId, onNewNotification }: Props) {
+  const onNewNotificationRef = useRef(onNewNotification);
+  useEffect(() => {
+    onNewNotificationRef.current = onNewNotification;
+  }, [onNewNotification]);
+
   useEffect(() => {
     if (!socket) {
-      socket = io({ path: "/api/socket" });
+      socket = io("http://localhost:3000", {
+        path: "/api/socket",
+        transports: ["polling", "websocket"],
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+      });
+
+      socket.on("connect", () => {
+        // console.log("🟢 Socket connected:", socket?.id);
+        socket?.emit("register", userId);
+      });
+
+      socket.on("disconnect", (reason) => {
+        console.log("⚠️ Socket disconnected:", reason);
+      });
+
+      socket.on("connect_error", (err) => {
+        console.warn("⚠️ Socket connect error (ignored in dev):", err.message);
+      });
+    } else {
+      // ถ้า socket already connected, register userId
+      if (socket.connected) socket.emit("register", userId);
     }
 
-    // สมัครเข้าห้องของ user
-    socket.emit("register", userId);
+    const handleStatusUpdate = (data: Notification) => {
+      onNewNotificationRef.current(data);
+    };
 
-    // ฟัง event statusUpdate
-    socket.on("statusUpdate", (data) => {
-      onNewNotification(data);
-    });
+    socket.on("statusUpdate", handleStatusUpdate);
 
     return () => {
-      socket.off("statusUpdate");
+      socket?.off("statusUpdate", handleStatusUpdate);
     };
-  }, [userId, onNewNotification]);
+  }, [userId]);
 
   return null;
 }

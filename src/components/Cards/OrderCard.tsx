@@ -126,6 +126,7 @@ function OrderCard({
             <ButtonPrimary
               onClick={onViewDetails}
               disabled={!onViewDetails}
+              autoWidth={detail === "ได้แสดงความคิดเห็นแล้ว" || detail === "แสดงความคิดเห็น"}
             >
               {detail}
             </ButtonPrimary>

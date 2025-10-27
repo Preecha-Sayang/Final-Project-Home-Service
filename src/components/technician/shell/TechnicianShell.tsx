@@ -34,7 +34,7 @@ export default function TechnicianShell({ children }: TechnicianShellProps) {
   ];
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-[240px_1fr]">
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-[240px_1fr] ">
       {/* Sidebar + Navbar responsive */}
       <NavbarTechnician menuItems={menuItems} />
 

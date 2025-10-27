@@ -37,6 +37,7 @@ export default function Home() {
                 alt="Professional Technician"
                 width={390}
                 height={390}
+                priority
                 className=" max-w-[390px] md:max-w-[480px] relative  md:right-5 md:top-1 h-auto object-contain pl-12 md:pl-0 ml-0 "
               />
             </div>
