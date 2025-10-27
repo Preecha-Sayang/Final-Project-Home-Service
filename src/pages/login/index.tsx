@@ -133,14 +133,17 @@ const onSubmit = async (data: LoginFormInputs) => {
             <span>ยังไม่มีบัญชีผู้ใช้ HomeService?</span>
             
             <ButtonGhost onClick={() => {
-              const redirect = router.query.redirect as string;
-              if (redirect) {
-                router.push(`/register?redirect=${encodeURIComponent(redirect)}`);
-              } else {
                 router.push("/register");
-              }
             }}>
               <span>ลงทะเบียน</span>
+            </ButtonGhost>
+            
+            <p>หรือ</p>
+            
+              <ButtonGhost onClick={() => {
+                router.push("/forgetpassword");
+            }}>
+              <span>ลืมรหัสผ่าน</span>
             </ButtonGhost>
           </div>
         </div>
