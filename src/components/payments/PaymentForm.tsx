@@ -147,6 +147,16 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
       return { month, year };
     };
 
+    // ส่งพิกัดที่ปักไปบันทึกหลัง “ชำระเงินสำเร็จ”
+    const placeName =
+      [customerInfo.address, customerInfo.subDistrict, customerInfo.district, customerInfo.province]
+        .filter(Boolean)
+        .join(" ") || null;
+    const pinnedLocation =
+      typeof customerInfo.latitude === "number" && typeof customerInfo.longitude === "number"
+        ? { lat: customerInfo.latitude, lng: customerInfo.longitude, place_name: placeName }
+        : null;
+
     // ---------- ฟังก์ชันหลัก: ยืนยันการชำระเงิน -----------//
     const handlePayment = async () => {
       try {
@@ -281,6 +291,8 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
                 longitude: customerInfo.longitude,
               },
               promotion_id: promotionId,
+              // แยก pinned_location ชัดเจน
+              pinned_location: pinnedLocation,
               charge_id: null,
               // 🗺️ ส่งพิกัดไปด้วย
               latitude: customerInfo.latitude,

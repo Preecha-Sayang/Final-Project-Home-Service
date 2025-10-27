@@ -65,4 +65,13 @@ export type BookingNearby = {
     item_names?: string[];
     service_titles?: string[];
     sub_items?: BookingSubItem[];
+    pinned_location?: PinnedLocation | null;
+};
+
+// geo point จากการปักหมุดหน้า booking นะ
+export type PinnedLocation = {
+  lat: number;
+  lng: number;
+  text?: string;
+  place_name?: string | null;
 };

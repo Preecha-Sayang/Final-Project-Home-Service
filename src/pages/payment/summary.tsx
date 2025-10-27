@@ -1,31 +1,40 @@
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import PaymentSummary from "@/components/payments/Payment_summary";
-import Navbar from "@/components/navbar/navbar";
-import { Footer } from "@/components/footer";
+import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
+import PaymentSummary from '@/components/payments/Payment_summary'
+import Navbar from '@/components/navbar/navbar'
+import { Footer } from '@/components/footer'
+import GoogleLocationPickerModal, { Picked } from "@/components/location/GoogleLocationPickerModal";
+
+//สำหรับดูแผนที่
+type PinnedLocation = {
+  lat: number;
+  lng: number;
+  place_name?: string | null;
+};
 
 interface BookingData {
   booking_id: number;
   service_name: string;
   items: Array<{
-    title: string;
-    price: number;
-    quantity: number;
-    unit: string;
-  }>;
-  total_amount: number;
-  discount_amount: number;
-  final_amount: number;
-  promo_code: string | null;
-  service_date: string;
-  service_time: string;
-  address: string;
-  province: string;
-  district: string;
-  subdistrict: string;
-  additional_info: string | null;
-  status: string;
-  charge_id: string | null;
+    title: string
+    price: number
+    quantity: number
+    unit: string
+  }>
+  total_amount: number
+  discount_amount: number
+  final_amount: number
+  promo_code: string | null
+  service_date: string
+  service_time: string
+  address: string
+  province: string
+  district: string
+  subdistrict: string
+  additional_info: string | null
+  status: string
+  charge_id: string | null
+  pinned_location: PinnedLocation | null; //สำหรับดูแผนที่
 }
 
 export default function PaymentSummaryPage() {
@@ -35,6 +44,8 @@ export default function PaymentSummaryPage() {
   const [paymentVerified, setPaymentVerified] = useState(false);
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [mapOpen, setMapOpen] = useState(false); //สำหรับดูแผนที่
 
   useEffect(() => {
     if (router.isReady) {
@@ -230,6 +241,21 @@ export default function PaymentSummaryPage() {
     .filter(Boolean)
     .join(" ");
 
+  // สำหรับดูแผนที่
+  const mapInitial: Picked | undefined = bookingData?.pinned_location
+    ? {
+      point: {
+        lat: bookingData.pinned_location.lat,
+        lng: bookingData.pinned_location.lng,
+      },
+      place_name:
+        bookingData.pinned_location.place_name ||
+        [bookingData.address, bookingData.subdistrict, bookingData.district, bookingData.province]
+          .filter(Boolean)
+          .join(" "),
+    }
+    : undefined;
+
   return (
     <>
       <Navbar />
@@ -250,8 +276,31 @@ export default function PaymentSummaryPage() {
           clickevent={() => handleCheckRepairList()}
           eventname={"เช็ครายการซ่อม"}
         />
+        {/* ถ้ามีพิกัดจาก DB ให้โชว์ปุ่มดูแผนที่ */}
+        {mapInitial && (
+          <button
+            type="button"
+            onClick={() => setMapOpen(true)}
+            className="mt-2 inline-flex items-center gap-2 rounded-lg border border-[var(--gray-300)] bg-white px-4 py-2 text-sm text-[var(--gray-900)] hover:bg-[var(--gray-50)] cursor-pointer"
+          >
+            ดูแผนที่
+          </button>
+        )}
       </div>
       <Footer />
+
+      {/* Modal แสดงแผนที่แบบดูอย่างเดียว */}
+      {mapInitial && (
+        <GoogleLocationPickerModal
+          open={mapOpen}
+          onClose={() => setMapOpen(false)}
+          initial={mapInitial}
+          onConfirm={() => setMapOpen(false)}
+          readOnly
+          hideHeader
+          hideActions
+        />
+      )}
     </>
   );
 }

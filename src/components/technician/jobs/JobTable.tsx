@@ -4,6 +4,15 @@ import ConfirmDialogDanger from "@/components/dialog/confirm_dialog_danger";
 import GoogleLocationPickerModal, { Picked } from "@/components/location/GoogleLocationPickerModal";
 import { formatThaiDateTimeText } from "lib/client/date/thai";
 
+type AddressMetaLite = {
+    lat?: number;
+    lng?: number;
+    subdistrict?: string;
+    district?: string;
+    province?: string;
+    text?: string;
+} | null;
+
 type Props = {
     jobs: BookingNearby[];
     onAccept: (id: number) => Promise<boolean> | boolean;
@@ -63,10 +72,7 @@ export default function JobTable({ jobs, onAccept, onDecline }: Props) {
                             </div>
                         ) : null;
 
-                    const onOpenMap = () => {
-                        setMapJob(job); // เปิดได้เสมอ (มีพิกัดจริงจะซูมไปที่จริง, ไม่มีก็ fallback)
-                        setMapOpen(true);
-                    };
+                    const coords = pickCoords(job);
 
                     return (
                         <div key={job.booking_id} className="rounded-xl border p-5 bg-white">
@@ -108,19 +114,16 @@ export default function JobTable({ jobs, onAccept, onDecline }: Props) {
                                     <div className="flex text-base text-[var(--gray-700)]">
                                         <div className="w-[136px]">สถานที่</div>
                                         <span className="text-[var(--gray-900)]">{job.address_text ?? "—"}</span>
-
                                         <button
                                             type="button"
-                                            onClick={onOpenMap}
+                                            // onClick={onOpenMap}
+                                            onClick={() => { setMapJob(job); setMapOpen(true); }}
                                             className="inline-flex items-center gap-1 text-[var(--blue-700)] underline underline-offset-2 ml-2 cursor-pointer"
                                             title="ดูแผนที่"
                                         >
                                             <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                                <path
-                                                    d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6zm0 8.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"
-                                                    stroke="currentColor"
-                                                    strokeWidth={1.5}
-                                                />
+                                                <path d="M12 2C8.686 2 6 4.686 6 8c0 4.5 6 12 6 12s6-7.5 6-12c0-3.314-2.686-6-6-6zm0 8.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"
+                                                    stroke="currentColor" strokeWidth={1.5} />
                                             </svg>
                                             ดูแผนที่
                                         </button>
@@ -198,36 +201,32 @@ export default function JobTable({ jobs, onAccept, onDecline }: Props) {
 
 /** แปลง BookingNearby -> Picked พร้อม fallback */
 function makePickedFromJob(job: BookingNearby): Picked {
-    const meta = job.address_meta ?? null;
+    const meta: AddressMetaLite = (job.address_meta as AddressMetaLite) ?? null;
 
-    const lat: number | undefined =
-        typeof job.lat === "number"
-            ? job.lat
-            : typeof meta?.lat === "number"
-                ? meta.lat
-                : undefined;
+    const c = pickCoords(job) ?? { lat: 13.755082, lng: 100.493153 };
 
-    const lng: number | undefined =
-        typeof job.lng === "number"
-            ? job.lng
-            : typeof meta?.lng === "number"
-                ? meta.lng
-                : undefined;
-
-    // พิกัด: ถ้ามีจริงใช้จริง ไม่มีก็ fallback กรุงเทพฯ
-    const point =
-        lat !== undefined && lng !== undefined
-            ? { lat, lng }
-            : { lat: 13.736717, lng: 100.523186 };
-
-    // place_name: ใช้ address_text ก่อน ถ้าไม่มีให้ประกอบจาก meta
     const parts: string[] = [];
     if (meta?.subdistrict) parts.push(meta.subdistrict);
     if (meta?.district) parts.push(meta.district);
     if (meta?.province) parts.push(meta.province);
 
-    const joined = parts.join(" ").trim();
-    const place_name = job.address_text ?? (joined.length > 0 ? joined : undefined);
+    const place_name = job.address_text ?? (parts.length ? parts.join(" ") : undefined);
 
-    return { point, place_name };
+    return { point: c, place_name };
+}
+
+function pickCoords(job: BookingNearby): { lat: number; lng: number } | null {
+    if (job.pinned_location
+        && typeof job.pinned_location.lat === "number"
+        && typeof job.pinned_location.lng === "number") {
+        return { lat: job.pinned_location.lat, lng: job.pinned_location.lng };
+    }
+    if (typeof job.lat === "number" && typeof job.lng === "number") {
+        return { lat: job.lat, lng: job.lng };
+    }
+    const meta: AddressMetaLite = (job.address_meta as AddressMetaLite) ?? null;
+    if (typeof meta?.lat === "number" && typeof meta?.lng === "number") {
+        return { lat: meta.lat, lng: meta.lng };
+    }
+    return null;
 }
