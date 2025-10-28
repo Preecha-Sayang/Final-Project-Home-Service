@@ -1,5 +1,4 @@
-// src/pages/technician/pending/index.tsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Pagination } from "rsuite";
 import { formatThaiDateTimeText } from "lib/client/date/thai";
 import ConfirmManageJob from "@/components/dialog/ConfirmManageJob";
@@ -15,9 +14,13 @@ type Job = {
     order_code: string;
     service_name?: string | null;
     total_price?: number | null;
+    // เพิ่มสถานะ (optional เพื่อไม่กระทบที่อื่น)
+    status_id?: number | null;
 };
 
 const PAGE_SIZE = 10;
+// สถานะที่ต้อง “ไม่แสดง” ใน pending
+const STATUS_COMPLETED = 3;
 
 export default function TechnicianMyJobs() {
     const [items, setItems] = useState<Job[]>([]);
@@ -36,7 +39,7 @@ export default function TechnicianMyJobs() {
     // สำหรับเลื่อนขึ้นหัวตารางอย่างนุ่ม ๆ เมื่อเปลี่ยนหน้า (เหมือนหน้า JobTable)
     const topRef = useRef<HTMLDivElement | null>(null);
 
-    async function load() {
+    const load = useCallback(async () => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
@@ -46,12 +49,20 @@ export default function TechnicianMyJobs() {
 
             const res = await fetch(`/api/technician/jobs?${params.toString()}`, { cache: "no-store" });
             const data = await res.json();
-            setItems(Array.isArray(data?.items) ? data.items : []);
+
+            const raw: Job[] = Array.isArray(data?.items) ? data.items : [];
+            // กรอง Completed ออกไปจาก pending
+            const onlyPending = raw.filter((x) => (x?.status_id ?? null) !== STATUS_COMPLETED);
+
+            setItems(onlyPending);
         } finally {
             setLoading(false);
         }
-    }
-    useEffect(() => { load(); }, []);
+    }, [q]);
+
+    useEffect(() => {
+        void load();
+    }, [load]);
 
     const serviceOptions = useMemo(() => {
         const set = new Set<string>();
@@ -110,7 +121,7 @@ export default function TechnicianMyJobs() {
             // @ts-expect-error narrow at runtime
             if (res.ok && (data?.ok as boolean)) {
                 setOpen(false);
-                await load();
+                await load(); // reload แล้วงานที่ complete จะหายจากตารางทันที
             } else {
                 // @ts-expect-error narrow at runtime
                 alert((data?.message as string) || "อัปเดตสถานะไม่สำเร็จ");

@@ -18,24 +18,40 @@ export default function GoogleLocationPicker({
     onChange?: (v: PickValue) => void;
     open?: boolean;
 }) {
-    const [state, setState] = useState<PickValue>(value ?? { point: DEFAULT_BKK, place_name: "" });
+    const [state, setState] = useState<PickValue>(
+        value ?? { point: DEFAULT_BKK, place_name: "" }
+    );
     const [addressText, setAddressText] = useState<string>("");
+
     const timerRef = useRef<number | undefined>(undefined);
     const lastPointRef = useRef<GeoPoint>(state.point);
     const primedRef = useRef(false);
 
-    // sync จาก parent
+    // เก็บค่าจาก prop ครั้งก่อน เพื่อเทียบว่า prop เปลี่ยนจริงไหม
+    const lastPropRef = useRef<PickValue | undefined>(value);
+
+    // sync จาก parent (ดูเฉพาะค่า prop ไม่ดู state เพื่อไม่ให้ทับตำแหน่งที่ลาก)
     useEffect(() => {
         if (!value) return;
+        const prev = lastPropRef.current;
         const changed =
-            Math.abs(value.point.lat - state.point.lat) > EPS ||
-            Math.abs(value.point.lng - state.point.lng) > EPS ||
-            value.place_name !== state.place_name;
-        if (changed) setState(value);
+            !prev ||
+            Math.abs(value.point.lat - prev.point.lat) > EPS ||
+            Math.abs(value.point.lng - prev.point.lng) > EPS ||
+            value.place_name !== prev.place_name;
+
+        if (changed) {
+            setState(value);
+            lastPropRef.current = value;
+        }
     }, [value?.point.lat, value?.point.lng, value?.place_name]);
 
+    // เปิดโมดอลครั้งแรกแล้ว reverse geocode ให้
     useEffect(() => {
-        if (!open) { primedRef.current = false; return; }
+        if (!open) {
+            primedRef.current = false;
+            return;
+        }
         if (primedRef.current) return;
         primedRef.current = true;
 
@@ -65,8 +81,10 @@ export default function GoogleLocationPicker({
             onChange?.({ point: state.point, place_name: text });
         }, 250);
 
-        return () => { if (timerRef.current) window.clearTimeout(timerRef.current); };
-    }, [state.point.lat, state.point.lng, onChange]);
+        return () => {
+            if (timerRef.current) window.clearTimeout(timerRef.current);
+        };
+    }, [state.point, state.point.lat, state.point.lng, onChange]);
 
     return (
         <div className="space-y-3">
@@ -82,7 +100,9 @@ export default function GoogleLocationPicker({
             />
             <div className="text-sm text-gray-700">
                 <div className="font-medium mb-1">ที่อยู่</div>
-                <div className="rounded-xl border bg-gray-50 px-3 py-2">{addressText || "—"}</div>
+                <div className="rounded-xl border bg-gray-50 px-3 py-2">
+                    {addressText || "—"}
+                </div>
             </div>
         </div>
     );

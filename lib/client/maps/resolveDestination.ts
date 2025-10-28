@@ -1,4 +1,4 @@
-import type { BookingNearby, AddressMeta } from "@/types/booking";
+import type { BookingNearby } from "@/types/booking";
 import type { GeoPoint } from "@/types/location";
 import { geocodeText } from "./requests";
 

@@ -5,7 +5,7 @@ import ConfirmDialogDanger from "@/components/dialog/confirm_dialog_danger";
 import { formatThaiDateTimeText } from "lib/client/date/thai";
 import GoogleMapRouteView from "@/components/location/GoogleMapRouteView";
 import { useTechnicianLocation } from "@/stores/geoStore";
-import { resolveBestDestination, formatAddress } from "lib/client/maps/resolveDestination";
+import { formatAddress } from "lib/client/maps/resolveDestination";
 import type { GeoPoint } from "@/types/location";
 
 type Props = {
@@ -17,9 +17,10 @@ type Props = {
 type Mode = "accept" | "decline";
 
 const PAGE_SIZE = 10;
+const EMPTY: BookingNearby[] = [];
 
 export default function JobTable({ jobs, onAccept, onDecline }: Props) {
-    const list = jobs ?? [];
+    const list = jobs ?? EMPTY;
     const total = list.length;
 
     const [busy, setBusy] = useState(false);
@@ -59,12 +60,13 @@ export default function JobTable({ jobs, onAccept, onDecline }: Props) {
     const confirmWhen = useMemo(() => {
         if (!confirm.job) return null;
         return formatThaiDateTimeText(confirm.job.service_date, confirm.job.service_time);
-    }, [confirm.job?.service_date, confirm.job?.service_time]);
+        // เพิ่ม confirm.job ลงใน deps เพื่อให้ถูกต้องตามกฎ
+    }, [confirm.job?.service_date, confirm.job?.service_time, confirm.job]);
 
     return (
         <>
             <div ref={topRef} />
-            <div className="space-y-3 w-full">
+            <div className="space-y-3 w-full" data-busy={busy ? "1" : "0"}>
                 {total === 0 && <div className="text-sm text-[var(--gray-500)]">พบ 0 รายการ</div>}
 
                 {pagedJobs.map((job) => {
@@ -209,11 +211,7 @@ export default function JobTable({ jobs, onAccept, onDecline }: Props) {
                                                 )}
                                             </div>
                                         </div>
-
-
                                     </div>
-
-
 
                                     <div className="shrink-0 flex items-center gap-2">
                                         <button

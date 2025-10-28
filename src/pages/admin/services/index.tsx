@@ -33,7 +33,11 @@ function InUseDialog({
                 <div className="text-base font-semibold">เนื่องจากบริการ</div>
                 <div className="flex flex-col justify-center items-center  text-gray-700">
                     <div className="text-xl">
-                        {serviceName ? <><b>{serviceName}</b></> : null}
+                        {serviceName ? (
+                            <>
+                                <b>{serviceName}</b>
+                            </>
+                        ) : null}
                     </div>
                     <div>
                         ถูกใช้งานอยู่ใน <b>{count}</b> รายการจองของช่าง
@@ -42,9 +46,7 @@ function InUseDialog({
 
                 {technicians.length > 0 && (
                     <div className="mt-3 rounded-md bg-gray-50 p-3">
-                        <div className="mb-1 text-sm font-medium text-gray-800">
-                            ช่างที่เกี่ยวข้อง (บางส่วน)
-                        </div>
+                        <div className="mb-1 text-sm font-medium text-gray-800">ช่างที่เกี่ยวข้อง (บางส่วน)</div>
                         <ul className="list-inside list-disc text-sm text-gray-700">
                             {technicians.map((t, i) => (
                                 <li key={`${t}-${i}`}>{t}</li>
@@ -54,10 +56,7 @@ function InUseDialog({
                 )}
 
                 <div className="mt-4 flex justify-end gap-2">
-                    <button
-                        onClick={onClose}
-                        className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
-                    >
+                    <button onClick={onClose} className="rounded-lg border px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer">
                         ปิด
                     </button>
                 </div>
@@ -70,7 +69,9 @@ export default function AdminServicesPage() {
     const [items, setItems] = useState<ServiceItem[]>([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
-    const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: ServiceItem; loading?: boolean }>({ open: false });
+    const [confirmDel, setConfirmDel] = useState<{ open: boolean; item?: ServiceItem; loading?: boolean }>({
+        open: false,
+    });
     const [page, setPage] = useState(1);
 
     // 👉 state สำหรับ popup
@@ -92,13 +93,15 @@ export default function AdminServicesPage() {
                 setLoading(false);
             }
         })();
-        return () => { alive = false; };
+        return () => {
+            alive = false;
+        };
     }, []);
 
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
         if (!q) return items;
-        return items.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
+        return items.filter((s) => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
     }, [items, search]);
 
     // ตัดหน้า
@@ -111,10 +114,10 @@ export default function AdminServicesPage() {
     async function handleReorder(nextPageItems: ServiceItem[]) {
         const merged = [...items];
         const filteredStart = (page - 1) * PAGE_SIZE;
-        const filteredIdsInPage = filtered.slice(filteredStart, filteredStart + PAGE_SIZE).map(x => x.id);
+        const filteredIdsInPage = filtered.slice(filteredStart, filteredStart + PAGE_SIZE).map((x) => x.id);
 
         let writeIdx = 0;
-        const replaced = merged.map(it => {
+        const replaced = merged.map((it) => {
             const pos = filteredIdsInPage.indexOf(it.id);
             if (pos !== -1) {
                 const np = nextPageItems[writeIdx++];
@@ -127,9 +130,35 @@ export default function AdminServicesPage() {
         const reindexed = replaced.map((x, i) => ({ ...x, index: i + 1 }));
         setItems(reindexed);
         try {
-            await reorderServices(reindexed.map(x => ({ id: x.id, index: x.index })));
+            await reorderServices(reindexed.map((x) => ({ id: x.id, index: x.index })));
         } catch { }
     }
+
+    // ---------- helpers แบบ type-safe สำหรับอ่าน JSON ----------
+    type Delete409Payload = {
+        count?: number;
+        technicians?: unknown;
+    };
+    type ErrorPayload = { message?: unknown };
+
+    const readNumber = (u: unknown): number | null => (typeof u === "number" ? u : null);
+
+    const readStringArray = (u: unknown): string[] => {
+        if (Array.isArray(u)) {
+            const allStrings = u.every((v) => typeof v === "string");
+            return allStrings ? (u as string[]) : [];
+        }
+        return [];
+    };
+
+    const readMessage = (u: unknown): string | null => {
+        if (u && typeof u === "object" && "message" in u) {
+            const v = (u as Record<string, unknown>).message;
+            return typeof v === "string" ? v : null;
+        }
+        return null;
+    };
+    // ------------------------------------------------------------
 
     // ลบ (ดัก 409 เพื่อโชว์ popup)
     async function handleDelete(item: ServiceItem) {
@@ -138,9 +167,9 @@ export default function AdminServicesPage() {
 
         if (res.ok) {
             // ลบสำเร็จ → อัปเดตรายการ
-            const next = items.filter(x => x.id !== item.id).map((x, i) => ({ ...x, index: i + 1 }));
+            const next = items.filter((x) => x.id !== item.id).map((x, i) => ({ ...x, index: i + 1 }));
             setItems(next);
-            const totalAfter = (filtered.length - 1);
+            const totalAfter = filtered.length - 1;
             const maxPage = Math.max(1, Math.ceil(totalAfter / PAGE_SIZE));
             if (page > maxPage) setPage(maxPage);
             return;
@@ -148,17 +177,21 @@ export default function AdminServicesPage() {
 
         if (res.status === 409) {
             // ลบไม่ได้เพราะมีการใช้งาน → เปิด popup พร้อม count/รายชื่อช่าง
-            const data = await res.json().catch(() => ({} as any));
-            setInUseCount(Number(data?.count ?? 0));
-            setInUseTechs(Array.isArray(data?.technicians) ? data.technicians : []);
+            const data = (await res.json().catch(() => null)) as unknown as Delete409Payload | null;
+            const cnt = data && "count" in data ? readNumber((data as Delete409Payload).count) : null;
+            const techs = data && "technicians" in data ? readStringArray((data as Delete409Payload).technicians) : [];
+
+            setInUseCount(cnt ?? 0);
+            setInUseTechs(techs);
             setInUseServiceName(item.name);
             setInUseOpen(true);
             return;
         }
 
         // error อื่น ๆ
-        const err = await res.json().catch(() => ({} as any));
-        alert(err?.message || "ลบไม่สำเร็จ");
+        const err = (await res.json().catch(() => null)) as unknown as ErrorPayload | null;
+        const msg = err ? readMessage(err) : null;
+        alert(msg || "ลบไม่สำเร็จ");
     }
 
     return (
@@ -169,13 +202,22 @@ export default function AdminServicesPage() {
                     <div className="relative">
                         <input
                             value={search}
-                            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                            onChange={(e) => {
+                                setSearch(e.target.value);
+                                setPage(1);
+                            }}
                             placeholder="ค้นหาบริการ..."
                             className="w-[350px] h-[44px] rounded-lg border border-[var(--gray-300)] px-11 text-sm"
                         />
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--gray-400)]">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                <path d="M21 21L15 15L21 21ZM17 10C17 10.9193 16.8189 11.8295 16.4672 12.6788C16.1154 13.5281 15.5998 14.2997 14.9497 14.9497C14.2997 15.5998 13.5281 16.1154 12.6788 16.4672C11.8295 16.8189 10.9193 17 10 17C9.08075 17 8.1705 16.8189 7.32122 16.4672C6.47194 16.1154 5.70026 15.5998 5.05025 14.9497C4.40024 14.2997 3.88463 13.5281 3.53284 12.6788C3.18106 11.8295 3 10.9193 3 10C3 8.14348 3.7375 6.36301 5.05025 5.05025C6.36301 3.7375 8.14348 3 10 3C11.8565 3 13.637 3.7375 14.9497 5.05025C16.2625 6.36301 17 8.14348 17 10Z" stroke="#CCD0D7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <path
+                                    d="M21 21L15 15L21 21ZM17 10C17 10.9193 16.8189 11.8295 16.4672 12.6788C16.1154 13.5281 15.5998 14.2997 14.9497 14.9497C14.2997 15.5998 13.5281 16.1154 12.6788 16.4672C11.8295 16.8189 10.9193 17 10 17C9.08075 17 8.1705 16.8189 7.32122 16.4672C6.47194 16.1154 5.70026 15.5998 5.05025 14.9497C4.40024 14.2997 3.88463 13.5281 3.53284 12.6788C3.18106 11.8295 3 10.9193 3 10C3 8.14348 3.7375 6.36301 5.05025 5.05025C6.36301 3.7375 8.14348 3 10 3C11.8565 3 13.637 3.7375 14.9497 5.05025C16.2625 6.36301 17 8.14348 17 10Z"
+                                    stroke="#CCD0D7"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
                             </svg>
                         </span>
                     </div>
@@ -205,16 +247,7 @@ export default function AdminServicesPage() {
                         {/* Pagination */}
                         <div className="mt-4 px-4 flex justify-between items-center">
                             <div className="text-sm text-[var(--gray-500)]">รวม {filtered.length} รายการ</div>
-                            <Pagination
-                                prev
-                                next
-                                ellipsis
-                                boundaryLinks
-                                total={filtered.length}
-                                limit={PAGE_SIZE}
-                                activePage={page}
-                                onChangePage={(p) => setPage(p)}
-                            />
+                            <Pagination prev next ellipsis boundaryLinks total={filtered.length} limit={PAGE_SIZE} activePage={page} onChangePage={(p) => setPage(p)} />
                         </div>
                     </>
                 )}
