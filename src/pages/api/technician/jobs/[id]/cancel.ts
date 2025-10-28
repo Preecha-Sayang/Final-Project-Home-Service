@@ -19,7 +19,7 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
         );
         const row = rows[0] as { booking_id: number; status_id: number; admin_id: number | null } | undefined;
         if (!row) { await query("ROLLBACK"); return res.status(404).json({ ok: false, message: "not found" }); }
-        if (![BookingStatusId.WaitingProcess, BookingStatusId.InProgress].includes(row.status_id) || row.admin_id !== adminId) {
+        if (![BookingStatusId.WaitingAccept, BookingStatusId.WaitingProcess].includes(row.status_id) || row.admin_id !== adminId) {
             await query("ROLLBACK"); return res.status(409).json({ ok: false, message: "cannot cancel" });
         }
 

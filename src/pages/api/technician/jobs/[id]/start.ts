@@ -25,7 +25,7 @@ async function handler(req: AdminRequest, res: NextApiResponse) {
 
         await query(
             "UPDATE booking SET status_id = $2, update_at = now() WHERE booking_id = $1",
-            [bookingId, BookingStatusId.InProgress]
+            [bookingId, BookingStatusId.Completed]
         );
         await query(
             "INSERT INTO booking_actions (booking_id, actor_admin_id, action, meta) VALUES ($1,$2,'TECH_START',$3::jsonb)",
