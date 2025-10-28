@@ -13,11 +13,6 @@ type LocationApiResponse =
     | { ok: true; location: TechnicianLocationRow | null }
     | { ok: false; message?: string };
 
-type GoogleReverseResponse = {
-    results: Array<{ formatted_address?: string }>;
-    status?: string;
-};
-
 type GeoState = {
     addressText: string;
     coords: LatLng | null;
@@ -112,7 +107,7 @@ async function postLocation(payload: {
 }
 
 /** Zustand store */
-export const useGeoStore = create<GeoState>((set, get) => ({
+export const useGeoStore = create<GeoState>((set) => ({
     addressText: "",
     coords: null,
     loading: false,

@@ -110,7 +110,8 @@ export default function TechnicianPendingDetail() {
             .map((s) => (s || "").trim())
             .filter(Boolean);
         const base = parts.join(" ");
-        const extra = (a as any).additional_info ? String((a as any).additional_info).trim() : "";
+        const extraRaw = (a as Record<string, unknown>).additional_info;
+        const extra = typeof extraRaw === "string" ? extraRaw.trim() : "";
         return extra ? `${base} ${extra}` : base;
     }, [head?.address_data]);
 
@@ -218,7 +219,6 @@ export default function TechnicianPendingDetail() {
                                             </div>
                                         </div>
                                     </div>
-
 
                                     <div className="flex">
                                         <span className="w-[205px] text-[var(--gray-500)]">รหัสคำสั่งซ่อม: </span>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import GoogleLocationPicker from "./GoogleLocationPicker";
 import type { GeoPoint } from "@/types/location";
 
@@ -29,11 +29,11 @@ export default function GoogleLocationPickerModal({
     hideActions = false,
     fallbackCenter = { lat: 13.736717, lng: 100.523186 },
 }: Props) {
-    // ทำให้มี point เสมอ
-    const safeInitial: Picked =
-        initial && initial.point
+    const safeInitial: Picked = useMemo(() => {
+        return initial && initial.point
             ? initial
             : { point: fallbackCenter, place_name: initial?.place_name };
+    }, [initial, fallbackCenter]);
 
     const [selected, setSelected] = useState<Picked>(safeInitial);
 

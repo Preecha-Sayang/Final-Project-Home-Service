@@ -3,13 +3,20 @@ import type { NextApiRequest } from "next";
 import { withAdminAuth, type AdminRequest } from "lib/server/withAdminAuth";
 import { query } from "lib/db";
 
+/** address_data จาก DB (เก็บอะไรมากกว่านี้ได้) */
+type AddressDataServer = {
+    lat?: number;
+    lng?: number;
+    text?: string;
+} & Record<string, unknown>;
+
 type Head = {
     booking_id: number;
     order_code: string;
     status_id: number;
     service_date: string | null;
     service_time: string | null;
-    address_data: any;
+    address_data: AddressDataServer | null;
     pinned_location: { lat: number; lng: number; place_name?: string } | null;
     customer_name: string | null;
     customer_phone: string | null;
@@ -23,6 +30,7 @@ type Item = {
     quantity: number;
     unit: string | null;
     price: number; // subtotal ของรายการนั้น ๆ
+    category_name?: string | null;
 };
 
 type Action = {
@@ -46,26 +54,25 @@ async function handler(req: AdminRequest & NextApiRequest, res: NextApiResponse)
     const adminId = Number(req.admin.adminId);
 
     try {
-        // ---- HEAD ----
         const headQ = await query(
             `
-      SELECT
-        b.booking_id,
-        b.order_code,
-        b.status_id,
-        b.service_date,
-        b.service_time,
-        b.address_data,
-        b.pinned_location,
-        COALESCE(b.total_price, 0) AS total_price,
-        u.fullname       AS customer_name,
-        u.phone_number   AS customer_phone,
-        b.admin_id
-      FROM booking b
-      LEFT JOIN users u ON u.user_id = b.user_id
-      WHERE b.booking_id = $1
-      LIMIT 1
-      `,
+        SELECT
+            b.booking_id,
+            b.order_code,
+            b.status_id,
+            b.service_date,
+            b.service_time,
+            b.address_data,
+            b.pinned_location,
+            COALESCE(b.total_price, 0) AS total_price,
+            u.fullname       AS customer_name,
+            u.phone_number   AS customer_phone,
+            b.admin_id
+        FROM booking b
+        LEFT JOIN users u ON u.user_id = b.user_id
+        WHERE b.booking_id = $1
+        LIMIT 1
+        `,
             [id]
         );
 
@@ -83,34 +90,30 @@ async function handler(req: AdminRequest & NextApiRequest, res: NextApiResponse)
             status_id: headRow.status_id,
             service_date: headRow.service_date,
             service_time: headRow.service_time,
-            address_data: headRow.address_data,
-            pinned_location: headRow.pinned_location as any,
+            address_data: (headRow.address_data ?? null) as AddressDataServer | null,
+            pinned_location: headRow.pinned_location as unknown as Head["pinned_location"],
             customer_name: headRow.customer_name ?? null,
             customer_phone: headRow.customer_phone ?? null,
             total_price: Number(headRow.total_price ?? 0),
         };
 
-        // ---- ITEMS ---- (ให้ตรงสคีมา)
-        // booking_item: id, booking_id, service_option_id, quantity, subtotal_price
-        // service_option: service_option_id, service_id, name, unit, unit_price
-        // services: service_id, servicename, price
         const itemsQ = await query(
             `
-      SELECT
-        bi.id                              AS booking_item_id,
-        s.servicename                      AS servicename,
-        so.name                            AS option_name,
-        bi.quantity                        AS quantity,
-        so.unit                            AS unit,
-        bi.subtotal_price                  AS price,
-        sc.name                            AS category_name
-      FROM booking_item bi
-      JOIN service_option so ON so.service_option_id = bi.service_option_id
-      JOIN services       s  ON s.service_id        = so.service_id
-      JOIN service_categories sc ON sc.category_id = s.category_id
-      WHERE bi.booking_id = $1
-      ORDER BY bi.id ASC
-      `,
+        SELECT
+            bi.id AS booking_item_id,
+            s.servicename AS servicename,
+            so.name AS option_name,
+            bi.quantity AS quantity,
+            so.unit AS unit,
+            bi.subtotal_price AS price,
+            sc.name AS category_name
+        FROM booking_item bi
+        JOIN service_option so ON so.service_option_id = bi.service_option_id
+        JOIN services s  ON s.service_id = so.service_id
+        JOIN service_categories sc ON sc.category_id = s.category_id
+        WHERE bi.booking_id = $1
+        ORDER BY bi.id ASC
+        `,
             [id]
         );
 
@@ -124,7 +127,6 @@ async function handler(req: AdminRequest & NextApiRequest, res: NextApiResponse)
             category_name: r.category_name ?? null,
         }));
 
-        // ---- ACTIONS ----
         const actionsQ = await query(
             `
       SELECT action, actor_admin_id, created_at

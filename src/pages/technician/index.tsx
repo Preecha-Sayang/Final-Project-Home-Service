@@ -18,15 +18,14 @@ function toGeoPosition(p: { lat: number; lng: number; accuracy?: number }): Geol
             speed: null,
         },
         timestamp: Date.now(),
-        toJSON() {
-            return this as any;
+        toJSON(): GeolocationPosition {
+            return this as unknown as GeolocationPosition;
         },
     };
     return obj as unknown as GeolocationPosition;
 }
 
 export default function TechnicianInboxPage() {
-    const [q, setQ] = useState("");
     const { addressText, coords, loading, loadFromServer, reverseAndSave } = useTechnicianLocation();
     const { getPositionOnce, permission, error } = useGeolocation();
     const { jobs, loadNearby, accept, decline } = useTechJobs();
@@ -36,6 +35,8 @@ export default function TechnicianInboxPage() {
     // ref กัน loop reverse geocode
     const hasReversedRef = useRef(false);
     const bootRef = useRef(false);
+
+    const isBusy = loading || loadingProfile;
 
     const looksLikeLatLng = (s?: string | null) =>
         !!s && /^\s*-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?\s*$/.test(s);
@@ -90,7 +91,7 @@ export default function TechnicianInboxPage() {
                 toGeoPosition({ lat: coords.lat, lng: coords.lng, accuracy: 5 })
             );
         }
-    }, [loading, coords?.lat, coords?.lng, addressText, reverseAndSave]);
+    }, [loading, coords, addressText, reverseAndSave]);
 
     const onRefresh = async () => {
         hasReversedRef.current = false; // รีเซ็ตให้ reverse ใหม่ได้
@@ -140,11 +141,11 @@ export default function TechnicianInboxPage() {
                             </div>
                             <button
                                 type="button"
-                                disabled={loading}
+                                disabled={isBusy}
                                 onClick={onRefresh}
-                                className="w-[96px] h-[36px] rounded-lg font-medium bg-[var(--blue-200)] border-2 border-[var(--blue-300)] text-[var(--blue-700)] hover:bg-[var(--blue-100)] cursor-pointer transition"
+                                className="w-[120px] h-[36px] rounded-lg font-medium bg-[var(--blue-200)] border-2 border-[var(--blue-300)] text-[var(--blue-700)] hover:bg-[var(--blue-100)] cursor-pointer transition"
                             >
-                                {loading ? "กำลังรีเฟรช…" : "รีเฟรช"}
+                                {isBusy ? "กำลังรีเฟรช…" : "รีเฟรช"}
                             </button>
                         </div>
                     </div>

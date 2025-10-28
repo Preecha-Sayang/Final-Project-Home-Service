@@ -46,7 +46,7 @@ export default function ConfirmDialog({
                 {/* text */}
                 <h3 className="mb-1 text-center text-lg font-semibold text-[var(--gray-900)]">{title}</h3>
                 {description && (
-                    <p className="mb-5 text-center text-md text-[var(--gray-600)]">{description}</p>
+                    <div className="mb-5 text-center text-md text-[var(--gray-600)]">{description}</div>
                 )}
 
                 {/* actions */}
