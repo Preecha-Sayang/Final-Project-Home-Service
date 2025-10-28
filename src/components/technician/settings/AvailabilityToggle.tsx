@@ -9,18 +9,31 @@ export type TechnicianRequestProps = {
   className?: string;
 };
 
+// response shape จาก API set-availability
+type SetAvailabilityResp = {
+  ok: boolean;
+  message?: string;
+};
+
+// type guard ตรวจสอบโครงสร้าง response โดยไม่ใช้ any
+function isSetAvailabilityResp(x: unknown): x is SetAvailabilityResp {
+  if (typeof x !== "object" || x === null) return false;
+  const r = x as Record<string, unknown>;
+  return typeof r.ok === "boolean" && (r.message === undefined || typeof r.message === "string");
+}
+
 // คอมโพเนนต์ที่สามารถแทรกได้ เมื่อกดปุ่มจะตั้งค่า is_available=true 
 // ในโปรไฟล์ช่างและแจ้งให้คอมโพเนนต์แม่ทราบ
 export default function AvailabilityToggle(props: TechnicianRequestProps) {
   const { onStatusChanged, className } = props;
-  
+
   // State สำหรับจัดการสถานะการโหลด, error และการเสร็จสิ้น
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
   // ฟังก์ชันเปิดใช้งานสถานะความพร้อมให้บริการ
-  const activate = useCallback(async () => {
+  const activate = useCallback(async (): Promise<void> => {
     if (loading) return;
     setLoading(true);
     setError(null);
@@ -33,13 +46,19 @@ export default function AvailabilityToggle(props: TechnicianRequestProps) {
         body: JSON.stringify({ is_available: true }),
       });
       if (!postRes.ok) throw new Error(`POST set-availability failed: ${postRes.status}`);
-      const postJson: any = await postRes.json().catch(() => ({ ok: false }));
-      if (!postJson?.ok) throw new Error(postJson?.message || "Failed to update availability");
+
+      const raw: unknown = await postRes.json().catch(() => ({ ok: false }));
+      const postJson: SetAvailabilityResp = isSetAvailabilityResp(raw)
+        ? raw
+        : { ok: false, message: "Invalid response format" };
+
+      if (!postJson.ok) throw new Error(postJson.message || "Failed to update availability");
 
       setDone(true);
       onStatusChanged?.(true);
-    } catch (e: any) {
-      setError(String(e?.message || e || "Unknown error"));
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -67,8 +86,8 @@ export default function AvailabilityToggle(props: TechnicianRequestProps) {
         {/* ปุ่มเปิดใช้งานสถานะความพร้อมให้บริการ */}
         <Button
           disabled={loading || done}
-          onClick={activate as any}
-          className={`w-[250px] text-[var(--white)] text-sm font-normal px-6 py-2 rounded-md whitespace-nowrap`}
+          onClick={activate}
+          className="w-[250px] text-[var(--white)] text-sm font-normal px-6 py-2 rounded-md whitespace-nowrap"
         >
           {done ? "พร้อมให้บริการแล้ว" : loading ? "กำลังเปิดใช้งาน..." : "เปลี่ยนสถานะเป็นพร้อมให้บริการ"}
         </Button>

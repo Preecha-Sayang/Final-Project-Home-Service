@@ -44,7 +44,7 @@ export default function GoogleLocationPicker({
             setState(value);
             lastPropRef.current = value;
         }
-    }, [value?.point.lat, value?.point.lng, value?.place_name]);
+    }, [value]);
 
     // เปิดโมดอลครั้งแรกแล้ว reverse geocode ให้
     useEffect(() => {
@@ -63,7 +63,7 @@ export default function GoogleLocationPicker({
             onChange?.({ point: state.point, place_name: text });
         };
         void run();
-    }, [open]);
+    }, [open, addressText, onChange, state.point]);
 
     useEffect(() => {
         const changed =

@@ -68,7 +68,6 @@ const BookingDetailsForm: React.FC = () => {
   const [defaultAddress, setDefaultAddress] = useState<DefaultAddress | null>(null)
   const [loadingDefaultAddress, setLoadingDefaultAddress] = useState(false)
   const [hasDefaultAddress, setHasDefaultAddress] = useState(false)
-  const [mapOpen, setMapOpen] = useState(false);
 
   // 🗺️ Map modal state
   const [showMapModal, setShowMapModal] = useState(false)

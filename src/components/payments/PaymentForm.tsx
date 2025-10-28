@@ -56,7 +56,7 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
     const router = useRouter();
 
     // ดึงข้อมูลจาก booking store
-    const { getActiveCartItems, getFinalAmount, customerInfo, paymentInfo } =
+    const { getActiveCartItems, customerInfo } =
       useBookingStore();
 
     // ดึงข้อมูล user จาก auth context
@@ -253,7 +253,6 @@ const PaymentForm = forwardRef<PaymentFormRef, PaymentFormProps>(
           let chargeId = "";
           try {
             const cartItems = getActiveCartItems();
-            const finalAmount = getFinalAmount();
 
             // ตรวจสอบว่ามีข้อมูลหรือไม่
             if (!cartItems || cartItems.length === 0) {

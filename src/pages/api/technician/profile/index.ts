@@ -5,25 +5,45 @@ import { query } from "lib/db";
 /** Types aligned with technician/location API */
 type MyReq = NextApiRequest & { admin: AdminJwt };
 
-type OkGet = { ok: true; profile: {
-  first_name: string | null;
-  last_name: string | null;
-  phone: string | null;
-  lat: number | null;
-  lng: number | null;
-  address_text: string;
-  address_meta: unknown;
-  is_available: boolean;
-  service_ids: number[];
-} };
+type OkGet = {
+  ok: true; profile: {
+    first_name: string | null;
+    last_name: string | null;
+    phone: string | null;
+    lat: number | null;
+    lng: number | null;
+    address_text: string;
+    address_meta: unknown;
+    is_available: boolean;
+    service_ids: number[];
+  }
+};
 
 type OkPost = { ok: true };
 
 type Err = { ok: false; message?: string };
 
+/** DB row shapes */
+type LocationRowDB = { lat: number | null; lng: number | null; address_text: string | null; address_meta: unknown };
+
+/** ใช้เป็นค่าที่อ่านจาก DB แล้วอาจไม่มีแถว */
 type LocationRow = { lat: number; lng: number; address_text: string; address_meta: unknown } | undefined;
 
-type ProfileRow = { is_available: boolean; service_ids: unknown; first_name: string | null; last_name: string | null; phone: string | null } | undefined;
+type ProfileRowDB = {
+  is_available: boolean | null;
+  service_ids: unknown;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+};
+
+type ProfileRow = {
+  is_available: boolean;
+  service_ids: unknown;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+} | undefined;
 
 async function q<T>(sqlText: string, params?: unknown[]): Promise<T[]> {
   const { rows } = await query(sqlText, params as unknown[]);
@@ -48,19 +68,41 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
     // Minimal data fetch in parallel
     const [adminRows, locRows, profRows] = await Promise.all([
       q<{ name: string }>(`SELECT name FROM public.admin WHERE admin_id = $1`, [techId]),
-      q<LocationRow extends undefined ? never : NonNullable<LocationRow>>(
+      q<LocationRowDB>(
         `SELECT lat, lng, address_text, address_meta FROM public.technician_locations WHERE admin_id = $1 LIMIT 1`,
         [techId]
       ),
-      q<NonNullable<ProfileRow>>(
+      q<ProfileRowDB>(
         `SELECT is_available, service_ids, first_name, last_name, phone FROM public.technician_profiles WHERE admin_id = $1 LIMIT 1`,
         [techId]
       ),
     ]);
 
     const name = adminRows[0]?.name ?? "";
-    const loc = (locRows as unknown as any[])[0] as LocationRow;
-    const prof = (profRows as unknown as any[])[0] as ProfileRow;
+
+    // แปลง locRows[0] -> LocationRow (หรือ undefined ถ้าขาด/ไม่สมบูรณ์)
+    const locDb = locRows[0];
+    const loc: LocationRow =
+      locDb && typeof locDb.lat === "number" && typeof locDb.lng === "number"
+        ? {
+          lat: locDb.lat,
+          lng: locDb.lng,
+          address_text: String(locDb.address_text ?? ""),
+          address_meta: locDb.address_meta ?? null,
+        }
+        : undefined;
+
+    // แปลง profRows[0] -> ProfileRow (ให้มี default ที่เหมาะสม)
+    const profDb = profRows[0];
+    const prof: ProfileRow = profDb
+      ? {
+        is_available: Boolean(profDb.is_available ?? true),
+        service_ids: profDb.service_ids,
+        first_name: profDb.first_name ?? null,
+        last_name: profDb.last_name ?? null,
+        phone: profDb.phone ?? null,
+      }
+      : undefined;
 
     const profile = {
       name,
@@ -118,7 +160,7 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
       await query("COMMIT");
       return res.json({ ok: true });
     } catch (e) {
-      try { await query("ROLLBACK"); } catch {}
+      try { await query("ROLLBACK"); } catch { }
       if (process.env.NODE_ENV !== "production") {
         return res.status(500).json({ ok: false, message: String(e) });
       }

@@ -119,10 +119,17 @@ export default function GoogleMapCanvas({
 
     // อัปเดต marker & pan
     useEffect(() => {
-        if (advMarkerRef.current)
-            advMarkerRef.current.position = center as AnyLatLng;
-        if (markerRef.current) markerRef.current.setPosition(center);
-        if (mapRef.current) mapRef.current.panTo(center);
+        const literal: google.maps.LatLngLiteral = { lat: center.lat, lng: center.lng };
+
+        if (advMarkerRef.current) {
+            advMarkerRef.current.position = literal as AnyLatLng;
+        }
+        if (markerRef.current) {
+            markerRef.current.setPosition(literal);
+        }
+        if (mapRef.current) {
+            mapRef.current.panTo(literal);
+        }
     }, [center.lat, center.lng]);
 
     // cleanup listeners / marker
