@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { sql } from "lib/db";
 import type { PromotionUse } from "@/types/promotion";
-import Swal from "sweetalert2";
 
 export default async function handler(
   req: NextApiRequest,

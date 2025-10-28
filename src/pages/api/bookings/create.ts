@@ -20,7 +20,6 @@ export default async function handler(
       service_time,
       address_data,
       promotion_id,
-      charge_id,
       latitude,
       longitude,
     } = req.body;

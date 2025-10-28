@@ -1,3 +1,5 @@
+import type { GeoPoint } from "@/types/location";
+
 const API_KEY = process.env.GOOGLE_MAPS_SERVER_KEY!;
 
 async function safeJson(res: Response) {
@@ -29,7 +31,7 @@ export async function geocodeAddress(address: string) {
     };
 }
 
-export async function getDirections(origin: any, destination: any) {
+export async function getDirections(origin: GeoPoint, destination: GeoPoint) {
     const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&mode=driving&key=${API_KEY}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Directions API error: ${res.status}`);

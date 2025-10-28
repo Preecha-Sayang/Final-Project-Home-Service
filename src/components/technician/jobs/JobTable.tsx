@@ -60,8 +60,7 @@ export default function JobTable({ jobs, onAccept, onDecline }: Props) {
     const confirmWhen = useMemo(() => {
         if (!confirm.job) return null;
         return formatThaiDateTimeText(confirm.job.service_date, confirm.job.service_time);
-        // เพิ่ม confirm.job ลงใน deps เพื่อให้ถูกต้องตามกฎ
-    }, [confirm.job?.service_date, confirm.job?.service_time, confirm.job]);
+    }, [confirm.job]);
 
     return (
         <>

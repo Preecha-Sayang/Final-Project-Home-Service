@@ -22,46 +22,36 @@ export function withAdminAuth<TReq extends NextApiRequest = NextApiRequest>(
   roles: Role[] = []
 ): NextApiHandler {
   return async (req, res) => {
-    let decoded: AdminJwt;
     try {
-      let token = req.headers.authorization?.startsWith("Bearer ")
-        ? req.headers.authorization.slice(7).trim()
-        : undefined;
-
-      if (!token && req.headers.cookie) {
-        const cookies = cookie.parse(req.headers.cookie);
-        token = cookies.accessToken;
-      }
+      // อ่าน token จาก cookie เท่านั้น
+      const cookies = cookie.parse(req.headers.cookie || "");
+      const token = cookies.accesstoken || cookies.accessToken; // รองรับสองชื่อ
 
       if (!token) {
         return res.status(401).json({ ok: false, message: "missing token" });
       }
 
-      decoded = jwt.verify(token, JWT_SECRET) as AdminJwt;
+      // ตรวจสอบ token
+      const decoded = jwt.verify(token, JWT_SECRET) as AdminJwt;
 
       if (!decoded?.adminId || !decoded?.role) {
         return res.status(401).json({ ok: false, message: "invalid token" });
       }
+
+      // ตรวจ role ถ้ามีระบุ
       if (roles.length && !roles.includes(decoded.role)) {
         return res.status(403).json({ ok: false, message: "forbidden" });
       }
+
       (req as unknown as AdminRequest).admin = decoded;
+
+      // เรียก handler ต่อ
+      return await handler(req as unknown as TReq, res);
     } catch (err) {
+      console.error("Auth error:", err);
       return res
         .status(401)
         .json({ ok: false, message: "unauthorized", error: String(err) });
-    }
-
-    try {
-      return await handler(req as unknown as TReq, res);
-    } catch (err) {
-      if (process.env.NODE_ENV !== "production") {
-        console.error(err);
-        return res
-          .status(500)
-          .json({ ok: false, message: "server error", error: String(err) });
-      }
-      return res.status(500).end();
     }
   };
 }

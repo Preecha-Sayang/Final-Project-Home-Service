@@ -3,6 +3,15 @@ import { sql } from "lib/db";
 
 export const config = { api: { bodyParser: false } };
 
+// ชนิดข้อมูลแถวที่ดึงจาก technician_locations
+type TechLocationRow = {
+    user_id: number;
+    lat: number | null;
+    lng: number | null;
+    updated_at: string | Date;
+    source: string | null;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     res.writeHead(200, {
         "Content-Type": "text/event-stream",
@@ -20,7 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             FROM technician_locations
             ORDER BY updated_at DESC
             LIMIT 100
-            ` as any[];
+            ` as TechLocationRow[];
+
         res.write(`data: ${JSON.stringify({ type: "tech_locations", items: rows })}\n\n`);
     }
 
