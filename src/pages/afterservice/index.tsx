@@ -15,7 +15,7 @@ function AfterService() {
   ];
 
   const searchParams = useSearchParams();
-  const tab = searchParams.get("tab");
+  const tab = searchParams?.get("tab") ?? null;
 
   const [keyword, setkeyword] = useState(tab || "ข้อมูลผู้ใช้งาน");
 
@@ -72,9 +72,8 @@ function AfterService() {
                     height={24}
                   />
                   <p
-                    className={`${
-                      keyword === item.label ? "text-[var(--blue-700)]" : ""
-                    }`}
+                    className={`${keyword === item.label ? "text-[var(--blue-700)]" : ""
+                      }`}
                   >
                     {item.label}
                   </p>

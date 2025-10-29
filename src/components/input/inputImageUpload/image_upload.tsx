@@ -183,6 +183,11 @@ export default function ImageUpload({
                         ชื่อไฟล์: <span className="font-medium">{value.name}</span>
                     </div>
                 )}
+                {!value && (
+                    <p className="text-xs text-[var(--gray-600)] leading-5">
+                        ขนาดภาพที่แนะนำ: 1440 × 225 PX
+                    </p>
+                )}
             </div>
 
         </div>

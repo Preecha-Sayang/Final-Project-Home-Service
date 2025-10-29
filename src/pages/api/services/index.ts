@@ -5,8 +5,12 @@ import { cloudinary } from "lib/server/upload/cloudinary";
 import { parseForm } from "lib/server/upload/parseForm";
 import type { File } from "formidable";
 
-//ถ้าลบบรรทัดนี้จะไม่สามารถสร้างบริการได้
-export const config = { api: { bodyParser: false as const } };
+//ถ้าลบบรรทัดนี้จะไม่สามารถสร้างบริการได้ (แกให้ไม่มี as const , saticfies)
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export type ServiceRow = {
     service_id: number;
