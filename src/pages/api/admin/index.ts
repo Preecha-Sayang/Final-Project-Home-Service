@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import { v2 as cloudinary } from "cloudinary";
 import { neon } from "@neondatabase/serverless";
 
-//  export const config = { api: { bodyParser: false } };
+export const config = { api: { bodyParser: false } };
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,

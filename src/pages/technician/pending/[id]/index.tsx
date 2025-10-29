@@ -84,7 +84,6 @@ export default function TechnicianPendingDetail() {
         } else {
             setOrigin({ lat: 13.736717, lng: 100.523186 });
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [router.isReady, id]);
 
     // เสร็จสิ้น / ปฏิเสธคืนคิว

@@ -439,14 +439,6 @@ export default function ServiceEditor({ mode, id }: Props) {
                                         <ImageUpload value={imageFile} onChange={setImageFile} />
                                         {/* {markRemoveImg && <div className="absolute mt-2 text-xs text-[var(--red)]">จะลบรูปเดิมเมื่อกดบันทึก</div>} */}
                                     </div>
-
-                                    {!imageFile ? (
-                                        <div className="-mt-4 -mb-2">
-                                            <span className="text-sm font-[400] text-[var(--gray-400)]">ขนาดภาพที่แนะนำ: 1440 x 225 PX</span>
-                                        </div>
-                                    ) : (
-                                        ""
-                                    )}
                                 </div>
                             )}
                         </div>
