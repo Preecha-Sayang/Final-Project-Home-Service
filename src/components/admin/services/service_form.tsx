@@ -42,7 +42,7 @@ export default function ServiceForm({ mode, initial, adminId, onSaved }: Props) 
             fd.append("category_id", String(categoryId));
             if (price !== "") fd.append("price", price);
             if (description) fd.append("description", description);
-            fd.append("admin_id", String(adminId));
+            // fd.append("admin_id", String(adminId));
             if (file) fd.append("file", file);
 
             const url = mode === "create" ? "/api/services" : `/api/services/${initial?.service_id}`;

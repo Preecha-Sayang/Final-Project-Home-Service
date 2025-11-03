@@ -270,7 +270,7 @@ export default function ServiceEditor({ mode, id }: Props) {
         const fd = new FormData();
         fd.append("servicename", name.trim());
         fd.append("category_id", String(categoryId));
-        fd.append("admin_id", "1");
+        // fd.append("admin_id", "1");
         if (basePrice != null) fd.append("price", String(basePrice));
         if (description) fd.append("description", description);
         if (mode === "create") {
