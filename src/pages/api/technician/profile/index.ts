@@ -128,6 +128,8 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
     const phone = (body.phone ?? "").toString().trim().slice(0, 50);
     const is_available = Boolean(body.is_available);
     const service_ids = toIntArray(body.service_ids);
+    // Get name from body or construct from first_name and last_name
+    const name = (body.name ?? [first_name, last_name].filter(Boolean).join(" ").trim()).toString().trim().slice(0, 200);
 
     // Validate service_ids against services table if any provided
     if (service_ids.length > 0) {
@@ -142,6 +144,14 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
 
     try {
       await query("BEGIN");
+
+      // Update admin name if provided
+      if (name) {
+        await query(
+          `UPDATE public.admin SET name = $1 WHERE admin_id = $2`,
+          [name, techId]
+        );
+      }
 
       // Upsert technician profile (availability + services + contacts)
       await query(
@@ -161,10 +171,9 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
       return res.json({ ok: true });
     } catch (e) {
       try { await query("ROLLBACK"); } catch { }
-      if (process.env.NODE_ENV !== "production") {
-        return res.status(500).json({ ok: false, message: String(e) });
-      }
-      return res.status(500).json({ ok: false });
+      const errorMessage = e instanceof Error ? e.message : String(e);
+      console.error("Error saving technician profile:", errorMessage);
+      return res.status(500).json({ ok: false, message: errorMessage });
     }
   }
 

@@ -156,12 +156,43 @@ export default function TechnicianCombinedSettingsPage() {
 
   // ยืนยันและบันทึกข้อมูล / Confirm and save data
   const handleConfirm = async () => {
+    // Validate required fields
+    if (!formData.firstName.trim()) {
+      await Swal.fire({
+        title: "กรุณากรอกข้อมูล",
+        text: "กรุณากรอกชื่อ",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
+    if (!formData.lastName.trim()) {
+      await Swal.fire({
+        title: "กรุณากรอกข้อมูล",
+        text: "กรุณากรอกนามสกุล",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
+    if (!formData.phone.trim()) {
+      await Swal.fire({
+        title: "กรุณากรอกข้อมูล",
+        text: "กรุณากรอกเบอร์ติดต่อ",
+        icon: "warning",
+        confirmButtonText: "ตกลง",
+      });
+      return;
+    }
+
     try {
       const payload = {
         name: [formData.firstName, formData.lastName].filter(Boolean).join(" ").trim(),
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
+        phone: formData.phone.trim(),
         is_available: isAvailable,
         service_ids: selectedIdsArray,
       };
@@ -172,8 +203,13 @@ export default function TechnicianCombinedSettingsPage() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
+      
       const js = await res.json();
-      if (!res.ok || !js?.ok) throw new Error(js?.message || `Save failed: ${res.status}`);
+      
+      if (!res.ok || !js?.ok) {
+        const errorMessage = js?.message || `บันทึกข้อมูลไม่สำเร็จ (รหัส: ${res.status})`;
+        throw new Error(errorMessage);
+      }
 
       // แสดง popup สำเร็จ
       await Swal.fire({
@@ -183,8 +219,10 @@ export default function TechnicianCombinedSettingsPage() {
         confirmButtonText: "ตกลง",
       });
     } catch (e) {
-      console.error(e);
-
+      console.error("Error saving profile:", e);
+      
+      const errorMessage = e instanceof Error ? e.message : "ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง";
+      
       // แสดง popup error
       await Swal.fire({
         title: "เกิดข้อผิดพลาด!",
