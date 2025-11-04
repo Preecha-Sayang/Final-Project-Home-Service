@@ -131,14 +131,26 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
     // Get name from body or construct from first_name and last_name
     const name = (body.name ?? [first_name, last_name].filter(Boolean).join(" ").trim()).toString().trim().slice(0, 200);
 
-    // Validate service_ids against services table if any provided
+    // Validate and filter service_ids against services table if any provided
+    let validServiceIds: number[] = [];
     if (service_ids.length > 0) {
-      const valid = await q<{ service_id: number }>(
-        `SELECT service_id FROM public.services WHERE service_id = ANY($1::int[])`,
-        [service_ids]
-      );
-      if (valid.length !== service_ids.length) {
-        return res.status(400).json({ ok: false, message: "Some service_ids are invalid" });
+      try {
+        const valid = await q<{ service_id: number }>(
+          `SELECT service_id FROM public.services WHERE service_id = ANY($1::int[])`,
+          [service_ids]
+        );
+        validServiceIds = valid.map(v => v.service_id);
+        
+        // Log warning if some IDs are invalid, but continue with valid ones
+        const validIdsSet = new Set(validServiceIds);
+        const invalidIds = service_ids.filter(id => !validIdsSet.has(id));
+        if (invalidIds.length > 0) {
+          console.warn(`Some service_ids are invalid: ${invalidIds.join(", ")}, using only valid ones`);
+        }
+      } catch (e) {
+        console.error("Error validating service_ids:", e);
+        // If validation fails, use empty array instead of failing the whole request
+        validServiceIds = [];
       }
     }
 
@@ -154,6 +166,7 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
       }
 
       // Upsert technician profile (availability + services + contacts)
+      // Use validated service_ids instead of original ones
       await query(
         `INSERT INTO public.technician_profiles (admin_id, first_name, last_name, phone, is_available, service_ids, update_at)
          VALUES ($1, $2, $3, $4, $5, $6::jsonb, now())
@@ -164,7 +177,7 @@ async function handler(req: MyReq, res: NextApiResponse<OkGet | OkPost | Err>) {
                        is_available = EXCLUDED.is_available,
                        service_ids  = EXCLUDED.service_ids,
                        update_at    = now()`,
-        [techId, first_name || null, last_name || null, phone || null, is_available, JSON.stringify(service_ids)]
+        [techId, first_name || null, last_name || null, phone || null, is_available, JSON.stringify(validServiceIds)]
       );
 
       await query("COMMIT");

@@ -208,6 +208,7 @@ export default function TechnicianCombinedSettingsPage() {
       
       if (!res.ok || !js?.ok) {
         const errorMessage = js?.message || `บันทึกข้อมูลไม่สำเร็จ (รหัส: ${res.status})`;
+        console.error("API Error:", errorMessage);
         throw new Error(errorMessage);
       }
 
